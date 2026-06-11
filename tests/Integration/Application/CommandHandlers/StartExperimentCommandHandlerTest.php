@@ -8,6 +8,7 @@ use ABTests\Application\CommandHandlers\StartExperimentCommandHandler;
 use ABTests\Application\Commands\StartExperimentCommand;
 use ABTests\Enums\ExperimentStatus;
 use ABTests\Infrastructure\Database\Models\ExperimentModel;
+use ABTests\Registry\ExperimentRegistry;
 use ABTests\Tests\Integration\DatabaseTestCase;
 use PHPUnit\Framework\Attributes\Test;
 
@@ -23,7 +24,7 @@ final class StartExperimentCommandHandlerTest extends DatabaseTestCase
             'is_killed' => false,
         ]);
 
-        new StartExperimentCommandHandler()->handle(new StartExperimentCommand(
+        new StartExperimentCommandHandler(new ExperimentRegistry())->handle(new StartExperimentCommand(
             experimentKey: 'checkout-button-color',
             actorIdentifier: 'tester',
         ));
@@ -46,7 +47,7 @@ final class StartExperimentCommandHandlerTest extends DatabaseTestCase
             'is_killed' => false,
         ]);
 
-        new StartExperimentCommandHandler()->handle(new StartExperimentCommand(
+        new StartExperimentCommandHandler(new ExperimentRegistry())->handle(new StartExperimentCommand(
             experimentKey: 'checkout-button-color',
             actorIdentifier: 'tester',
         ));

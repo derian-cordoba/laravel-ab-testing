@@ -10,10 +10,18 @@ use ABTests\Exceptions\ExperimentNotFound;
 use ABTests\Exceptions\InvalidStateTransition;
 use ABTests\Infrastructure\Database\Models\AuditLogModel;
 use ABTests\Infrastructure\Database\Models\ExperimentModel;
+use ABTests\Infrastructure\Database\Models\VariantModel;
+use ABTests\Registry\ExperimentRegistry;
 use Illuminate\Support\Carbon;
+use Throwable;
 
 final readonly class StartExperimentCommandHandler
 {
+    public function __construct(private ExperimentRegistry $registry)
+    {
+        //
+    }
+
     public function handle(StartExperimentCommand $command): void
     {
         $model = ExperimentModel::query()->firstWhere('key', $command->experimentKey);
@@ -50,5 +58,32 @@ final readonly class StartExperimentCommandHandler
             'occurred_at' => Carbon::now(),
         ]);
 
+        $this->syncVariantSnapshot($model, $command->experimentKey);
+    }
+
+    /**
+     * Snapshot the variant configuration from the code definition into the
+     * database so the dashboard always has variant metadata, even after a
+     * code-defined class is renamed or deleted.
+     *
+     * Each arm is upserted so repeated calls (e.g. on every deploy) are
+     * idempotent — the first write creates the row, subsequent writes update
+     * only the weight and is_control flag.
+     */
+    private function syncVariantSnapshot(ExperimentModel $model, string $experimentKey): void
+    {
+        try {
+            $definition = $this->registry->findByKey($experimentKey);
+        } catch (Throwable) {
+            // Runtime-defined experiment with no code definition — nothing to snapshot.
+            return;
+        }
+
+        foreach ($definition->allocation->variants as $variant) {
+            VariantModel::query()->updateOrCreate(
+                ['experiment_id' => $model->id, 'key' => $variant->key()],
+                ['weight' => $variant->weight(), 'is_control' => $variant->isControl()],
+            );
+        }
     }
 }

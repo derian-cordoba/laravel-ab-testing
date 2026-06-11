@@ -52,9 +52,9 @@ abstract class DatabaseTestCase extends TestCase
         $capsule = new DB();
         $capsule->setEventDispatcher(new Dispatcher($container));
         $capsule->addConnection([
-            'driver' => 'sqlite',
+            'driver'   => 'sqlite',
             'database' => ':memory:',
-            'prefix' => '',
+            'prefix'   => '',
         ]);
         $capsule->setContainer($container);
         $capsule->setAsGlobal();
@@ -62,6 +62,9 @@ abstract class DatabaseTestCase extends TestCase
 
         $container->instance('db', $capsule->getDatabaseManager());
         $container->instance('events', $capsule->getEventDispatcher());
+
+        // Enable foreign-key enforcement for SQLite (off by default).
+        $capsule->getConnection()->statement('PRAGMA foreign_keys = ON');
 
         self::$capsule = $capsule;
     }
@@ -81,6 +84,21 @@ abstract class DatabaseTestCase extends TestCase
             $table->timestamp('started_at')->nullable();
             $table->timestamp('stopped_at')->nullable();
             $table->timestamps();
+        });
+
+        DB::schema()->create('ab_testing_variants', static function ($table): void {
+            $table->id();
+            $table->unsignedBigInteger('experiment_id');
+            $table->string('key');
+            $table->unsignedInteger('weight');
+            $table->boolean('is_control')->default(false);
+            $table->timestamps();
+
+            $table->unique(['experiment_id', 'key']);
+            $table->foreign('experiment_id')
+                ->references('id')
+                ->on('ab_testing_experiments')
+                ->cascadeOnDelete();
         });
 
         DB::schema()->create('ab_testing_assignments', static function ($table): void {
@@ -170,6 +188,7 @@ abstract class DatabaseTestCase extends TestCase
         DB::schema()->dropIfExists('ab_testing_rollups');
         DB::schema()->dropIfExists('ab_testing_events');
         DB::schema()->dropIfExists('ab_testing_assignments');
+        DB::schema()->dropIfExists('ab_testing_variants');
         DB::schema()->dropIfExists('ab_testing_experiments');
     }
 }

@@ -4,21 +4,20 @@ declare(strict_types=1);
 
 namespace ABTests;
 
+use ABTests\Attributes\AsFeatureFlag;
 use RuntimeException;
 use Throwable;
 use ABTests\Contracts\AssignmentRepository;
 use ABTests\Contracts\Bucketable;
 use ABTests\Contracts\BucketingStrategy;
 use ABTests\Contracts\EventSink;
+use ABTests\Contracts\ResolvesVariant;
 use ABTests\Enums\Environment;
 use ABTests\Enums\Operator;
-use ABTests\FeatureFlag;
 use ABTests\Infrastructure\Database\Models\FeatureFlagStateModel;
 use ABTests\Registry\ExperimentRegistry;
 use ABTests\Registry\FeatureFlagRegistry;
-use ABTests\Resolution\Resolver;
 use ABTests\Values\Context;
-use ABTests\Values\Criterion;
 use ABTests\Values\Segment;
 
 /**
@@ -46,7 +45,7 @@ final class Experiments
     public function __construct(
         private readonly ExperimentRegistry $registry,
         private readonly FeatureFlagRegistry $flagRegistry,
-        private readonly Resolver $resolver,
+        private readonly ResolvesVariant $resolver,
         private readonly EventSink $eventSink,
         private readonly AssignmentRepository $assignmentRepository,
         private readonly BucketingStrategy $bucketingStrategy,
@@ -145,7 +144,7 @@ final class Experiments
         return $this->flagRegistry;
     }
 
-    public function resolver(): Resolver
+    public function resolver(): ResolvesVariant
     {
         return $this->resolver;
     }
@@ -240,7 +239,7 @@ final class Experiments
     {
         try {
             $reflector = new \ReflectionClass($flagClass);
-            $attrs = $reflector->getAttributes(\ABTests\Attributes\AsFeatureFlag::class);
+            $attrs = $reflector->getAttributes(AsFeatureFlag::class);
 
             if ($attrs !== []) {
                 return $attrs[0]->newInstance()->defaultValue;

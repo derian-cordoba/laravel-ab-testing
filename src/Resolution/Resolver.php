@@ -9,6 +9,7 @@ use ABTests\Contracts\BucketingStrategy;
 use ABTests\Contracts\ExperimentStateRepository;
 use ABTests\Contracts\Variant;
 use ABTests\Definitions\ExperimentDefinition;
+use ABTests\Contracts\ResolvesVariant;
 use ABTests\Resolution\Contracts\ResolutionStep;
 
 /**
@@ -22,7 +23,7 @@ use ABTests\Resolution\Contracts\ResolutionStep;
  * Resolution is a pure function of its inputs: same definition + same unit +
  * same state → same variant. No side effects beyond what the steps inject.
  */
-final readonly class Resolver
+final readonly class Resolver implements ResolvesVariant
 {
     /**
      * @param list<ResolutionStep> $steps Ordered pipeline steps.

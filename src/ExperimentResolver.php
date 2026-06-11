@@ -8,10 +8,10 @@ use ABTests\Attributes\AsMetric;
 use ABTests\Contracts\AssignmentRepository;
 use ABTests\Contracts\Bucketable;
 use ABTests\Contracts\EventSink;
+use ABTests\Contracts\ResolvesVariant;
 use ABTests\Contracts\Variant;
 use ABTests\Enums\EventType;
 use ABTests\Registry\ExperimentRegistry;
-use ABTests\Resolution\Resolver;
 use ABTests\Values\RecordedEvent;
 use DateTimeImmutable;
 use ReflectionClass;
@@ -26,7 +26,7 @@ final readonly class ExperimentResolver
     public function __construct(
         private Bucketable $unit,
         private ExperimentRegistry $registry,
-        private Resolver $resolver,
+        private ResolvesVariant $resolver,
         private EventSink $eventSink,
         private AssignmentRepository $assignmentRepository,
     ) {

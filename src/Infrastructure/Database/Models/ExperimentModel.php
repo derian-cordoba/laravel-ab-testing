@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace ABTests\Infrastructure\Database\Models;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
@@ -12,15 +14,16 @@ use Illuminate\Support\Carbon;
  * mutable operational state of an experiment (status, traffic, kill switch).
  * Structural definition (variants, allocation) lives in code, not here.
  *
- * @property string      $key
- * @property int         $version
- * @property string|null $layer
- * @property string      $status
- * @property int         $traffic_percentage
- * @property bool        $is_killed
- * @property string|null $killed_at
- * @property Carbon|null $started_at
- * @property Carbon|null $stopped_at
+ * @property string                      $key
+ * @property int                         $version
+ * @property string|null                 $layer
+ * @property string                      $status
+ * @property int                         $traffic_percentage
+ * @property bool                        $is_killed
+ * @property string|null                 $killed_at
+ * @property Carbon|null                 $started_at
+ * @property Carbon|null                 $stopped_at
+ * @property Collection<int,VariantModel> $variants
  */
 final class ExperimentModel extends Model
 {
@@ -44,4 +47,10 @@ final class ExperimentModel extends Model
         'started_at' => 'datetime',
         'stopped_at' => 'datetime',
     ];
+
+    /** @return HasMany<VariantModel, $this> */
+    public function variants(): HasMany
+    {
+        return $this->hasMany(VariantModel::class, 'experiment_id');
+    }
 }
