@@ -1,15 +1,7 @@
 @use(ABTests\Enums\ExperimentStatus)
 
 <div x-data="{ confirmAction: null }">
-    {{-- Flash message --}}
-    @if($this->flashMessage !== '')
-        <div class="mb-4 rounded-lg border p-4 text-sm
-            {{ $this->flashType === 'success'
-                ? 'border-green-700/50 bg-green-900/20 text-green-300'
-                : 'border-red-700/50 bg-red-900/20 text-red-300' }}">
-            {{ $this->flashMessage }}
-        </div>
-    @endif
+    <x-ab-testing::flash-message :message="$this->flashMessage" :type="$this->flashType" />
 
     @if($model === null)
         <p class="text-sm text-gray-500">Experiment record not found.</p>

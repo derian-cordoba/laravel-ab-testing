@@ -43,12 +43,33 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Registered feature flags
+    |--------------------------------------------------------------------------
+    |
+    | List every FeatureFlag subclass decorated with #[AsFeatureFlag] that the
+    | package should resolve. The service provider reads these at boot and
+    | populates the FeatureFlagRegistry via AttributeReader.
+    |
+    | Example:
+    |   'feature_flags' => [
+    |       \App\Flags\NewCheckoutFlag::class,
+    |   ],
+    |
+    */
+
+    'feature_flags' => [],
+
+    /*
+    |--------------------------------------------------------------------------
     | Auto-discovery
     |--------------------------------------------------------------------------
     |
-    | When enabled, `php artisan ab:cache` will also scan the listed paths for
-    | classes decorated with #[AsExperiment] in addition to the explicit list
-    | above. Disabled by default to avoid unexpected behavior on boot.
+    | When enabled, the service provider will scan the listed paths at boot and
+    | register any Experiment or FeatureFlag subclass it finds — so you don't
+    | have to list every class in 'experiments' or 'feature_flags' above.
+    | `php artisan ab:cache` also honours these paths when building the manifest.
+    |
+    | Disabled by default to avoid unexpected behaviour on boot.
     |
     */
 
@@ -56,6 +77,7 @@ return [
         'enabled' => false,
         'paths' => [
             // app_path('Experiments'),
+            // app_path('Flags'),
         ],
     ],
 

@@ -6,6 +6,7 @@ namespace ABTests\Registry;
 
 use ABTests\Attributes\Analysis;
 use ABTests\Attributes\AsExperiment;
+use ABTests\Attributes\AsFeatureFlag;
 use ABTests\Attributes\AsMetric;
 use ABTests\Attributes\AsUnit;
 use ABTests\Attributes\Guardrail;
@@ -13,6 +14,7 @@ use ABTests\Attributes\PrimaryMetric;
 use ABTests\Attributes\SecondaryMetric;
 use ABTests\Contracts\Variant;
 use ABTests\Definitions\ExperimentDefinition;
+use ABTests\Definitions\FeatureFlagDefinition;
 use ABTests\Definitions\MetricBinding;
 use ABTests\Enums\MetricRole;
 use ABTests\Experiment;
@@ -71,6 +73,33 @@ final readonly class AttributeReader
             metrics: $metrics,
             name: $asExperiment->name,
             layer: $asExperiment->layer,
+        );
+    }
+
+    /**
+     * @param class-string<\ABTests\FeatureFlag> $flagClass
+     *
+     * @throws InvalidArgumentException|ReflectionException
+     */
+    public function readFeatureFlag(string $flagClass): FeatureFlagDefinition
+    {
+        $reflector = new ReflectionClass($flagClass);
+        $attrs = $reflector->getAttributes(AsFeatureFlag::class);
+
+        if ($attrs === []) {
+            throw new InvalidArgumentException(
+                "Class [$flagClass] is missing the required #[AsFeatureFlag] attribute."
+            );
+        }
+
+        /** @var AsFeatureFlag $asFlag */
+        $asFlag = $attrs[0]->newInstance();
+        $unitType = $this->resolveUnitType($asFlag->unit);
+
+        return new FeatureFlagDefinition(
+            key: $asFlag->key,
+            unitType: $unitType,
+            defaultValue: $asFlag->defaultValue,
         );
     }
 

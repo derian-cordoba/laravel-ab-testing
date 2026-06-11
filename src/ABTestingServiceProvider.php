@@ -23,6 +23,7 @@ use ABTests\Infrastructure\Jobs\RefreshRollupsJob;
 use ABTests\Infrastructure\NullEventSink;
 use ABTests\Registry\AttributeReader;
 use ABTests\Registry\ExperimentRegistry;
+use ABTests\Registry\FeatureFlagRegistry;
 use ABTests\Resolution\Resolver;
 use ABTests\Resolution\Steps\BucketStep;
 use ABTests\Resolution\Steps\CheckExperimentActiveStep;
@@ -105,6 +106,29 @@ final class ABTestingServiceProvider extends ServiceProvider
             return $registry;
         });
 
+        $this->app->singleton(FeatureFlagRegistry::class, function (): FeatureFlagRegistry {
+            $registry = new FeatureFlagRegistry();
+            $reader = new AttributeReader();
+
+            /** @var list<class-string<\ABTests\FeatureFlag>> $classes */
+            $classes = $this->app->make(ConfigRepository::class)->get('ab-testing.feature_flags', []);
+
+            foreach ($classes as $class) {
+                try {
+                    $definition = $reader->readFeatureFlag($class);
+                    $registry->register($definition, $class);
+                } catch (Throwable $e) {
+                    if ($this->app->bound(LoggerInterface::class)) {
+                        $this->app->make(LoggerInterface::class)->warning(
+                            "[ABTesting] Failed to register feature flag [$class]: {$e->getMessage()}"
+                        );
+                    }
+                }
+            }
+
+            return $registry;
+        });
+
         $this->app->singleton(Resolver::class, function (): Resolver {
             $assignmentRepository = $this->app->make(AssignmentRepository::class);
 
@@ -153,9 +177,11 @@ final class ABTestingServiceProvider extends ServiceProvider
             Experiments::class,
             fn (): Experiments => new Experiments(
                 registry: $this->app->make(ExperimentRegistry::class),
+                flagRegistry: $this->app->make(FeatureFlagRegistry::class),
                 resolver: $this->app->make(Resolver::class),
                 eventSink: $this->app->make(EventSink::class),
                 assignmentRepository: $this->app->make(AssignmentRepository::class),
+                bucketingStrategy: $this->app->make(BucketingStrategy::class),
             ),
         );
     }

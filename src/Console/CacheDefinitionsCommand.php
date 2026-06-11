@@ -5,13 +5,15 @@ declare(strict_types=1);
 namespace ABTests\Console;
 
 use ABTests\Experiment;
+use ABTests\FeatureFlag;
 use ABTests\Registry\AttributeReader;
 use ABTests\Registry\ClassDiscovery;
 use ABTests\Registry\ExperimentRegistry;
-use Illuminate\Contracts\Container\BindingResolutionException;
-use Throwable;
+use ABTests\Registry\FeatureFlagRegistry;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
+use Illuminate\Contracts\Container\BindingResolutionException;
+use Throwable;
 
 /**
  * php artisan ab:cache
@@ -33,16 +35,22 @@ final class CacheDefinitionsCommand extends Command
     /**
      * @throws BindingResolutionException
      */
-    public function handle(ExperimentRegistry $registry, AttributeReader $reader): int
-    {
+    public function handle(
+        ExperimentRegistry $registry,
+        FeatureFlagRegistry $flagRegistry,
+        AttributeReader $reader,
+    ): int {
         /** @var ConfigRepository $configRepo */
         $configRepo = $this->laravel->make(ConfigRepository::class);
 
         /** @var array<string, mixed> $config */
         $config = $configRepo->get('ab-testing', []);
 
-        /** @var list<class-string<Experiment>> $explicit */
-        $explicit = $config['experiments'] ?? [];
+        /** @var list<class-string<Experiment>> $explicitExperiments */
+        $explicitExperiments = $config['experiments'] ?? [];
+
+        /** @var list<class-string<FeatureFlag>> $explicitFlags */
+        $explicitFlags = $config['feature_flags'] ?? [];
 
         /** @var list<string> $paths */
         $paths = $config['discovery']['paths'] ?? [];
@@ -53,11 +61,10 @@ final class CacheDefinitionsCommand extends Command
             $discovered = new ClassDiscovery()->discover($paths);
         }
 
-        /** @var list<string> $allClasses */
-        $allClasses = array_values(array_unique(array_merge($explicit, $discovered)));
+        $allClasses = array_values(array_unique(array_merge($explicitExperiments, $explicitFlags, $discovered)));
 
         if ($allClasses === []) {
-            $this->warn('No experiment classes found. Add them to config/ab-testing.php or enable discovery.');
+            $this->warn('No experiment or feature flag classes found. Add them to config/ab-testing.php or enable discovery.');
 
             return self::SUCCESS;
         }
@@ -72,21 +79,36 @@ final class CacheDefinitionsCommand extends Command
                 continue;
             }
 
-            if (! is_a($class, Experiment::class, true)) {
-                $this->error("  Class [$class] does not extend " . Experiment::class . '.');
-                $failed++;
+            if (is_a($class, Experiment::class, true)) {
+                try {
+                    $definition = $reader->readExperiment($class);
+                    $registry->register($definition, $class);
+                    $this->line("  <info>✓</info> [experiment] $definition->key  ($class)");
+                    $registered++;
+                } catch (Throwable $e) {
+                    $this->error("  ✗ $class: {$e->getMessage()}");
+                    $failed++;
+                }
+
                 continue;
             }
 
-            try {
-                $definition = $reader->readExperiment($class);
-                $registry->register($definition, $class);
-                $this->line("  <info>✓</info> $definition->key  ($class)");
-                $registered++;
-            } catch (Throwable $e) {
-                $this->error("  ✗ $class: {$e->getMessage()}");
-                $failed++;
+            if (is_a($class, FeatureFlag::class, true)) {
+                try {
+                    $definition = $reader->readFeatureFlag($class);
+                    $flagRegistry->register($definition, $class);
+                    $this->line("  <info>✓</info> [flag]       $definition->key  ($class)");
+                    $registered++;
+                } catch (Throwable $e) {
+                    $this->error("  ✗ $class: {$e->getMessage()}");
+                    $failed++;
+                }
+
+                continue;
             }
+
+            $this->error("  Class [$class] does not extend " . Experiment::class . ' or ' . FeatureFlag::class . '.');
+            $failed++;
         }
 
         $this->newLine();

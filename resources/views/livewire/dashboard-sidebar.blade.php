@@ -44,6 +44,37 @@
                 <span class="truncate font-mono text-xs">{{ $experiment->key }}</span>
             </a>
         @endforeach
+
+        {{-- Feature Flags section --}}
+        <p class="px-2 pb-1 pt-5 text-xs font-semibold uppercase tracking-widest text-gray-500">Feature Flags</p>
+
+        <a href="{{ route('ab-testing.feature-flags.index') }}"
+           class="group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors
+                  {{ request()->routeIs('ab-testing.feature-flags.index') ? 'bg-violet-600/20 text-violet-300' : 'text-gray-400 hover:bg-gray-800 hover:text-gray-100' }}">
+            <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M3 3v1.5M3 21v-6m0 0 2.77-.693a9 9 0 0 1 6.208.682l.108.054a9 9 0 0 0 6.086.71l3.114-.732a48.524 48.524 0 0 1-.005-10.499l-3.11.732a9 9 0 0 1-6.085-.711l-.108-.054a9 9 0 0 0-6.208-.682L3 4.5M3 15V4.5"/>
+            </svg>
+            All Flags
+        </a>
+
+        @foreach($featureFlags as $flag)
+            @php
+                $isFlagActive = request()->routeIs('ab-testing.feature-flag.show')
+                    && request()->route('key') === $flag->key;
+                $flagDot = $flag->killed_at !== null
+                    ? 'bg-red-400'
+                    : ($flag->is_enabled ? 'bg-green-400' : 'bg-gray-500');
+            @endphp
+            <a href="{{ route('ab-testing.feature-flag.show', $flag->key) }}"
+               class="group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors
+                      {{ $isFlagActive ? 'bg-violet-600/20 text-violet-300' : 'text-gray-400 hover:bg-gray-800 hover:text-gray-100' }}">
+                <span class="flex h-4 w-4 shrink-0 items-center justify-center">
+                    <span class="h-1.5 w-1.5 rounded-full {{ $flagDot }}"></span>
+                </span>
+                <span class="truncate font-mono text-xs">{{ $flag->key }}</span>
+            </a>
+        @endforeach
     </nav>
 
     <x-ab-testing::sidebar-footer />
