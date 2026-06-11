@@ -1,0 +1,50 @@
+name: Tests
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches:
+      - main
+      - release/**
+
+  pull_request:
+    branches:
+      - main
+      - release/**
+    types:
+      - labeled
+      - opened
+      - synchronize
+
+  workflow_dispatch:
+    inputs:
+      php-version:
+        description: PHP version to use
+        default: '8.4'
+      runs-on:
+        description: Runner environment
+        default: 'ubuntu-latest'
+
+jobs:
+  tests:
+    runs-on: ${{ inputs.runs-on || vars.RUNS_ON || 'ubuntu-latest' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ inputs.php-version || vars.PHP_VERSION || '8.4' }}
+          coverage: none
+          tools: composer:v2
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Run tests
+        run: composer test

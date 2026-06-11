@@ -1,0 +1,14 @@
+parameters:
+    level: 8
+
+    paths:
+        - src
+        - examples
+
+    phpVersion: 80400
+
+    bootstrapFiles:
+        - phpstan/stubs.php
+
+    stubFiles:
+        - phpstan/container.stub.php

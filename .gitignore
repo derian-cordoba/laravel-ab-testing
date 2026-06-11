@@ -1,0 +1,15 @@
+.idea/
+.vscode/
+vendor/
+
+.DS_Store
+
+.env*
+!.env.example
+!.env.local
+
+.phpunit.result.cache
+.phpunit.cache/
+.phpstan.cache/
+
+coverage/
