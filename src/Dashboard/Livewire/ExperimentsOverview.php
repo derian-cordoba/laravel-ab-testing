@@ -1,0 +1,56 @@
+<?php
+
+declare(strict_types=1);
+
+namespace ABTests\Dashboard\Livewire;
+
+use ABTests\Infrastructure\Database\Models\AssignmentModel;
+use ABTests\Infrastructure\Database\Models\ExperimentModel;
+use ABTests\Registry\ExperimentRegistry;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Contracts\View\View;
+use Livewire\Component;
+use Throwable;
+
+/**
+ * Full-page Livewire component for the experiments overview. Renders a table
+ * of all experiments that exist in the database, with their live operational
+ * state and a link to each experiment's detail/results page.
+ */
+final class ExperimentsOverview extends Component
+{
+    public function render(): View
+    {
+        $experiments = ExperimentModel::query()
+            ->orderByDesc('created_at')
+            ->get()
+            ->all();
+
+        $registry = app(ExperimentRegistry::class);
+
+        $rows = array_map(static function (ExperimentModel $model) use ($registry): array {
+            $definition = null;
+
+            try {
+                $definition = $registry->findByKey($model->key);
+            } catch (Throwable) {
+                // Not registered in code — runtime-defined only.
+            }
+
+            return [
+                'model' => $model,
+                'definition' => $definition,
+            ];
+        }, $experiments);
+
+        /** @var array<string, int> $assignedCounts */
+        $assignedCounts = AssignmentModel::query()
+            ->select('experiment_key', DB::raw('count(*) as total'))
+            ->groupBy('experiment_key')
+            ->pluck('total', 'experiment_key')
+            ->all();
+
+        return view('ab-testing::livewire.experiments-overview', compact('rows', 'assignedCounts'))
+            ->layout('ab-testing::layout', ['title' => 'A/B Testing — Experiments']);
+    }
+}

@@ -59,4 +59,46 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Dashboard
+    |--------------------------------------------------------------------------
+    |
+    | Controls the built-in Livewire dashboard.
+    |
+    |   path               — URL prefix for all dashboard routes (default: 'ab-testing').
+    |   middleware         — Middleware stack applied to every dashboard route.
+    |   viewer_gate        — Gate name checked by RequiresDashboardAccess. If the gate
+    |                        is not defined, all authenticated users are allowed through.
+    |   results_cache_ttl_seconds — How long ResultsService caches computed results.
+    |   auto_schedule_rollups — Register RefreshRollupsJob in the scheduler automatically.
+    |
+    */
+
+    'dashboard' => [
+        'path' => env('AB_TESTING_DASHBOARD_PATH', 'ab-testing'),
+        'middleware' => ['web'],
+        'viewer_gate' => 'viewAbTestingDashboard',
+        'results_cache_ttl_seconds' => (int) env('AB_TESTING_RESULTS_CACHE_TTL', 300),
+        'auto_schedule_rollups' => (bool) env('AB_TESTING_AUTO_SCHEDULE_ROLLUPS', true),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Event ingestion
+    |--------------------------------------------------------------------------
+    |
+    |   batch_size      — Maximum number of events flushed to the database in one
+    |                     INSERT batch.
+    |   queue_connection — Queue connection used by RefreshRollupsJob.
+    |   queue_name       — Queue name for the rollup job.
+    |
+    */
+
+    'events' => [
+        'batch_size' => (int) env('AB_TESTING_EVENT_BATCH_SIZE', 500),
+        'queue_connection' => env('AB_TESTING_QUEUE_CONNECTION', 'sync'),
+        'queue_name' => env('AB_TESTING_QUEUE_NAME', 'default'),
+    ],
+
 ];

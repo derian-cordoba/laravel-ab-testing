@@ -4,6 +4,8 @@ Standalone experimentation primitives for Laravel: typed experiments, determinis
 
 This package is intentionally not a thin feature-flag helper. It is designed around real experimentation concerns: stable assignment units, explicit control and traffic allocation, reusable metrics, sample-ratio mismatch detection, and normalized experiment definitions that can be consumed by both code-defined and runtime-defined workflows.
 
+![A/B Testing dashboard screenshot](docs/resources/ab-testing-dashboard-screenshot.png)
+
 ## Contents
 
 - [Current status](#current-status)
@@ -18,6 +20,7 @@ This package is intentionally not a thin feature-flag helper. It is designed aro
 - [Resolving variants](#resolving-variants)
 - [Tracking metrics](#tracking-metrics)
 - [Real-world request flow](#real-world-request-flow)
+- [Dashboard](#dashboard)
 - [Discovery and caching](#discovery-and-caching)
 - [Running statistical analysis](#running-statistical-analysis)
 - [Feature flags](#feature-flags)
@@ -38,15 +41,16 @@ This repository already includes the foundational engine and several important r
 - Deterministic bucketing with an SHA-256 strategy
 - Assignment persistence behind repository contracts
 - A resolution pipeline for eligibility, traffic checks, sticky assignment, and layer exclusion
-- Event recording primitives for exposures and metrics
+- Database-backed event recording for exposures and metrics
+- Incremental rollups over raw events for dashboard reads
 - Bayesian and frequentist analysis engines
 - Sample-ratio mismatch detection
+- A built-in Livewire dashboard with experiment overview, detail pages, controls, audit trail, and results tables
 - Experiment registration from configuration and optional discovery
 
 Some larger platform pieces are still intentionally not presented as finished:
 
-- Event persistence (`EventSink` ships as a no-op placeholder)
-- Dashboard UI
+- Runtime-defined experiment authoring in the dashboard
 - Full feature-flag registry and runtime integration
 
 The README below focuses on what exists today and shows how to use the package honestly in its current form.
@@ -82,6 +86,12 @@ Run the migrations:
 
 ```bash
 php artisan migrate
+```
+
+If you want to customize the package dashboard views, publish them:
+
+```bash
+php artisan vendor:publish --tag=ab-testing-dashboard-views
 ```
 
 The package supports Laravel package discovery, so you should not need to register the service provider manually.
@@ -121,6 +131,7 @@ final readonly class ExperimentUser implements Bucketable
 {
     public function __construct(private User $user)
     {
+        //
     }
 
     public function bucketingKey(): string
@@ -253,13 +264,9 @@ $user = new ExperimentUser($request->user());
 
 $variant = Experiments::for($user)->variant(CheckoutButtonColor::class);
 
-if ($variant === null) {
-    return view('checkout.default');
-}
-
 return match ($variant) {
-    CheckoutButtonVariant::control => view('checkout.default'),
     CheckoutButtonVariant::green => view('checkout.green'),
+    CheckoutButtonVariant::control, null => view('checkout.default'),
 };
 ```
 
@@ -586,6 +593,79 @@ One safe way to think about the package is:
 
 If those two calls happen in the correct places, the rest of the package architecture stays coherent.
 
+## Dashboard
+
+The package ships with a Livewire dashboard mounted at `/ab-testing` by default. It is intended to be the operational surface for experiment state:
+
+- overview of registered experiments
+- per-experiment results and analysis
+- start, pause, resume, stop, archive, kill-switch, and traffic ramp controls
+- audit log entries for state transitions
+- manual rollup refresh when you want new data immediately
+
+### Dashboard access
+
+The dashboard route prefix, middleware stack, and viewer gate are configured in `config/ab-testing.php`:
+
+```php
+'dashboard' => [
+    'path' => env('AB_TESTING_DASHBOARD_PATH', 'ab-testing'),
+    'middleware' => ['web'],
+    'viewer_gate' => 'viewAbTestingDashboard',
+    'results_cache_ttl_seconds' => (int) env('AB_TESTING_RESULTS_CACHE_TTL', 300),
+    'auto_schedule_rollups' => (bool) env('AB_TESTING_AUTO_SCHEDULE_ROLLUPS', true),
+],
+```
+
+Define the gate in your application if you want to restrict access:
+
+```php
+use Illuminate\Support\Facades\Gate;
+
+Gate::define('viewAbTestingDashboard', function ($user): bool {
+    return $user->is_admin;
+});
+```
+
+If the configured gate does not exist, the package middleware falls back to whatever access rules your configured dashboard middleware already enforces.
+
+### What the dashboard reads
+
+The dashboard does not scan raw event tables on every request. It reads pre-aggregated rows from `ab_testing_rollups` through `ResultsService`, then runs the analysis layer on those summaries.
+
+That separation matters:
+
+- raw events remain append-only
+- the request path stays fast
+- manual refreshes and scheduled rollups produce the dashboard data intentionally
+
+### Making results appear
+
+To see data in the dashboard:
+
+1. Run the package migrations.
+2. Register your experiments in `config/ab-testing.php`.
+3. Ensure each experiment has an operational state row in `ab_testing_experiments`.
+4. Put the experiment into `running` state, either through the dashboard or your own setup code.
+5. Generate exposures and metric events by resolving variants and tracking outcomes.
+6. Let the scheduled rollup run or use the dashboard's `Refresh Data` control.
+
+### Rollup scheduling
+
+When `ab-testing.dashboard.auto_schedule_rollups` is enabled, the package registers `RefreshRollupsJob` with Laravel's scheduler automatically. You still need a normal scheduler/queue setup in the host app:
+
+```bash
+php artisan schedule:work
+```
+
+Or your usual production scheduler:
+
+```bash
+* * * * * php /path/to/artisan schedule:run >> /dev/null 2>&1
+```
+
+For local development, the dashboard can also trigger a manual per-experiment refresh so you do not have to wait for the next scheduled cycle.
+
 ## Discovery and caching
 
 The package includes an `ab:cache` Artisan command:
@@ -715,7 +795,8 @@ Default bindings:
 - `Sha256BucketingStrategy`
 - `DatabaseAssignmentRepository` (database driver, default)
 - `DatabaseExperimentStateRepository` (database driver, default)
-- `NullEventSink`
+- `DatabaseEventSink` (database driver, default)
+- `NullEventSink` (in-memory driver)
 
 The storage driver is configurable; the in-memory alternatives are available for tests and local development without a database connection (see [Storage driver](#storage-driver) below).
 
@@ -747,15 +828,27 @@ The package loads its migrations automatically. If you prefer to publish them to
 php artisan vendor:publish --tag=ab-testing-migrations
 ```
 
-The two tables created are:
+The package migrations create these tables:
 
 `ab_testing_experiments` — mutable operational state driven from the dashboard (status, traffic percentage, kill switch). One row per experiment key.
 
 `ab_testing_assignments` — sticky, deterministic bucketing. One row per `(experiment_key, unit_type, unit_key)` triple. The composite primary key enforces idempotency: the first write wins and duplicates are silently discarded.
 
+`ab_testing_events` — append-only exposure and metric event log.
+
+`ab_testing_rollups` — pre-aggregated experiment summaries used by the dashboard and analysis layer.
+
+`ab_testing_guardrail_breaches` — breach records emitted when a guardrail crosses its threshold.
+
+`ab_testing_audit_log` — operational audit trail for dashboard actions.
+
+`ab_testing_feature_flag_states` — persisted state for feature flags; UI surface is still limited.
+
+`ab_testing_experiments.target_sample_size` — nullable progress target shown in the dashboard when set.
+
 ### Creating experiment state rows
 
-The `DatabaseExperimentStateRepository` looks up a row in `ab_testing_experiments` by key. If no row exists, the resolver treats the experiment as not running and returns `null`. You need to insert a row (via the future dashboard, a seeder, or a migration) before an experiment can go live:
+The `DatabaseExperimentStateRepository` looks up a row in `ab_testing_experiments` by key. If no row exists, the resolver treats the experiment as not running and returns `null`. You need to insert a row before an experiment can go live, either via the dashboard or your own bootstrap code:
 
 ```php
 use ABTests\Infrastructure\Database\Models\ExperimentModel;
@@ -770,22 +863,21 @@ ExperimentModel::create([
 
 ### Event sink
 
-Event persistence (`EventSink`) still uses the `NullEventSink` placeholder. For production, bind your own implementation that inserts append-only rows into an `events` table with an idempotency unique constraint:
+When `AB_TESTING_DRIVER=database`, the package binds `DatabaseEventSink` automatically and flushes its buffered events at the end of each request. In-memory mode intentionally keeps the no-op sink:
 
 ```php
-// In AppServiceProvider::register()
-$this->app->singleton(
-    \ABTests\Contracts\EventSink::class,
-    \App\ABTesting\Infrastructure\DatabaseEventSink::class,
-);
+'storage' => [
+    'driver' => env('AB_TESTING_DRIVER', 'database'),
+],
 ```
 
 ### Production checklist
 
 - Run `php artisan migrate` to create the package tables
 - Insert experiment rows in `ab_testing_experiments` before starting experiments
-- Provide a real `EventSink` binding for exposure and metric persistence
-- Make event writes append-only with a unique constraint on idempotency keys
+- Expose the dashboard behind appropriate middleware or a viewer gate
+- Run a scheduler so `RefreshRollupsJob` can keep `ab_testing_rollups` current
+- If you queue rollups off `sync`, run the configured queue worker too
 - Keep experiment operational state outside the PHP class definition
 - Ensure your unit attributes are reproducible across requests
 - Monitor failed registration logs during deploys
@@ -823,8 +915,8 @@ The repository also includes a GitHub Actions workflow for tests.
 
 This package is not pretending to be more finished than it is. Before adopting it in production, keep these points in mind:
 
-- Event persistence uses a no-op `NullEventSink`; you need to provide a real implementation before exposure and metric events are stored
-- Dashboard workflows are planned, not complete; experiment state rows must be managed manually or via seeders for now
+- The dashboard is intentionally focused on code-defined experiments in v1; runtime-created experiment authoring is not the main path yet
+- Results depend on rollups, so very fresh events are not visible until the scheduled job or manual refresh runs
 - Feature-flag definition primitives exist, but the end-user flag runtime is not yet the main surface
 - The architecture is designed for runtime-defined experiments too, but the most complete experience today is the code-defined attribute flow
 

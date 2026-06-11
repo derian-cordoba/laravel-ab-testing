@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ABTests\Infrastructure\Database\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * Database model for the ab_testing_experiments table. Represents the
@@ -18,8 +19,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property int         $traffic_percentage
  * @property bool        $is_killed
  * @property string|null $killed_at
- * @property string|null $started_at
- * @property string|null $stopped_at
+ * @property Carbon|null $started_at
+ * @property Carbon|null $stopped_at
  */
 final class ExperimentModel extends Model
 {
@@ -39,8 +40,6 @@ final class ExperimentModel extends Model
 
     protected $casts = [
         'is_killed' => 'boolean',
-        'traffic_percentage' => 'integer',
-        'version' => 'integer',
         'killed_at' => 'datetime',
         'started_at' => 'datetime',
         'stopped_at' => 'datetime',

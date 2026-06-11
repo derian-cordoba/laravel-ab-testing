@@ -4,20 +4,25 @@ declare(strict_types=1);
 
 namespace ABTests;
 
+use ABTests\Application\Listeners\AutoPauseOnGuardrailBreachListener;
+use ABTests\Application\ResultsService;
+use ABTests\Application\SynchronousCommandBus;
 use ABTests\Console\CacheDefinitionsCommand;
 use ABTests\Contracts\AssignmentRepository;
 use ABTests\Contracts\BucketingStrategy;
+use ABTests\Contracts\CommandBus;
 use ABTests\Contracts\EventSink;
 use ABTests\Contracts\ExperimentStateRepository;
+use ABTests\Domain\Events\GuardrailBreachedEvent;
 use ABTests\Infrastructure\AlwaysRunningExperimentStateRepository;
 use ABTests\Infrastructure\Database\DatabaseAssignmentRepository;
+use ABTests\Infrastructure\Database\DatabaseEventSink;
 use ABTests\Infrastructure\Database\DatabaseExperimentStateRepository;
 use ABTests\Infrastructure\InMemoryAssignmentRepository;
+use ABTests\Infrastructure\Jobs\RefreshRollupsJob;
 use ABTests\Infrastructure\NullEventSink;
 use ABTests\Registry\AttributeReader;
 use ABTests\Registry\ExperimentRegistry;
-use Illuminate\Contracts\Config\Repository as ConfigRepository;
-use Psr\Log\LoggerInterface;
 use ABTests\Resolution\Resolver;
 use ABTests\Resolution\Steps\BucketStep;
 use ABTests\Resolution\Steps\CheckExperimentActiveStep;
@@ -32,8 +37,14 @@ use ABTests\Statistics\FrequentistAnalysisEngine;
 use ABTests\Statistics\SampleRatioMismatchDetector;
 use ABTests\Statistics\VerdictResolver;
 use ABTests\Strategies\Sha256BucketingStrategy;
+use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Contracts\Container\BindingResolutionException;
+use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
+use Livewire\Livewire;
+use Psr\Log\LoggerInterface;
 use Throwable;
 
 /**
@@ -48,10 +59,16 @@ use Throwable;
  *                             → InMemoryAssignmentRepository      (in_memory driver)
  *   ExperimentStateRepository → DatabaseExperimentStateRepository (database driver, default)
  *                             → AlwaysRunningExperimentStateRepository (in_memory driver)
- *   EventSink                 → NullEventSink  (replace with queued batch sink)
+ *   EventSink                 → DatabaseEventSink  (database driver)
+ *                             → NullEventSink      (in_memory driver)
+ *   CommandBus                → SynchronousCommandBus
+ *   ResultsService            → ResultsService (TTL-cached)
  */
 final class ABTestingServiceProvider extends ServiceProvider
 {
+    /**
+     * @throws BindingResolutionException
+     */
     public function register(): void
     {
         $this->mergeConfigFrom(
@@ -60,7 +77,6 @@ final class ABTestingServiceProvider extends ServiceProvider
         );
 
         $this->app->singleton(BucketingStrategy::class, Sha256BucketingStrategy::class);
-        $this->app->singleton(EventSink::class, NullEventSink::class);
 
         $this->bindStorageDriver();
 
@@ -121,21 +137,33 @@ final class ABTestingServiceProvider extends ServiceProvider
             );
         });
 
-        $this->app->singleton(Experiments::class, function (): Experiments {
-            return new Experiments(
+        $this->app->singleton(ResultsService::class, function (): ResultsService {
+            return new ResultsService(
+                registry: $this->app->make(ExperimentRegistry::class),
+                analysisService: $this->app->make(AnalysisService::class),
+            );
+        });
+
+        $this->app->singleton(
+            CommandBus::class,
+            fn (): SynchronousCommandBus => new SynchronousCommandBus($this->app),
+        );
+
+        $this->app->singleton(
+            Experiments::class,
+            fn (): Experiments => new Experiments(
                 registry: $this->app->make(ExperimentRegistry::class),
                 resolver: $this->app->make(Resolver::class),
                 eventSink: $this->app->make(EventSink::class),
                 assignmentRepository: $this->app->make(AssignmentRepository::class),
-            );
-        });
+            ),
+        );
     }
 
     /**
-     * Bind the AssignmentRepository and ExperimentStateRepository to either the
-     * Eloquent (database) or InMemory implementations based on the configured
-     * storage driver. 'database' is the production default; 'in_memory' is
-     * used for tests and local development without a database.
+     * Bind the storage driver contracts to their implementations. 'database' is
+     * the production default; 'in_memory' is suitable for tests and local
+     * development without a database.
      *
      * @throws BindingResolutionException
      */
@@ -147,6 +175,7 @@ final class ABTestingServiceProvider extends ServiceProvider
         if ($driver === 'in_memory') {
             $this->app->singleton(AssignmentRepository::class, InMemoryAssignmentRepository::class);
             $this->app->singleton(ExperimentStateRepository::class, AlwaysRunningExperimentStateRepository::class);
+            $this->app->singleton(EventSink::class, NullEventSink::class);
 
             return;
         }
@@ -154,6 +183,7 @@ final class ABTestingServiceProvider extends ServiceProvider
         // 'database' driver — Eloquent implementations backed by PostgreSQL/MySQL.
         $this->app->singleton(AssignmentRepository::class, DatabaseAssignmentRepository::class);
         $this->app->singleton(ExperimentStateRepository::class, DatabaseExperimentStateRepository::class);
+        $this->app->singleton(EventSink::class, DatabaseEventSink::class);
     }
 
     /**
@@ -162,6 +192,44 @@ final class ABTestingServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Experiments::setInstance($this->app->make(Experiments::class));
+
+        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'ab-testing');
+        $this->loadRoutesFrom(__DIR__ . '/Dashboard/routes.php');
+
+        // Register anonymous Blade components under the ab-testing:: prefix so
+        // <x-ab-testing::status-badge> and <x-ab-testing::verdict-badge> resolve
+        // to resources/views/components/*.blade.php.
+        Blade::anonymousComponentPath(__DIR__ . '/../resources/views/components', 'ab-testing');
+
+        // Register the ab-testing Livewire namespace so the :: resolver can
+        // auto-discover all components in ABTests\Dashboard\Livewire, including
+        // experiments-overview, experiment-detail, experiment-controls, and
+        // experiment-results-table, without individual registrations.
+        if (class_exists(Livewire::class)) {
+            Livewire::addNamespace('ab-testing', classNamespace: 'ABTests\\Dashboard\\Livewire');
+        }
+
+        // Guardrail breach → auto-pause listener.
+        Event::listen(GuardrailBreachedEvent::class, AutoPauseOnGuardrailBreachListener::class);
+
+        // Flush the DatabaseEventSink buffer at the end of every request.
+        /** @var string $driver */
+        $driver = $this->app->make(ConfigRepository::class)->get('ab-testing.storage.driver', 'database');
+
+        if ($driver === 'database') {
+            $this->app->terminating(function (): void {
+                /** @var DatabaseEventSink $sink */
+                $sink = $this->app->make(EventSink::class);
+                $sink->flush();
+            });
+        }
+
+        // Optional scheduler registration for the rollup job.
+        if ($this->app->make(ConfigRepository::class)->get('ab-testing.dashboard.auto_schedule_rollups', true)) {
+            $this->callAfterResolving(Schedule::class, static function (Schedule $schedule): void {
+                $schedule->job(RefreshRollupsJob::class)->everyFiveMinutes();
+            });
+        }
 
         if ($this->app->runningInConsole()) {
             $this->commands([CacheDefinitionsCommand::class]);
@@ -173,6 +241,10 @@ final class ABTestingServiceProvider extends ServiceProvider
             $this->publishes([
                 __DIR__ . '/../database/migrations' => $this->app->databasePath('migrations'),
             ], 'ab-testing-migrations');
+
+            $this->publishes([
+                __DIR__ . '/../resources/views' => $this->app->resourcePath('views/vendor/ab-testing'),
+            ], 'ab-testing-dashboard-views');
         }
 
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
