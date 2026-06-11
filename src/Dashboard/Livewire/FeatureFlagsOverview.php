@@ -7,6 +7,7 @@ namespace ABTests\Dashboard\Livewire;
 use ABTests\Infrastructure\Database\Models\FeatureFlagStateModel;
 use ABTests\Registry\FeatureFlagRegistry;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Carbon;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Throwable;
@@ -33,22 +34,41 @@ final class FeatureFlagsOverview extends Component
 
         $registry = app(FeatureFlagRegistry::class);
 
-        $rows = array_map(static function (FeatureFlagStateModel $model) use ($registry): array {
-            $definition = null;
+        /** @var int $staleThresholdDays */
+        $staleThresholdDays = config('ab-testing.flags.stale_threshold_days', 90);
+        $staleThreshold     = Carbon::now()->subDays($staleThresholdDays);
 
-            try {
-                $definition = $registry->findByKey($model->key);
-            } catch (Throwable) {
-                // Not registered in code — state record only.
-            }
+        $rows = array_map(
+            static function (FeatureFlagStateModel $model) use ($registry, $staleThreshold): array {
+                $definition = null;
 
-            return [
-                'model' => $model,
-                'definition' => $definition,
-            ];
-        }, $flags);
+                try {
+                    $definition = $registry->findByKey($model->key);
+                } catch (Throwable) {
+                    // Not registered in code — state record only.
+                }
 
-        return view('ab-testing::livewire.feature-flags-overview', compact('rows'))
+                // A flag is stale when it is still enabled (active in production)
+                // but has not been touched for longer than the configured threshold.
+                // Killed flags and fully-disabled flags are not considered stale
+                // because they are already in a "decided" state.
+                $isStale = $model->is_enabled
+                    && $model->killed_at === null
+                    && $model->updated_at !== null
+                    && $model->updated_at->isBefore($staleThreshold);
+
+                return [
+                    'model'      => $model,
+                    'definition' => $definition,
+                    'is_stale'   => $isStale,
+                ];
+            },
+            $flags,
+        );
+
+        $staleCount = count(array_filter($rows, static fn ($r) => $r['is_stale']));
+
+        return view('ab-testing::livewire.feature-flags-overview', compact('rows', 'staleCount', 'staleThresholdDays'))
             ->layout('ab-testing::layout', ['title' => 'A/B Testing — Feature Flags']);
     }
 }

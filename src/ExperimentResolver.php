@@ -64,6 +64,32 @@ final readonly class ExperimentResolver
     }
 
     /**
+     * Resolve the variant assigned to the unit by experiment key string rather
+     * than class name. Intended for Blade directives and runtime-defined
+     * experiments that have no corresponding PHP class. Records an exposure
+     * event when a variant is resolved, identical to variant().
+     */
+    public function variantForKey(string $experimentKey): ?Variant
+    {
+        $definition = $this->registry->findByKey($experimentKey);
+        $variant    = $this->resolver->resolve($definition, $this->unit);
+
+        if ($variant !== null) {
+            $this->eventSink->record(new RecordedEvent(
+                experimentKey: $definition->key,
+                unitType: $definition->unitType,
+                unitKey: $this->unit->bucketingKey(),
+                variantKey: $variant->key(),
+                type: EventType::exposure,
+                idempotencyKey: "exposure:$definition->key:{$this->unit->bucketingKey()}",
+                occurredAt: new DateTimeImmutable(),
+            ));
+        }
+
+        return $variant;
+    }
+
+    /**
      * Record a conversion or continuous-metric event for every experiment in
      * which the unit currently has a live assignment and that experiment uses
      * the given metric.

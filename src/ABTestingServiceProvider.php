@@ -6,6 +6,7 @@ namespace ABTests;
 
 use ABTests\Application\Listeners\AutoPauseOnGuardrailBreachListener;
 use ABTests\Application\ResultsService;
+use ABTests\Blade\BladeDirectiveHelpers;
 use ABTests\Presentation\Middleware\ResolveExperimentMiddleware;
 use ABTests\Application\SynchronousCommandBus;
 use ABTests\Console\CacheDefinitionsCommand;
@@ -43,6 +44,7 @@ use ABTests\Strategies\Sha256BucketingStrategy;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Contracts\Container\BindingResolutionException;
+use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
@@ -112,7 +114,7 @@ final class ABTestingServiceProvider extends ServiceProvider
             $registry = new FeatureFlagRegistry();
             $reader = new AttributeReader();
 
-            /** @var list<class-string<\ABTests\FeatureFlag>> $classes */
+            /** @var list<class-string<FeatureFlag>> $classes */
             $classes = $this->app->make(ConfigRepository::class)->get('ab-testing.feature_flags', []);
 
             foreach ($classes as $class) {
@@ -309,10 +311,36 @@ final class ABTestingServiceProvider extends ServiceProvider
             Livewire::addNamespace('ab-testing', classNamespace: 'ABTests\\Dashboard\\Livewire');
         }
 
+        // ── Blade directives ─────────────────────────────────────────────────
+        // @abVariant('experiment-key', 'variant-key') ... @endAbVariant
+        Blade::directive('abVariant', static function (string $expression): string {
+            return "<?php if (\\ABTests\\Blade\\BladeDirectiveHelpers::isVariant($expression)): ?>";
+        });
+        Blade::directive('endAbVariant', static fn (): string => '<?php endif; ?>');
+
+        // @abNotVariant('experiment-key', 'variant-key') ... @endAbNotVariant
+        Blade::directive('abNotVariant', static function (string $expression): string {
+            return "<?php if (\\ABTests\\Blade\\BladeDirectiveHelpers::isNotVariant($expression)): ?>";
+        });
+        Blade::directive('endAbNotVariant', static fn (): string => '<?php endif; ?>');
+
+        // @featureEnabled('flag-key') ... @endFeatureEnabled
+        Blade::directive('featureEnabled', static function (string $expression): string {
+            return "<?php if (\\ABTests\\Blade\\BladeDirectiveHelpers::featureEnabled($expression)): ?>";
+        });
+        Blade::directive('endFeatureEnabled', static fn (): string => '<?php endif; ?>');
+
+        // @featureDisabled('flag-key') ... @endFeatureDisabled
+        Blade::directive('featureDisabled', static function (string $expression): string {
+            return "<?php if (\\ABTests\\Blade\\BladeDirectiveHelpers::featureDisabled($expression)): ?>";
+        });
+        Blade::directive('endFeatureDisabled', static fn (): string => '<?php endif; ?>');
+        // ─────────────────────────────────────────────────────────────────────
+
         // Register the variant-resolution middleware alias so consumers can use
         // ->middleware('ab-testing.resolve') on routes with #[ResolvesExperiment].
-        if ($this->app->bound(\Illuminate\Routing\Router::class)) {
-            $this->app->make(\Illuminate\Routing\Router::class)
+        if ($this->app->bound(Router::class)) {
+            $this->app->make(Router::class)
                 ->aliasMiddleware('ab-testing.resolve', ResolveExperimentMiddleware::class);
         }
 

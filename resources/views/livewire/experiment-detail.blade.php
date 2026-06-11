@@ -48,6 +48,11 @@
         {{-- Results table sub-component --}}
         @livewire('ab-testing::experiment-results-table', ['experimentKey' => $model->key])
 
+        {{-- Time-series chart --}}
+        <div class="mt-8">
+            @livewire('ab-testing::experiment-time-series-chart', ['experimentKey' => $model->key])
+        </div>
+
         {{-- Trust panel --}}
         <div class="mt-8">
             @livewire('ab-testing::experiment-trust-panel', ['experimentKey' => $model->key])
