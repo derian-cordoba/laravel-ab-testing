@@ -15,11 +15,22 @@
     </div>
 
     <nav class="flex-1 overflow-y-auto space-y-1 px-3 py-4">
-        <p class="px-2 pb-1 pt-2 text-xs font-semibold uppercase tracking-widest text-gray-500">Experiments</p>
 
-        <a href="{{ route('ab-testing.overview') }}"
+        <a href="{{ route('ab-testing.index') }}"
            class="group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors
-                  {{ request()->routeIs('ab-testing.overview') || request()->routeIs('ab-testing.experiment.show') ? 'bg-violet-600/20 text-violet-300' : 'text-gray-400 hover:bg-gray-800 hover:text-gray-100' }}">
+                  {{ request()->routeIs('ab-testing.index') ? 'bg-violet-600/20 text-violet-300' : 'text-gray-400 hover:bg-gray-800 hover:text-gray-100' }}">
+            <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M2.25 12 11.204 3.045c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/>
+            </svg>
+            Overview
+        </a>
+
+        <p class="px-2 pb-1 pt-4 text-xs font-semibold uppercase tracking-widest text-gray-500">Experiments</p>
+
+        <a href="{{ route('ab-testing.experiments.index') }}"
+           class="group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors
+                  {{ request()->routeIs('ab-testing.experiments.index') || request()->routeIs('ab-testing.experiments.show') ? 'bg-violet-600/20 text-violet-300' : 'text-gray-400 hover:bg-gray-800 hover:text-gray-100' }}">
             <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round"
                       d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z"/>
@@ -27,7 +38,7 @@
             Experiments
         </a>
 
-        <p class="px-2 pb-1 pt-5 text-xs font-semibold uppercase tracking-widest text-gray-500">Feature Flags</p>
+        <p class="px-2 pb-1 pt-4 text-xs font-semibold uppercase tracking-widest text-gray-500">Feature Flags</p>
 
         <a href="{{ route('ab-testing.feature-flags.index') }}"
            class="group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors

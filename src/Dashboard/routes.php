@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use ABTests\Dashboard\Http\Middleware\RequiresDashboardAccess;
+use ABTests\Dashboard\Livewire\DashboardIndex;
 use ABTests\Dashboard\Livewire\ExperimentDetail;
 use ABTests\Dashboard\Livewire\ExperimentsOverview;
 use ABTests\Dashboard\Livewire\FeatureFlagDetail;
@@ -19,8 +20,9 @@ Route::prefix($prefix)
     ->middleware($middleware)
     ->name('ab-testing.')
     ->group(function (): void {
-        Route::get('/', ExperimentsOverview::class)->name('overview');
-        Route::get('/experiments/{key}', ExperimentDetail::class)->name('experiment.show');
+        Route::get('/', DashboardIndex::class)->name('index');
+        Route::get('/experiments', ExperimentsOverview::class)->name('experiments.index');
+        Route::get('/experiments/{key}', ExperimentDetail::class)->name('experiments.show');
         Route::get('/feature-flags', FeatureFlagsOverview::class)->name('feature-flags.index');
         Route::get('/feature-flags/{key}', FeatureFlagDetail::class)->name('feature-flag.show');
     });

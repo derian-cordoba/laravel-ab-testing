@@ -5,14 +5,14 @@
             <p class="mt-1 text-sm text-yellow-400/80">
                 No experiment with this key exists in the database or registry.
             </p>
-            <a href="{{ route('ab-testing.overview') }}" class="mt-3 inline-block text-sm text-yellow-300 underline hover:text-yellow-100">
+            <a href="{{ route('ab-testing.index') }}" class="mt-3 inline-block text-sm text-yellow-300 underline hover:text-yellow-100">
                 Back to overview
             </a>
         </div>
     @else
         {{-- Breadcrumb --}}
         <nav class="mb-5 flex items-center gap-1.5 text-sm text-gray-500">
-            <a href="{{ route('ab-testing.overview') }}" class="hover:text-gray-300 transition-colors">Experiments</a>
+            <a href="{{ route('ab-testing.index') }}" class="hover:text-gray-300 transition-colors">Experiments</a>
             <svg class="h-3.5 w-3.5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
             </svg>

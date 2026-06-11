@@ -22,7 +22,9 @@ final class ExperimentsOverview extends Component
 {
     /** Re-render so card headers reflect the updated state after any action. */
     #[On('experiment-updated')]
-    public function refresh(): void {}
+    public function onExperimentUpdated(): void {
+        //
+    }
 
     public function render(): View
     {

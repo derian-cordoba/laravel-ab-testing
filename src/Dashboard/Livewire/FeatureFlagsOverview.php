@@ -20,7 +20,9 @@ final class FeatureFlagsOverview extends Component
 {
     /** Re-render so card headers reflect the updated state after any action. */
     #[On('flag-updated')]
-    public function refresh(): void {}
+    public function onFlagUpdated(): void {
+        //
+    }
 
     public function render(): View
     {
