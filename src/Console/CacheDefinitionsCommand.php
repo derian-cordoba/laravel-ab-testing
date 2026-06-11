@@ -8,6 +8,7 @@ use ABTests\Experiment;
 use ABTests\Registry\AttributeReader;
 use ABTests\Registry\ClassDiscovery;
 use ABTests\Registry\ExperimentRegistry;
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Throwable;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
@@ -29,6 +30,9 @@ final class CacheDefinitionsCommand extends Command
 
     protected $description = 'Discover and cache all experiment and feature-flag definitions.';
 
+    /**
+     * @throws BindingResolutionException
+     */
     public function handle(ExperimentRegistry $registry, AttributeReader $reader): int
     {
         /** @var ConfigRepository $configRepo */
