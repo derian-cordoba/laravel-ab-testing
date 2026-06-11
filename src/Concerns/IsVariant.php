@@ -6,6 +6,7 @@ namespace ABTests\Concerns;
 
 use ABTests\Attributes\Control;
 use ABTests\Attributes\Weight;
+use ABTests\Contracts\Variant;
 use ABTests\Exceptions\MissingVariantWeight;
 use BackedEnum;
 use ReflectionEnumBackedCase;
@@ -16,7 +17,7 @@ use ReflectionEnumBackedCase;
  * type-safe declaration of an experiment's arms.
  *
  * @mixin BackedEnum
- * @phpstan-require-implements \ABTests\Contracts\Variant
+ * @phpstan-require-implements Variant
  */
 trait IsVariant
 {

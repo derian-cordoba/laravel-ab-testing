@@ -20,5 +20,6 @@ final readonly class ResolvesExperiment
      */
     public function __construct(public string $experiment)
     {
+        //
     }
 }

@@ -19,6 +19,7 @@ final readonly class Segment
      */
     private function __construct(public array $criteria)
     {
+        //
     }
 
     /** Everyone is eligible. */

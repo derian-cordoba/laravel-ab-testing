@@ -16,5 +16,6 @@ final readonly class SampleRatioMismatchResult
         public float $chiSquare,
         public float $pValue,
     ) {
+        //
     }
 }

@@ -30,6 +30,7 @@ final readonly class ExperimentResolver
         private EventSink $eventSink,
         private AssignmentRepository $assignmentRepository,
     ) {
+        //
     }
 
     /**
@@ -54,7 +55,7 @@ final readonly class ExperimentResolver
                 unitKey: $this->unit->bucketingKey(),
                 variantKey: $variant->key(),
                 type: EventType::exposure,
-                idempotencyKey: "exposure:{$definition->key}:{$this->unit->bucketingKey()}",
+                idempotencyKey: "exposure:$definition->key:{$this->unit->bucketingKey()}",
                 occurredAt: new DateTimeImmutable(),
             ));
         }
@@ -141,6 +142,6 @@ final readonly class ExperimentResolver
      */
     private function metricIdempotencyKey(string $experimentKey, string $metricKey): string
     {
-        return "metric:{$experimentKey}:{$metricKey}:{$this->unit->bucketingKey()}:" . hrtime(true);
+        return "metric:$experimentKey:$metricKey:{$this->unit->bucketingKey()}:" . hrtime(true);
     }
 }

@@ -53,7 +53,7 @@ final readonly class BayesianAnalysisEngine implements AnalysisEngine
 
         $varLikelihood = $varControl + $varTreatment;
 
-        $relativeLift = $control->mean != 0.0 ? $delta / abs($control->mean) : 0.0;
+        $relativeLift = $control->mean !== 0.0 ? $delta / abs($control->mean) : 0.0;
 
         if ($varLikelihood <= 0.0) {
             return new AnalysisResult(

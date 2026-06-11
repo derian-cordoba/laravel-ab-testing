@@ -20,7 +20,7 @@ enum ExperimentStatus: string
 
     public function canTransitionTo(self $target): bool
     {
-        return in_array($target, $this->allowedTransitions(), true);
+        return in_array($target, $this->allowedTransitions(), strict: true);
     }
 
     /**

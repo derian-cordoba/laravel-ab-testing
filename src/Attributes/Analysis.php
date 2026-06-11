@@ -25,5 +25,6 @@ final readonly class Analysis
         public float $confidenceLevel = 0.95,
         public bool $sequential = true,
     ) {
+        //
     }
 }

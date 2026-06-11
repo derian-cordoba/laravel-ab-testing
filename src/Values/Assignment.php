@@ -21,5 +21,6 @@ final readonly class Assignment
         public ?string $layer,
         public DateTimeImmutable $assignedAt,
     ) {
+        //
     }
 }

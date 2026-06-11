@@ -20,6 +20,7 @@ final readonly class GenericVariant implements Variant
         private int $weight,
         private bool $isControl = false,
     ) {
+        //
     }
 
     public function key(): string

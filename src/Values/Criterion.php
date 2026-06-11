@@ -17,6 +17,7 @@ final readonly class Criterion
         public Operator $operator,
         public mixed $expected,
     ) {
+        //
     }
 
     /**

@@ -25,6 +25,7 @@ final readonly class ExperimentResultsData
         public Collection $activeGuardrailBreaches,
         public DateTimeImmutable $computedAt,
     ) {
+        //
     }
 
     public function hasResults(): bool

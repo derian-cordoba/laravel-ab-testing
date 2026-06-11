@@ -12,4 +12,5 @@ use Throwable;
  */
 interface ABTestingException extends Throwable
 {
+    //
 }

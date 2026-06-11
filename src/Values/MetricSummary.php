@@ -20,6 +20,7 @@ final class MetricSummary
         public readonly float $sumOfSquaredValues,
         public readonly int $conversions,
     ) {
+        //
     }
 
     public float $mean {

@@ -15,5 +15,6 @@ final readonly class Weight
 {
     public function __construct(public int $percentage)
     {
+        //
     }
 }

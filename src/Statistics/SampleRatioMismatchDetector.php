@@ -15,7 +15,7 @@ use ABTests\Values\SampleRatioMismatchResult;
  * test. Compares the observed unit counts across variants against the expected
  * counts implied by the configured allocation weights.
  *
- * An SRM (p < 0.01 by convention) is a data-quality flag: the randomisation
+ * An SRM (p < 0.01 by convention) is a data-quality flag: the randomization
  * or event logging pipeline is not working as specified, so the experiment's
  * causal estimates cannot be trusted regardless of what the metric engines say.
  *

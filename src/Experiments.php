@@ -8,7 +8,6 @@ use RuntimeException;
 use ABTests\Contracts\AssignmentRepository;
 use ABTests\Contracts\Bucketable;
 use ABTests\Contracts\EventSink;
-use ABTests\Contracts\Variant;
 use ABTests\Registry\ExperimentRegistry;
 use ABTests\Resolution\Resolver;
 
@@ -40,6 +39,7 @@ final class Experiments
         private readonly EventSink $eventSink,
         private readonly AssignmentRepository $assignmentRepository,
     ) {
+        //
     }
 
     // -------------------------------------------------------------------------

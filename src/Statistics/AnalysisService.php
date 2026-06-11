@@ -7,7 +7,6 @@ namespace ABTests\Statistics;
 use ABTests\Contracts\AnalysisEngine;
 use ABTests\Definitions\ExperimentDefinition;
 use ABTests\Enums\StatisticalEngine;
-use ABTests\Values\Allocation;
 use ABTests\Values\MetricSummary;
 use ABTests\Values\VerdictResult;
 
@@ -34,7 +33,7 @@ final readonly class AnalysisService
     }
 
     /**
-     * Analyse a single treatment arm against control.
+     * Analyze a single treatment arm against control.
      *
      * @param list<MetricSummary> $allSummaries All variant summaries for SRM detection
      *                                          (include both control and treatment).

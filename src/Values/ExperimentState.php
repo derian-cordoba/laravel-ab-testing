@@ -20,6 +20,7 @@ final readonly class ExperimentState
         public int $trafficPercentage,
         public bool $isKilled = false,
     ) {
+        //
     }
 
     /**

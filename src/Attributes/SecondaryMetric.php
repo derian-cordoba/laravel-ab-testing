@@ -18,5 +18,6 @@ final readonly class SecondaryMetric
      */
     public function __construct(public string $metric)
     {
+        //
     }
 }

@@ -8,4 +8,5 @@ use DomainException;
 
 final class InvalidAllocation extends DomainException implements ABTestingException
 {
+    //
 }

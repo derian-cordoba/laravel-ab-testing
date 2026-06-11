@@ -23,5 +23,6 @@ final readonly class Guardrail
         public string $metric,
         public float $maximumRegression,
     ) {
+        //
     }
 }

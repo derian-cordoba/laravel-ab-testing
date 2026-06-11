@@ -15,7 +15,7 @@ use ABTests\Contracts\Bucketable;
 #[Attribute(Attribute::TARGET_CLASS)]
 final readonly class AsFeatureFlag
 {
-    /** Stable, kebab-case identifier, normalised from a string or enum case. */
+    /** Stable, kebab-case identifier, normalized from a string or enum case. */
     public string $key;
 
     /**

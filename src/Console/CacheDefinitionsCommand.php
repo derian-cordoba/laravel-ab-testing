@@ -67,13 +67,13 @@ final class CacheDefinitionsCommand extends Command
 
         foreach ($allClasses as $class) {
             if (! class_exists($class)) {
-                $this->error("  Class not found: {$class}");
+                $this->error("  Class not found: $class");
                 $failed++;
                 continue;
             }
 
             if (! is_a($class, Experiment::class, true)) {
-                $this->error("  Class [{$class}] does not extend " . Experiment::class . '.');
+                $this->error("  Class [$class] does not extend " . Experiment::class . '.');
                 $failed++;
                 continue;
             }
@@ -84,7 +84,7 @@ final class CacheDefinitionsCommand extends Command
                 $this->line("  <info>✓</info> $definition->key  ($class)");
                 $registered++;
             } catch (Throwable $e) {
-                $this->error("  ✗ {$class}: {$e->getMessage()}");
+                $this->error("  ✗ $class: {$e->getMessage()}");
                 $failed++;
             }
         }

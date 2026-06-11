@@ -24,5 +24,6 @@ final readonly class AnalysisResult
         public ?float $probabilityToBeatControl = null,  // bayesian
         public ?float $expectedLoss = null,              // bayesian
     ) {
+        //
     }
 }

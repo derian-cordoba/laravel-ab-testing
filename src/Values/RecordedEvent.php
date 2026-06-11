@@ -29,5 +29,6 @@ final readonly class RecordedEvent
         public ?float $value = null,
         public array $properties = [],
     ) {
+        //
     }
 }

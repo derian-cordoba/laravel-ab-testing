@@ -14,7 +14,7 @@ use UnitEnum;
 #[Attribute(Attribute::TARGET_CLASS)]
 final readonly class AsUnit
 {
-    /** Stable type key, normalised from a string or enum case. */
+    /** Stable type key, normalized from a string or enum case. */
     public string $key;
 
     /**

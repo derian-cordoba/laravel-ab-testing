@@ -21,7 +21,13 @@ final readonly class RequiresDashboardAccess
         $gate = config('ab-testing.dashboard.viewer_gate', 'viewAbTestingDashboard');
 
         if (Gate::has($gate) && Gate::denies($gate)) {
-            abort(403, 'Access to the A/B testing dashboard is not authorized.');
+            if (app()->isProduction()) {
+                // When Dashboard is running on production environment, suppress detailed errors to avoid information
+                // leakage. In non-production environments, return 403 to aid debugging.
+                abort(404, 'Not found.');
+            } else {
+                abort(403, 'Access to the A/B testing dashboard is not authorized.');
+            }
         }
 
         return $next($request);

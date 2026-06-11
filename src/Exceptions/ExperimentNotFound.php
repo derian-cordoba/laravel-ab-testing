@@ -15,7 +15,7 @@ final class ExperimentNotFound extends RuntimeException implements ABTestingExce
     public function __construct(string $identifier)
     {
         parent::__construct(
-            "Experiment [{$identifier}] is not registered. Did you add it to the registry or run php artisan ab:cache?"
+            "Experiment [$identifier] is not registered. Did you add it to the registry or run php artisan ab:cache?"
         );
     }
 }

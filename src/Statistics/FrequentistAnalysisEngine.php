@@ -52,7 +52,7 @@ final readonly class FrequentistAnalysisEngine implements AnalysisEngine
         $varDelta = $varControl + $varTreatment;
         $se = sqrt($varDelta);
 
-        $relativeLift = $control->mean != 0.0 ? $delta / abs($control->mean) : 0.0;
+        $relativeLift = $control->mean !== 0.0 ? $delta / abs($control->mean) : 0.0;
 
         if ($se <= 0.0) {
             // No variance — cannot determine significance.

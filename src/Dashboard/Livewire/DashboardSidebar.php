@@ -14,6 +14,7 @@ final class DashboardSidebar extends Component
     #[On('experiment-updated')]
     public function refreshSidebar(): void
     {
+        //
     }
 
     public function render(): View

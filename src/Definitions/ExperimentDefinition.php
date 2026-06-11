@@ -43,7 +43,7 @@ final readonly class ExperimentDefinition
             }
         }
 
-        throw new LogicException("Experiment [{$this->key}] has no primary metric.");
+        throw new LogicException("Experiment [$this->key] has no primary metric.");
     }
 
     /**

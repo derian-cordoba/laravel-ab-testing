@@ -17,6 +17,7 @@ final readonly class AnalysisConfiguration
         public Confidence $confidence,
         public bool $sequential,
     ) {
+        //
     }
 
     public static function default(): self

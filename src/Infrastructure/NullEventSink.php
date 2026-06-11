@@ -16,9 +16,11 @@ final readonly class NullEventSink implements EventSink
 {
     public function record(RecordedEvent $event): void
     {
+        //
     }
 
     public function recordBatch(iterable $events): void
     {
+        //
     }
 }

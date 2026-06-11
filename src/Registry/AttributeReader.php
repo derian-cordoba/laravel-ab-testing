@@ -22,9 +22,10 @@ use ABTests\Values\Confidence;
 use BackedEnum;
 use InvalidArgumentException;
 use ReflectionClass;
+use ReflectionException;
 
 /**
- * Reads the PHP attributes decorating an Experiment subclass and normalises
+ * Reads the PHP attributes decorating an Experiment subclass and normalizes
  * them into a framework-agnostic ExperimentDefinition. This is one of the two
  * front-ends described in §4 of CLAUDE.md; the other is the database loader
  * (dashboard-created experiments) which builds the identical value object from
@@ -35,7 +36,7 @@ final readonly class AttributeReader
     /**
      * @param class-string<Experiment> $experimentClass
      *
-     * @throws InvalidArgumentException When a required attribute is missing or
+     * @throws InvalidArgumentException|ReflectionException When a required attribute is missing or
      *                                   the variants enum is malformed.
      */
     public function readExperiment(string $experimentClass): ExperimentDefinition
@@ -50,7 +51,7 @@ final readonly class AttributeReader
 
         if (! is_a($variantsClass, BackedEnum::class, true)) {
             throw new InvalidArgumentException(
-                "Variants class [{$variantsClass}] must be a backed enum that implements Variant."
+                "Variants class [$variantsClass] must be a backed enum that implements Variant."
             );
         }
 
@@ -93,7 +94,7 @@ final readonly class AttributeReader
 
         if ($attrs === []) {
             throw new InvalidArgumentException(
-                "Class [{$experimentClass}] is missing the required #[{$attributeClass}] attribute."
+                "Class [$experimentClass] is missing the required #[$attributeClass] attribute."
             );
         }
 
@@ -104,6 +105,8 @@ final readonly class AttributeReader
      * Read the stable type key from the unit class's #[AsUnit] attribute.
      *
      * @param class-string $unitClass
+     *
+     * @throws ReflectionException
      */
     private function resolveUnitType(string $unitClass): string
     {
@@ -112,14 +115,12 @@ final readonly class AttributeReader
 
         if ($attrs === []) {
             throw new InvalidArgumentException(
-                "Unit class [{$unitClass}] is missing the #[AsUnit] attribute. " .
+                "Unit class [$unitClass] is missing the #[AsUnit] attribute. " .
                 "Add #[AsUnit(key: 'your-type-key')] to the class."
             );
         }
 
-        $asUnit = $attrs[0]->newInstance();
-
-        return $asUnit->key;
+        return $attrs[0]->newInstance()->key;
     }
 
     /**

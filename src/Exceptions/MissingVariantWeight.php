@@ -11,7 +11,7 @@ final class MissingVariantWeight extends LogicException implements ABTestingExce
     public function __construct(string $enum, string $case)
     {
         parent::__construct(
-            "Variant {$enum}::{$case} is missing a #[Weight(...)] attribute."
+            "Variant $enum::$case is missing a #[Weight(...)] attribute."
         );
     }
 }

@@ -37,6 +37,7 @@ final readonly class ResultsService
         private ExperimentRegistry $registry,
         private AnalysisService $analysisService,
     ) {
+        //
     }
 
     /**
@@ -152,7 +153,7 @@ final readonly class ResultsService
                     continue;
                 }
 
-                $metricRollupKey = "{$variant->key()}|{$binding->metric}";
+                $metricRollupKey = "{$variant->key()}|$binding->metric";
                 $metricRollup = $rollups->get($metricRollupKey);
 
                 if ($metricRollup === null) {

@@ -20,5 +20,6 @@ final readonly class MetricBinding
         public MetricRole $role,
         public ?float $maximumRegression = null,
     ) {
+        //
     }
 }

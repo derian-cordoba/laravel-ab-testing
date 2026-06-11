@@ -23,6 +23,7 @@ final readonly class LoadExistingAssignmentStep implements ResolutionStep
 {
     public function __construct(private AssignmentRepository $assignmentRepository)
     {
+        //
     }
 
     public function handle(ResolutionPayload $payload): bool

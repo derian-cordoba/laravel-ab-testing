@@ -106,7 +106,7 @@ final readonly class ClassDiscovery
                 if ($j < $count && is_array($tokens[$j]) && $tokens[$j][0] === T_STRING) {
                     $shortName = $tokens[$j][1];
 
-                    return $namespace !== '' ? "{$namespace}\\{$shortName}" : $shortName;
+                    return $namespace !== '' ? "$namespace\\$shortName" : $shortName;
                 }
             }
         }

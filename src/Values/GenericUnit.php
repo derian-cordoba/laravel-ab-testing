@@ -21,6 +21,7 @@ final readonly class GenericUnit implements Bucketable
         private string $key,
         private array $attributes = [],
     ) {
+        //
     }
 
     public function bucketingKey(): string
