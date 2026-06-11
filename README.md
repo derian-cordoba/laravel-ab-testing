@@ -171,6 +171,7 @@ use ABTests\Metric;
 )]
 final class CheckoutConversion extends Metric
 {
+    //
 }
 ```
 
@@ -459,7 +460,7 @@ return [
     'discovery' => [
         'enabled' => false,
         'paths' => [
-            // app_path('ABTesting/Experiments'),
+            // app_path('Experiments'),
         ],
     ],
 ];
@@ -682,7 +683,7 @@ Example config:
 'discovery' => [
     'enabled' => true,
     'paths' => [
-        app_path('ABTesting/Experiments'),
+        app_path('Experiments'),
     ],
 ],
 ```
