@@ -10,6 +10,8 @@ use ABTests\Contracts\BucketingStrategy;
 use ABTests\Contracts\EventSink;
 use ABTests\Contracts\ExperimentStateRepository;
 use ABTests\Infrastructure\AlwaysRunningExperimentStateRepository;
+use ABTests\Infrastructure\Database\DatabaseAssignmentRepository;
+use ABTests\Infrastructure\Database\DatabaseExperimentStateRepository;
 use ABTests\Infrastructure\InMemoryAssignmentRepository;
 use ABTests\Infrastructure\NullEventSink;
 use ABTests\Registry\AttributeReader;
@@ -41,10 +43,12 @@ use Throwable;
  *
  * Default bindings (all swappable via config or by re-binding in AppServiceProvider):
  *
- *   BucketingStrategy      → Sha256BucketingStrategy
- *   AssignmentRepository   → InMemoryAssignmentRepository  (replace with Eloquent in prod)
- *   ExperimentStateRepository → AlwaysRunningExperimentStateRepository  (replace with Eloquent)
- *   EventSink              → NullEventSink  (replace with queued batch sink)
+ *   BucketingStrategy         → Sha256BucketingStrategy
+ *   AssignmentRepository      → DatabaseAssignmentRepository      (database driver, default)
+ *                             → InMemoryAssignmentRepository      (in_memory driver)
+ *   ExperimentStateRepository → DatabaseExperimentStateRepository (database driver, default)
+ *                             → AlwaysRunningExperimentStateRepository (in_memory driver)
+ *   EventSink                 → NullEventSink  (replace with queued batch sink)
  */
 final class ABTestingServiceProvider extends ServiceProvider
 {
@@ -56,9 +60,9 @@ final class ABTestingServiceProvider extends ServiceProvider
         );
 
         $this->app->singleton(BucketingStrategy::class, Sha256BucketingStrategy::class);
-        $this->app->singleton(AssignmentRepository::class, InMemoryAssignmentRepository::class);
-        $this->app->singleton(ExperimentStateRepository::class, AlwaysRunningExperimentStateRepository::class);
         $this->app->singleton(EventSink::class, NullEventSink::class);
+
+        $this->bindStorageDriver();
 
         $this->app->singleton(ExperimentRegistry::class, function (): ExperimentRegistry {
             $registry = new ExperimentRegistry();
@@ -128,6 +132,31 @@ final class ABTestingServiceProvider extends ServiceProvider
     }
 
     /**
+     * Bind the AssignmentRepository and ExperimentStateRepository to either the
+     * Eloquent (database) or InMemory implementations based on the configured
+     * storage driver. 'database' is the production default; 'in_memory' is
+     * used for tests and local development without a database.
+     *
+     * @throws BindingResolutionException
+     */
+    private function bindStorageDriver(): void
+    {
+        /** @var string $driver */
+        $driver = $this->app->make(ConfigRepository::class)->get('ab-testing.storage.driver', 'database');
+
+        if ($driver === 'in_memory') {
+            $this->app->singleton(AssignmentRepository::class, InMemoryAssignmentRepository::class);
+            $this->app->singleton(ExperimentStateRepository::class, AlwaysRunningExperimentStateRepository::class);
+
+            return;
+        }
+
+        // 'database' driver — Eloquent implementations backed by PostgreSQL/MySQL.
+        $this->app->singleton(AssignmentRepository::class, DatabaseAssignmentRepository::class);
+        $this->app->singleton(ExperimentStateRepository::class, DatabaseExperimentStateRepository::class);
+    }
+
+    /**
      * @throws BindingResolutionException
      */
     public function boot(): void
@@ -140,6 +169,12 @@ final class ABTestingServiceProvider extends ServiceProvider
             $this->publishes([
                 __DIR__ . '/../config/ab-testing.php' => $this->app->configPath('ab-testing.php'),
             ], 'ab-testing-config');
+
+            $this->publishes([
+                __DIR__ . '/../database/migrations' => $this->app->databasePath('migrations'),
+            ], 'ab-testing-migrations');
         }
+
+        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
     }
 }

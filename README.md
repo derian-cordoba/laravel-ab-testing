@@ -23,6 +23,7 @@ This package is intentionally not a thin feature-flag helper. It is designed aro
 - [Feature flags](#feature-flags)
 - [Architecture](#architecture)
 - [Production integration](#production-integration)
+  - [Storage driver](#storage-driver)
 - [Testing](#testing)
 - [Current limitations](#current-limitations)
 - [Contributing](#contributing)
@@ -34,7 +35,7 @@ This repository already includes the foundational engine and several important r
 
 - Attribute-based experiment definitions via `#[AsExperiment]`, `#[AsMetric]`, `#[AsUnit]`, and related attributes
 - Typed variant enums with explicit control and weight declarations
-- Deterministic bucketing with a SHA-256 strategy
+- Deterministic bucketing with an SHA-256 strategy
 - Assignment persistence behind repository contracts
 - A resolution pipeline for eligibility, traffic checks, sticky assignment, and layer exclusion
 - Event recording primitives for exposures and metrics
@@ -44,10 +45,9 @@ This repository already includes the foundational engine and several important r
 
 Some larger platform pieces are still intentionally not presented as finished:
 
-- Production-grade persistence for assignments, events, and experiment state
+- Event persistence (`EventSink` ships as a no-op placeholder)
 - Dashboard UI
 - Full feature-flag registry and runtime integration
-- End-to-end database-backed operational workflows
 
 The README below focuses on what exists today and shows how to use the package honestly in its current form.
 
@@ -76,6 +76,12 @@ Publish the configuration file:
 
 ```bash
 php artisan vendor:publish --tag=ab-testing-config
+```
+
+Run the migrations:
+
+```bash
+php artisan migrate
 ```
 
 The package supports Laravel package discovery, so you should not need to register the service provider manually.
@@ -704,166 +710,82 @@ Key contracts and abstractions:
 - `EventSink`
 - `AnalysisEngine`
 
-Default bindings currently include:
+Default bindings:
 
 - `Sha256BucketingStrategy`
-- `InMemoryAssignmentRepository`
-- `AlwaysRunningExperimentStateRepository`
+- `DatabaseAssignmentRepository` (database driver, default)
+- `DatabaseExperimentStateRepository` (database driver, default)
 - `NullEventSink`
 
-That means the package is easy to experiment with immediately, while still leaving the important persistence seams replaceable.
+The storage driver is configurable; the in-memory alternatives are available for tests and local development without a database connection (see [Storage driver](#storage-driver) below).
 
 ## Production integration
 
-Out of the box, the package uses development-friendly defaults:
+The package ships with a full Eloquent database layer enabled by default. Running the migrations is the only step needed to go from zero to a working persistent store.
 
-- `InMemoryAssignmentRepository`
-- `AlwaysRunningExperimentStateRepository`
-- `NullEventSink`
+### Storage driver
 
-Those are useful for tests, examples, and early integration, but they are not the shape you want in production.
-
-### What to replace
-
-For a serious deployment, you should provide concrete implementations for at least these contracts:
-
-- `ABTests\Contracts\AssignmentRepository`
-- `ABTests\Contracts\ExperimentStateRepository`
-- `ABTests\Contracts\EventSink`
-
-### Recommended responsibilities
-
-`AssignmentRepository`
-
-- Persist sticky assignments keyed by experiment key, unit type, and unit key
-- Make writes idempotent
-- Support layer lookups so mutual exclusion works across running experiments
-
-`ExperimentStateRepository`
-
-- Return the operational state for an experiment
-- Control whether an experiment is considered live
-- Surface traffic percentage, pause state, and kill-switch-like behavior through `ExperimentState`
-
-`EventSink`
-
-- Record exposure events
-- Record metric and conversion events
-- Prefer append-only writes
-- Make batching easy, even if the interface is used one event at a time
-
-### Rebinding the contracts
-
-In your application service provider:
+The storage driver controls which repository implementations are bound. Set it in `config/ab-testing.php` or via environment variable:
 
 ```php
-<?php
-
-declare(strict_types=1);
-
-namespace App\Providers;
-
-use ABTests\Contracts\AssignmentRepository;
-use ABTests\Contracts\EventSink;
-use ABTests\Contracts\ExperimentStateRepository;
-use App\ABTesting\Infrastructure\DatabaseAssignmentRepository;
-use App\ABTesting\Infrastructure\DatabaseExperimentStateRepository;
-use App\ABTesting\Infrastructure\DatabaseEventSink;
-use Illuminate\Support\ServiceProvider;
-
-final class AppServiceProvider extends ServiceProvider
-{
-    public function register(): void
-    {
-        $this->app->singleton(AssignmentRepository::class, DatabaseAssignmentRepository::class);
-        $this->app->singleton(ExperimentStateRepository::class, DatabaseExperimentStateRepository::class);
-        $this->app->singleton(EventSink::class, DatabaseEventSink::class);
-    }
-}
+// config/ab-testing.php
+'storage' => [
+    'driver' => env('AB_TESTING_DRIVER', 'database'),
+],
 ```
 
-### Suggested database model
+| Driver               | Assignment repository          | State repository                         | When to use                        |
+|----------------------|--------------------------------|------------------------------------------|------------------------------------|
+| `database` (default) | `DatabaseAssignmentRepository` | `DatabaseExperimentStateRepository`      | Production and staging             |
+| `in_memory`          | `InMemoryAssignmentRepository` | `AlwaysRunningExperimentStateRepository` | Unit tests, local dev without a DB |
 
-The package does not yet ship its own full production schema, but the intended shape is close to:
+### Migrations
 
-- `assignments`
-  stores one sticky assignment per experiment, unit type, and unit key
-- `events`
-  append-only exposure and metric events with idempotency keys
-- `experiments`
-  operational state such as running, paused, traffic percentage, and timestamps
+The package loads its migrations automatically. If you prefer to publish them to your application's `database/migrations` directory:
 
-### Assignment repository example
-
-```php
-<?php
-
-declare(strict_types=1);
-
-namespace App\ABTesting\Infrastructure;
-
-use ABTests\Contracts\AssignmentRepository;
-use ABTests\Values\Assignment;
-
-final class DatabaseAssignmentRepository implements AssignmentRepository
-{
-    public function findAssignment(
-        string $experimentKey,
-        string $unitType,
-        string $unitKey,
-    ): ?Assignment {
-        // Load and hydrate from your persistence layer.
-    }
-
-    public function storeAssignment(Assignment $assignment): void
-    {
-        // Use an insert that does not overwrite an existing assignment.
-    }
-
-    public function findAssignmentByLayer(
-        string $layer,
-        string $unitType,
-        string $unitKey,
-    ): ?Assignment {
-        // Resolve the first live assignment in the given layer for this unit.
-    }
-}
+```bash
+php artisan vendor:publish --tag=ab-testing-migrations
 ```
 
-### Event sink example
+The two tables created are:
+
+`ab_testing_experiments` — mutable operational state driven from the dashboard (status, traffic percentage, kill switch). One row per experiment key.
+
+`ab_testing_assignments` — sticky, deterministic bucketing. One row per `(experiment_key, unit_type, unit_key)` triple. The composite primary key enforces idempotency: the first write wins and duplicates are silently discarded.
+
+### Creating experiment state rows
+
+The `DatabaseExperimentStateRepository` looks up a row in `ab_testing_experiments` by key. If no row exists, the resolver treats the experiment as not running and returns `null`. You need to insert a row (via the future dashboard, a seeder, or a migration) before an experiment can go live:
 
 ```php
-<?php
+use ABTests\Infrastructure\Database\Models\ExperimentModel;
 
-declare(strict_types=1);
+ExperimentModel::create([
+    'key'                => 'checkout-button-color',
+    'status'             => 'running',
+    'traffic_percentage' => 50,
+    'is_killed'          => false,
+]);
+```
 
-namespace App\ABTesting\Infrastructure;
+### Event sink
 
-use ABTests\Contracts\EventSink;
-use ABTests\Values\RecordedEvent;
+Event persistence (`EventSink`) still uses the `NullEventSink` placeholder. For production, bind your own implementation that inserts append-only rows into an `events` table with an idempotency unique constraint:
 
-final class DatabaseEventSink implements EventSink
-{
-    public function record(RecordedEvent $event): void
-    {
-        $this->recordBatch([$event]);
-    }
-
-    public function recordBatch(iterable $events): void
-    {
-        foreach ($events as $event) {
-            // Insert append-only rows, ideally with an idempotency unique index.
-        }
-    }
-}
+```php
+// In AppServiceProvider::register()
+$this->app->singleton(
+    \ABTests\Contracts\EventSink::class,
+    \App\ABTesting\Infrastructure\DatabaseEventSink::class,
+);
 ```
 
 ### Production checklist
 
-- Replace the default repositories and sink bindings
-- Make assignment writes idempotent
-- Make event writes append-only
-- Add a unique constraint on event idempotency keys
+- Run `php artisan migrate` to create the package tables
+- Insert experiment rows in `ab_testing_experiments` before starting experiments
+- Provide a real `EventSink` binding for exposure and metric persistence
+- Make event writes append-only with a unique constraint on idempotency keys
 - Keep experiment operational state outside the PHP class definition
 - Ensure your unit attributes are reproducible across requests
 - Monitor failed registration logs during deploys
@@ -871,7 +793,6 @@ final class DatabaseEventSink implements EventSink
 
 ### What not to do
 
-- Do not store experiment structure only in the database if your current integration is using code-defined experiments.
 - Do not change variant keys or experiment keys mid-flight.
 - Do not count raw events directly as if they were unit-level observations for statistical decisions.
 - Do not treat control assignment and ineligibility as the same thing.
@@ -902,19 +823,17 @@ The repository also includes a GitHub Actions workflow for tests.
 
 This package is not pretending to be more finished than it is. Before adopting it in production, keep these points in mind:
 
-- The default repositories are in-memory or always-on placeholders
-- Event persistence is behind a contract, but a production event store is not yet shipped here
-- Dashboard workflows are planned, not complete
+- Event persistence uses a no-op `NullEventSink`; you need to provide a real implementation before exposure and metric events are stored
+- Dashboard workflows are planned, not complete; experiment state rows must be managed manually or via seeders for now
 - Feature-flag definition primitives exist, but the end-user flag runtime is not yet the main surface
 - The architecture is designed for runtime-defined experiments too, but the most complete experience today is the code-defined attribute flow
 
 If you want to evaluate the package today, the strongest implemented path is:
 
 - code-defined experiments
-- deterministic resolution
+- deterministic resolution and Eloquent-backed sticky assignment
 - metric tracking contracts
 - analysis primitives
-- custom infrastructure implementations in your app
 
 ## Contributing
 

@@ -8,7 +8,7 @@ use ABTests\Values\Assignment;
 
 /**
  * Persistence seam for sticky variant assignments. The default implementation
- * is Eloquent (PostgreSQL); swap this binding for tests or alternative stores.
+ * is database-backed (PostgreSQL); swap this binding for tests or alternative stores.
  */
 interface AssignmentRepository
 {
