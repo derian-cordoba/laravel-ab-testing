@@ -1,6 +1,6 @@
 @use(ABTests\Enums\ExperimentStatus)
 
-<aside class="fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-gray-800 bg-gray-900 transition-transform duration-200 lg:relative lg:inset-auto lg:z-auto lg:min-h-full lg:self-stretch"
+<aside class="fixed inset-y-0 left-0 z-50 flex h-screen w-64 flex-col overflow-hidden border-r border-gray-800 bg-gray-900 transition-transform duration-200 lg:sticky lg:top-0 lg:z-auto"
        :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'">
 
     <div class="flex h-16 shrink-0 items-center gap-3 border-b border-gray-800 px-5">
