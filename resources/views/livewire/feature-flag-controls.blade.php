@@ -26,6 +26,7 @@
         </div>
 
         {{-- Kill switch --}}
+        @if($showKillSwitch)
         <div class="border-t border-gray-700/60 pt-5">
             <h3 class="text-sm font-semibold text-gray-300 mb-3">Kill Switch</h3>
             <div class="flex items-center justify-between gap-4">
@@ -45,8 +46,10 @@
                 </button>
             </div>
         </div>
+        @endif
 
         {{-- Rollout percentage --}}
+        @if($showRolloutPercentage)
         <div class="border-t border-gray-700/60 pt-5">
             <h3 class="text-sm font-semibold text-gray-300 mb-3">Rollout Percentage</h3>
             <div class="flex items-end gap-3">
@@ -78,6 +81,7 @@
                 </p>
             @endif
         </div>
+        @endif
 
         {{-- Targeting conditions --}}
         <div class="border-t border-gray-700/60 pt-5">

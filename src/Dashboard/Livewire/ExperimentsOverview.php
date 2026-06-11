@@ -9,16 +9,21 @@ use ABTests\Infrastructure\Database\Models\ExperimentModel;
 use ABTests\Registry\ExperimentRegistry;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Contracts\View\View;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Throwable;
 
 /**
- * Full-page Livewire component for the experiments overview. Renders a table
- * of all experiments that exist in the database, with their live operational
- * state and a link to each experiment's detail/results page.
+ * Full-page Livewire component for the experiments overview. Renders a card
+ * per experiment with its live operational state; re-renders whenever any
+ * embedded ExperimentControls child dispatches 'experiment-updated'.
  */
 final class ExperimentsOverview extends Component
 {
+    /** Re-render so card headers reflect the updated state after any action. */
+    #[On('experiment-updated')]
+    public function refresh(): void {}
+
     public function render(): View
     {
         $experiments = ExperimentModel::query()

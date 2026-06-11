@@ -1,5 +1,3 @@
-@use(ABTests\Enums\ExperimentStatus)
-
 <aside class="fixed inset-y-0 left-0 z-50 flex h-screen w-64 flex-col overflow-hidden border-r border-gray-800 bg-gray-900 transition-transform duration-200 lg:sticky lg:top-0 lg:z-auto"
        :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'">
 
@@ -21,60 +19,25 @@
 
         <a href="{{ route('ab-testing.overview') }}"
            class="group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors
-                  {{ request()->routeIs('ab-testing.overview') ? 'bg-violet-600/20 text-violet-300' : 'text-gray-400 hover:bg-gray-800 hover:text-gray-100' }}">
+                  {{ request()->routeIs('ab-testing.overview') || request()->routeIs('ab-testing.experiment.show') ? 'bg-violet-600/20 text-violet-300' : 'text-gray-400 hover:bg-gray-800 hover:text-gray-100' }}">
             <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round"
                       d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z"/>
             </svg>
-            Overview
+            Experiments
         </a>
 
-        @foreach($experiments as $experiment)
-            @php
-                $isActive = request()->routeIs('ab-testing.experiment.show')
-                    && request()->route('key') === $experiment->key;
-                $statusEnum = ExperimentStatus::tryFrom($experiment->status);
-            @endphp
-            <a href="{{ route('ab-testing.experiment.show', $experiment->key) }}"
-               class="group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors
-                      {{ $isActive ? 'bg-violet-600/20 text-violet-300' : 'text-gray-400 hover:bg-gray-800 hover:text-gray-100' }}">
-                <span class="flex h-4 w-4 shrink-0 items-center justify-center">
-                    <span class="h-1.5 w-1.5 rounded-full {{ $statusEnum?->dotClass() ?? 'bg-gray-500' }}"></span>
-                </span>
-                <span class="truncate font-mono text-xs">{{ $experiment->key }}</span>
-            </a>
-        @endforeach
-
-        {{-- Feature Flags section --}}
         <p class="px-2 pb-1 pt-5 text-xs font-semibold uppercase tracking-widest text-gray-500">Feature Flags</p>
 
         <a href="{{ route('ab-testing.feature-flags.index') }}"
            class="group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors
-                  {{ request()->routeIs('ab-testing.feature-flags.index') ? 'bg-violet-600/20 text-violet-300' : 'text-gray-400 hover:bg-gray-800 hover:text-gray-100' }}">
+                  {{ request()->routeIs('ab-testing.feature-flags.index') || request()->routeIs('ab-testing.feature-flag.show') ? 'bg-violet-600/20 text-violet-300' : 'text-gray-400 hover:bg-gray-800 hover:text-gray-100' }}">
             <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round"
                       d="M3 3v1.5M3 21v-6m0 0 2.77-.693a9 9 0 0 1 6.208.682l.108.054a9 9 0 0 0 6.086.71l3.114-.732a48.524 48.524 0 0 1-.005-10.499l-3.11.732a9 9 0 0 1-6.085-.711l-.108-.054a9 9 0 0 0-6.208-.682L3 4.5M3 15V4.5"/>
             </svg>
-            All Flags
+            Feature Flags
         </a>
-
-        @foreach($featureFlags as $flag)
-            @php
-                $isFlagActive = request()->routeIs('ab-testing.feature-flag.show')
-                    && request()->route('key') === $flag->key;
-                $flagDot = $flag->killed_at !== null
-                    ? 'bg-red-400'
-                    : ($flag->is_enabled ? 'bg-green-400' : 'bg-gray-500');
-            @endphp
-            <a href="{{ route('ab-testing.feature-flag.show', $flag->key) }}"
-               class="group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors
-                      {{ $isFlagActive ? 'bg-violet-600/20 text-violet-300' : 'text-gray-400 hover:bg-gray-800 hover:text-gray-100' }}">
-                <span class="flex h-4 w-4 shrink-0 items-center justify-center">
-                    <span class="h-1.5 w-1.5 rounded-full {{ $flagDot }}"></span>
-                </span>
-                <span class="truncate font-mono text-xs">{{ $flag->key }}</span>
-            </a>
-        @endforeach
     </nav>
 
     <x-ab-testing::sidebar-footer />

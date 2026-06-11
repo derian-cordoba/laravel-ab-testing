@@ -7,16 +7,21 @@ namespace ABTests\Dashboard\Livewire;
 use ABTests\Infrastructure\Database\Models\FeatureFlagStateModel;
 use ABTests\Registry\FeatureFlagRegistry;
 use Illuminate\Contracts\View\View;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Throwable;
 
 /**
- * Full-page Livewire component for the feature flags overview. Renders a table
- * of all flags that exist in the database with their live operational state and
- * a link to each flag's detail page.
+ * Full-page Livewire component for the feature flags overview. Renders a card
+ * per flag with its live operational state; re-renders whenever any embedded
+ * FeatureFlagControls child dispatches 'flag-updated'.
  */
 final class FeatureFlagsOverview extends Component
 {
+    /** Re-render so card headers reflect the updated state after any action. */
+    #[On('flag-updated')]
+    public function refresh(): void {}
+
     public function render(): View
     {
         $flags = FeatureFlagStateModel::query()

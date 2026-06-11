@@ -18,6 +18,7 @@
         <div class="rounded-lg border border-gray-700 bg-gray-900 p-6 space-y-6">
 
             {{-- Lifecycle actions --}}
+            @if($status !== ExperimentStatus::archived)
             <div>
                 <h3 class="text-sm font-semibold text-gray-300 mb-3">Lifecycle</h3>
                 <div class="flex flex-wrap gap-2">
@@ -62,9 +63,10 @@
                     @endif
                 </div>
             </div>
+            @endif
 
             {{-- Kill switch --}}
-            @if($isRunning || $model->is_killed)
+            @if($showKillSwitch && ($isRunning || $model->is_killed))
                 <div class="border-t border-gray-700/60 pt-5">
                     <h3 class="text-sm font-semibold text-gray-300 mb-3">Kill Switch</h3>
                     <div class="flex items-center justify-between gap-4">
@@ -88,6 +90,7 @@
             @endif
 
             {{-- Refresh rollup --}}
+            @if($showData)
             <div class="border-t border-gray-700/60 pt-5">
                 <h3 class="text-sm font-semibold text-gray-300 mb-3">Data</h3>
                 <div class="flex items-center justify-between gap-4">
@@ -106,9 +109,10 @@
                     </button>
                 </div>
             </div>
+            @endif
 
             {{-- Traffic ramp --}}
-            @if($isRunning)
+            @if($showTrafficRamp && $isRunning)
                 <div class="border-t border-gray-700/60 pt-5">
                     <h3 class="text-sm font-semibold text-gray-300 mb-3">Traffic Ramp</h3>
                     <div class="flex items-end gap-3">

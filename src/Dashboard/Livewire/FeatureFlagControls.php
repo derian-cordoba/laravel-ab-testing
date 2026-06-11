@@ -27,6 +27,10 @@ final class FeatureFlagControls extends Component
 {
     public string $flagKey = '';
 
+    public bool $showKillSwitch = true;
+
+    public bool $showRolloutPercentage = true;
+
     #[Validate('required|integer|min:0|max:100')]
     public int $rolloutPercentage = 100;
 

@@ -33,6 +33,12 @@ final class ExperimentControls extends Component
 {
     public string $experimentKey = '';
 
+    public bool $showKillSwitch = true;
+
+    public bool $showData = true;
+
+    public bool $showTrafficRamp = true;
+
     #[Validate('required|integer|min:0|max:100')]
     public int $trafficPercentage = 100;
 
