@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ABTests\Tests\Integration;
 
-use Illuminate\Container\Container;
+use ABTests\Tests\Support\TestApplication;
 use Illuminate\Database\Capsule\Manager as DB;
 use Illuminate\Events\Dispatcher;
 use Illuminate\Support\Facades\Facade;
@@ -46,7 +46,7 @@ abstract class DatabaseTestCase extends TestCase
             return;
         }
 
-        $container = new Container();
+        $container = new TestApplication();
         Facade::setFacadeApplication($container);
 
         $capsule = new DB();
@@ -150,10 +150,21 @@ abstract class DatabaseTestCase extends TestCase
             $table->json('after_state')->nullable();
             $table->timestamp('occurred_at');
         });
+
+        DB::schema()->create('ab_testing_feature_flag_states', static function ($table): void {
+            $table->id();
+            $table->string('key')->unique();
+            $table->boolean('is_enabled')->default(false);
+            $table->unsignedInteger('rollout_percentage')->default(100);
+            $table->json('conditions')->nullable();
+            $table->timestamp('killed_at')->nullable();
+            $table->timestamps();
+        });
     }
 
     private function dropSchema(): void
     {
+        DB::schema()->dropIfExists('ab_testing_feature_flag_states');
         DB::schema()->dropIfExists('ab_testing_audit_log');
         DB::schema()->dropIfExists('ab_testing_guardrail_breaches');
         DB::schema()->dropIfExists('ab_testing_rollups');

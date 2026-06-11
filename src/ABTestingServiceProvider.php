@@ -22,6 +22,7 @@ use ABTests\Infrastructure\InMemoryAssignmentRepository;
 use ABTests\Infrastructure\Jobs\RefreshRollupsJob;
 use ABTests\Infrastructure\NullEventSink;
 use ABTests\Registry\AttributeReader;
+use ABTests\Registry\ClassDiscovery;
 use ABTests\Registry\ExperimentRegistry;
 use ABTests\Registry\FeatureFlagRegistry;
 use ABTests\Resolution\Resolver;
@@ -187,6 +188,76 @@ final class ABTestingServiceProvider extends ServiceProvider
     }
 
     /**
+     * If auto-discovery is enabled, scan the configured paths and register any
+     * Experiment or FeatureFlag subclass found into the appropriate registry.
+     * Runs after the singleton factories have already populated the explicit
+     * 'experiments' and 'feature_flags' lists, so discovered classes are
+     * additive — duplicates are silently skipped by the registries.
+     *
+     * @throws BindingResolutionException
+     */
+    private function bootDiscovery(): void
+    {
+        /** @var array<string, mixed> $config */
+        $config = $this->app->make(ConfigRepository::class)->get('ab-testing', []);
+
+        if (! ($config['discovery']['enabled'] ?? false)) {
+            return;
+        }
+
+        /** @var list<string> $paths */
+        $paths = $config['discovery']['paths'] ?? [];
+
+        if ($paths === []) {
+            return;
+        }
+
+        $discovered = new ClassDiscovery()->discover($paths);
+
+        if ($discovered === []) {
+            return;
+        }
+
+        $reader           = new AttributeReader();
+        $experimentRegistry = $this->app->make(ExperimentRegistry::class);
+        $flagRegistry       = $this->app->make(FeatureFlagRegistry::class);
+
+        foreach ($discovered as $class) {
+            if (! class_exists($class)) {
+                continue;
+            }
+
+            if (is_a($class, Experiment::class, true)) {
+                try {
+                    $definition = $reader->readExperiment($class);
+                    $experimentRegistry->register($definition, $class);
+                } catch (Throwable $e) {
+                    if ($this->app->bound(LoggerInterface::class)) {
+                        $this->app->make(LoggerInterface::class)->warning(
+                            "[ABTesting] Discovery: failed to register experiment [$class]: {$e->getMessage()}"
+                        );
+                    }
+                }
+
+                continue;
+            }
+
+            if (is_a($class, FeatureFlag::class, true)) {
+                try {
+                    $definition = $reader->readFeatureFlag($class);
+                    $flagRegistry->register($definition, $class);
+                } catch (Throwable $e) {
+                    if ($this->app->bound(LoggerInterface::class)) {
+                        $this->app->make(LoggerInterface::class)->warning(
+                            "[ABTesting] Discovery: failed to register feature flag [$class]: {$e->getMessage()}"
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    /**
      * Bind the storage driver contracts to their implementations. 'database' is
      * the production default; 'in_memory' is suitable for tests and local
      * development without a database.
@@ -218,6 +289,8 @@ final class ABTestingServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Experiments::setInstance($this->app->make(Experiments::class));
+
+        $this->bootDiscovery();
 
         $this->loadViewsFrom(__DIR__ . '/../resources/views', 'ab-testing');
         $this->loadRoutesFrom(__DIR__ . '/Dashboard/routes.php');

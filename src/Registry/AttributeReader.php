@@ -18,6 +18,7 @@ use ABTests\Definitions\FeatureFlagDefinition;
 use ABTests\Definitions\MetricBinding;
 use ABTests\Enums\MetricRole;
 use ABTests\Experiment;
+use ABTests\FeatureFlag;
 use ABTests\Values\Allocation;
 use ABTests\Values\AnalysisConfiguration;
 use ABTests\Values\Confidence;
@@ -77,7 +78,7 @@ final readonly class AttributeReader
     }
 
     /**
-     * @param class-string<\ABTests\FeatureFlag> $flagClass
+     * @param class-string<FeatureFlag> $flagClass
      *
      * @throws InvalidArgumentException|ReflectionException
      */
