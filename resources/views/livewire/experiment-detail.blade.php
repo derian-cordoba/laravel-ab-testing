@@ -35,6 +35,11 @@
             </div>
         </div>
 
+        {{-- Verdict banner --}}
+        <div class="mb-6">
+            @livewire('ab-testing::experiment-verdict-banner', ['experimentKey' => $model->key])
+        </div>
+
         {{-- Variants panel --}}
         <div class="mb-8">
             @livewire('ab-testing::experiment-variant-manager', ['experimentKey' => $model->key])
@@ -42,6 +47,11 @@
 
         {{-- Results table sub-component --}}
         @livewire('ab-testing::experiment-results-table', ['experimentKey' => $model->key])
+
+        {{-- Trust panel --}}
+        <div class="mt-8">
+            @livewire('ab-testing::experiment-trust-panel', ['experimentKey' => $model->key])
+        </div>
 
         {{-- Controls sub-component --}}
         <div class="mt-8">

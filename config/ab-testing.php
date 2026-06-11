@@ -67,9 +67,9 @@ return [
     | When enabled, the service provider will scan the listed paths at boot and
     | register any Experiment or FeatureFlag subclass it finds — so you don't
     | have to list every class in 'experiments' or 'feature_flags' above.
-    | `php artisan ab:cache` also honours these paths when building the manifest.
+    | `php artisan ab:cache` also honors these paths when building the manifest.
     |
-    | Disabled by default to avoid unexpected behaviour on boot.
+    | Disabled by default to avoid unexpected behavior on boot.
     |
     */
 
@@ -122,5 +122,4 @@ return [
         'queue_connection' => env('AB_TESTING_QUEUE_CONNECTION', 'sync'),
         'queue_name' => env('AB_TESTING_QUEUE_NAME', 'default'),
     ],
-
 ];

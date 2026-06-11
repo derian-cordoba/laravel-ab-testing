@@ -6,6 +6,7 @@ namespace ABTests;
 
 use ABTests\Application\Listeners\AutoPauseOnGuardrailBreachListener;
 use ABTests\Application\ResultsService;
+use ABTests\Presentation\Middleware\ResolveExperimentMiddleware;
 use ABTests\Application\SynchronousCommandBus;
 use ABTests\Console\CacheDefinitionsCommand;
 use ABTests\Contracts\AssignmentRepository;
@@ -306,6 +307,13 @@ final class ABTestingServiceProvider extends ServiceProvider
         // experiment-results-table, without individual registrations.
         if (class_exists(Livewire::class)) {
             Livewire::addNamespace('ab-testing', classNamespace: 'ABTests\\Dashboard\\Livewire');
+        }
+
+        // Register the variant-resolution middleware alias so consumers can use
+        // ->middleware('ab-testing.resolve') on routes with #[ResolvesExperiment].
+        if ($this->app->bound(\Illuminate\Routing\Router::class)) {
+            $this->app->make(\Illuminate\Routing\Router::class)
+                ->aliasMiddleware('ab-testing.resolve', ResolveExperimentMiddleware::class);
         }
 
         // Guardrail breach → auto-pause listener.
