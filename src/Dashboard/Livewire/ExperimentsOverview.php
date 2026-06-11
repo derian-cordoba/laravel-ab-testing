@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ABTests\Dashboard\Livewire;
 
+use ABTests\Definitions\ExperimentDefinition;
 use ABTests\Infrastructure\Database\Models\AssignmentModel;
 use ABTests\Infrastructure\Database\Models\ExperimentModel;
 use ABTests\Registry\ExperimentRegistry;
@@ -45,8 +46,9 @@ final class ExperimentsOverview extends Component
             }
 
             return [
-                'model' => $model,
+                'model'     => $model,
                 'definition' => $definition,
+                'variants'  => self::normalizeVariants($model, $definition),
             ];
         }, $experiments);
 
@@ -59,5 +61,39 @@ final class ExperimentsOverview extends Component
 
         return view('ab-testing::livewire.experiments-overview', compact('rows', 'assignedCounts'))
             ->layout('ab-testing::layout', ['title' => 'A/B Testing — Experiments']);
+    }
+
+    /**
+     * @return list<array{key: string, weight: int, is_control: bool, source: string}>
+     */
+    private static function normalizeVariants(ExperimentModel $model, ?ExperimentDefinition $definition): array
+    {
+        $dbVariants = $model->variants()
+            ->orderByDesc('is_control')
+            ->orderBy('key')
+            ->get();
+
+        if ($dbVariants->isNotEmpty()) {
+            return $dbVariants->map(static fn ($v): array => [
+                'key'        => $v->key,
+                'weight'     => $v->weight,
+                'is_control' => $v->is_control,
+                'source'     => 'database',
+            ])->all();
+        }
+
+        if ($definition !== null) {
+            $sorted = $definition->allocation->variants;
+            usort($sorted, static fn ($a, $b): int => $b->isControl() <=> $a->isControl() ?: strcmp($a->key(), $b->key()));
+
+            return array_map(static fn ($v): array => [
+                'key'        => $v->key(),
+                'weight'     => $v->weight(),
+                'is_control' => $v->isControl(),
+                'source'     => 'definition',
+            ], $sorted);
+        }
+
+        return [];
     }
 }

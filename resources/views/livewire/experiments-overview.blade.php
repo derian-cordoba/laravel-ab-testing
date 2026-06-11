@@ -18,10 +18,11 @@
             @foreach($rows as $row)
                 @php
                     /** @var ExperimentModel $model */
-                    $model = $row['model'];
-                    $definition = $row['definition'];
+                    $model       = $row['model'];
+                    $definition  = $row['definition'];
+                    $variants    = $row['variants'];
                     $displayName = $definition?->name ?? $model->key;
-                    $statusEnum = ExperimentStatus::tryFrom($model->status);
+                    $statusEnum  = ExperimentStatus::tryFrom($model->status);
                 @endphp
 
                 <div x-data="{ open: false }"
@@ -104,6 +105,26 @@
                          x-transition:leave-start="opacity-100 translate-y-0"
                          x-transition:leave-end="opacity-0 -translate-y-1"
                          class="border-t border-gray-700/60">
+
+                        {{-- Variant allocation strip --}}
+                        @if(!empty($variants))
+                            <div class="flex flex-wrap items-center gap-2 border-b border-gray-700/60 bg-gray-800/30 px-5 py-3">
+                                <span class="text-xs text-gray-500 shrink-0">Variants</span>
+                                @foreach($variants as $variant)
+                                    <span class="inline-flex items-center gap-1.5 rounded border px-2 py-0.5
+                                        {{ $variant['is_control']
+                                            ? 'border-gray-600 bg-gray-800 text-gray-400'
+                                            : 'border-violet-700/60 bg-violet-900/30 text-violet-300' }}">
+                                        <span class="h-1.5 w-1.5 rounded-full {{ $variant['is_control'] ? 'bg-gray-500' : 'bg-violet-500' }}"></span>
+                                        <span class="font-mono text-xs">{{ $variant['key'] }}</span>
+                                        <span class="text-xs tabular-nums opacity-60">{{ $variant['weight'] }}%</span>
+                                        @if($variant['is_control'])
+                                            <span class="text-xs opacity-50">ctrl</span>
+                                        @endif
+                                    </span>
+                                @endforeach
+                            </div>
+                        @endif
 
                         {{-- Archived notice --}}
                         @if($statusEnum === ExperimentStatus::archived)

@@ -35,6 +35,11 @@
             </div>
         </div>
 
+        {{-- Variants panel --}}
+        <div class="mb-8">
+            @livewire('ab-testing::experiment-variant-manager', ['experimentKey' => $model->key])
+        </div>
+
         {{-- Results table sub-component --}}
         @livewire('ab-testing::experiment-results-table', ['experimentKey' => $model->key])
 
