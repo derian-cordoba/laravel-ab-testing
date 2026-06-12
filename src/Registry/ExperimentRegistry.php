@@ -24,6 +24,9 @@ final class ExperimentRegistry
     /** @var array<string, string> Maps class-string → experiment key. */
     private array $classToKey = [];
 
+    /** @var array<string, string> Maps experiment key → class-string. */
+    private array $keyToClass = [];
+
     /**
      * Register a definition. For code-defined experiments, pass the decorated
      * class name as $experimentClass so it can also be looked up that way.
@@ -36,6 +39,7 @@ final class ExperimentRegistry
 
         if ($experimentClass !== null) {
             $this->classToKey[$experimentClass] = $definition->key;
+            $this->keyToClass[$definition->key]  = $experimentClass;
         }
     }
 
@@ -69,6 +73,17 @@ final class ExperimentRegistry
         }
 
         return $this->definitions[$key];
+    }
+
+    /**
+     * Return the experiment class registered for the given key, or null when
+     * the experiment was registered without a class (e.g. runtime-defined).
+     *
+     * @return class-string|null
+     */
+    public function findClassByKey(string $key): ?string
+    {
+        return $this->keyToClass[$key] ?? null;
     }
 
     /**

@@ -50,7 +50,7 @@ final class CacheDefinitionsCommand extends Command
         $explicitExperiments = $config['experiments'] ?? [];
 
         /** @var list<class-string<FeatureFlag>> $explicitFlags */
-        $explicitFlags = $config['feature_flags'] ?? [];
+        $explicitFlags = $config['feature_flags']['register'] ?? [];
 
         /** @var list<string> $paths */
         $paths = $config['discovery']['paths'] ?? [];

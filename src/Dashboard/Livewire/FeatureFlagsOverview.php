@@ -35,7 +35,7 @@ final class FeatureFlagsOverview extends Component
         $registry = app(FeatureFlagRegistry::class);
 
         /** @var int $staleThresholdDays */
-        $staleThresholdDays = config('ab-testing.flags.stale_threshold_days', 90);
+        $staleThresholdDays = config('ab-testing.feature_flags.stale_threshold_days', 90);
         $staleThreshold     = Carbon::now()->subDays($staleThresholdDays);
 
         $rows = array_map(
@@ -49,13 +49,15 @@ final class FeatureFlagsOverview extends Component
                 }
 
                 // A flag is stale when it is still enabled (active in production)
-                // but has not been touched for longer than the configured threshold.
+                // but has not been evaluated for longer than the configured threshold.
+                // We prefer last_evaluated_at (accurate) over updated_at (proxy).
                 // Killed flags and fully-disabled flags are not considered stale
                 // because they are already in a "decided" state.
+                $activityTimestamp = $model->last_evaluated_at ?? $model->updated_at;
                 $isStale = $model->is_enabled
                     && $model->killed_at === null
-                    && $model->updated_at !== null
-                    && $model->updated_at->isBefore($staleThreshold);
+                    && $activityTimestamp !== null
+                    && $activityTimestamp->isBefore($staleThreshold);
 
                 return [
                     'model'      => $model,

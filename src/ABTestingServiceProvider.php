@@ -7,9 +7,13 @@ namespace ABTests;
 use ABTests\Application\Listeners\AutoPauseOnGuardrailBreachListener;
 use ABTests\Application\ResultsService;
 use ABTests\Blade\BladeDirectiveHelpers;
+use ABTests\Http\Middleware\ExposeAssignmentsMiddleware;
 use ABTests\Presentation\Middleware\ResolveExperimentMiddleware;
 use ABTests\Application\SynchronousCommandBus;
 use ABTests\Console\CacheDefinitionsCommand;
+use ABTests\Console\DetectStaleFlagsCommand;
+use ABTests\Console\PowerAnalysisCommand;
+use ABTests\Console\PruneEventDataCommand;
 use ABTests\Contracts\AssignmentRepository;
 use ABTests\Contracts\BucketingStrategy;
 use ABTests\Contracts\CommandBus;
@@ -21,6 +25,7 @@ use ABTests\Infrastructure\Database\DatabaseAssignmentRepository;
 use ABTests\Infrastructure\Database\DatabaseEventSink;
 use ABTests\Infrastructure\Database\DatabaseExperimentStateRepository;
 use ABTests\Infrastructure\InMemoryAssignmentRepository;
+use ABTests\Infrastructure\Jobs\PruneEventDataJob;
 use ABTests\Infrastructure\Jobs\RefreshRollupsJob;
 use ABTests\Infrastructure\NullEventSink;
 use ABTests\Registry\AttributeReader;
@@ -115,7 +120,7 @@ final class ABTestingServiceProvider extends ServiceProvider
             $reader = new AttributeReader();
 
             /** @var list<class-string<FeatureFlag>> $classes */
-            $classes = $this->app->make(ConfigRepository::class)->get('ab-testing.feature_flags', []);
+            $classes = $this->app->make(ConfigRepository::class)->get('ab-testing.feature_flags.register', []);
 
             foreach ($classes as $class) {
                 try {
@@ -335,13 +340,22 @@ final class ABTestingServiceProvider extends ServiceProvider
             return "<?php if (\\ABTests\\Blade\\BladeDirectiveHelpers::featureDisabled($expression)): ?>";
         });
         Blade::directive('endFeatureDisabled', static fn (): string => '<?php endif; ?>');
+
+        // @abAssignmentsJson('user', $userId)
+        // Renders a <meta name="ab-assignments" content='{"experiment-key":"variant"}'>
+        // tag for the given unit so JS can bootstrap from the server assignment.
+        Blade::directive('abAssignmentsJson', static function (string $expression): string {
+            return "<?php echo \\ABTests\\Blade\\BladeDirectiveHelpers::assignmentsMetaTag($expression); ?>";
+        });
         // ─────────────────────────────────────────────────────────────────────
 
-        // Register the variant-resolution middleware alias so consumers can use
-        // ->middleware('ab-testing.resolve') on routes with #[ResolvesExperiment].
+        // Register middleware aliases.
         if ($this->app->bound(Router::class)) {
-            $this->app->make(Router::class)
-                ->aliasMiddleware('ab-testing.resolve', ResolveExperimentMiddleware::class);
+            $router = $this->app->make(Router::class);
+            // ->middleware('ab-testing.resolve') on routes with #[ResolvesExperiment]
+            $router->aliasMiddleware('ab-testing.resolve', ResolveExperimentMiddleware::class);
+            // ->middleware('ab-testing.expose-assignments') injects server assignments into HTML
+            $router->aliasMiddleware('ab-testing.expose-assignments', ExposeAssignmentsMiddleware::class);
         }
 
         // Guardrail breach → auto-pause listener.
@@ -366,8 +380,20 @@ final class ABTestingServiceProvider extends ServiceProvider
             });
         }
 
+        // Optional scheduler registration for the event-data pruning job.
+        if ($this->app->make(ConfigRepository::class)->get('ab-testing.retention.auto_schedule', true)) {
+            $this->callAfterResolving(Schedule::class, static function (Schedule $schedule): void {
+                $schedule->job(PruneEventDataJob::class)->weekly()->sundays()->atMidnight();
+            });
+        }
+
         if ($this->app->runningInConsole()) {
-            $this->commands([CacheDefinitionsCommand::class]);
+            $this->commands([
+                CacheDefinitionsCommand::class,
+                DetectStaleFlagsCommand::class,
+                PruneEventDataCommand::class,
+                PowerAnalysisCommand::class,
+            ]);
 
             $this->publishes([
                 __DIR__ . '/../config/ab-testing.php' => $this->app->configPath('ab-testing.php'),

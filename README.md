@@ -17,6 +17,7 @@ This package is intentionally not a thin feature-flag helper. It is designed aro
 - [Defining variants](#defining-variants)
 - [Defining experiments](#defining-experiments)
 - [Registering experiments](#registering-experiments)
+- [Blade directives](#blade-directives)
 - [Resolving variants](#resolving-variants)
 - [Tracking metrics](#tracking-metrics)
 - [Real-world request flow](#real-world-request-flow)
@@ -338,6 +339,15 @@ The `#[AsMetric]` attribute describes the metric itself:
 )]
 final class RevenuePerVisitor extends Metric
 {
+    //
+}
+```
+
+When `valueFromProperty` is set, the base `Metric::valueOf()` reads that property from the event's payload automatically and casts it to `float`. Override `valueOf()` only when the derivation requires custom logic beyond reading a single property:
+
+```php
+final class RevenuePerVisitor extends Metric
+{
     public function valueOf(array $properties): float
     {
         return (float) ($properties['revenue'] ?? 0.0);
@@ -468,6 +478,30 @@ return [
 
 If an experiment cannot be read at boot, the service provider logs the failure instead of crashing the whole app.
 
+## Blade directives
+
+The package registers four Blade directives for conditional rendering without writing resolver boilerplate.
+
+```blade
+@abVariant('checkout-button-color', 'green')
+    {{-- rendered only when the current user is in the green variant --}}
+@endAbVariant
+
+@abNotVariant('checkout-button-color', 'green')
+    {{-- rendered for everyone except the green variant --}}
+@endAbNotVariant
+
+@featureEnabled('new-billing-page')
+    {{-- rendered only when the flag is enabled for the current user --}}
+@endFeatureEnabled
+
+@featureDisabled('new-billing-page')
+    {{-- rendered when the flag is disabled or the user is outside the rollout --}}
+@endFeatureDisabled
+```
+
+The current unit is resolved at render time using `Auth::user()` when the authenticated user implements `Bucketable`, or a session-keyed `GenericUnit` for unauthenticated visitors.
+
 ## Resolving variants
 
 The main entry point is `ABTests\Experiments`.
@@ -487,6 +521,27 @@ Resolution goes through a pipeline with the following responsibilities:
 - persist the assignment
 
 When a variant is successfully resolved, the package records an exposure event through the configured `EventSink`.
+
+### Attribute-driven resolution via middleware
+
+Attach `#[ResolvesExperiment]` to a controller method and add `->middleware('ab-testing.resolve')` to the route. The middleware resolves the variant, records the exposure, and injects the typed enum directly into the method:
+
+```php
+use ABTests\Attributes\ResolvesExperiment;
+use App\ABTesting\Experiments\CheckoutButtonColor;
+use App\ABTesting\Variants\CheckoutButtonVariant;
+
+#[ResolvesExperiment(CheckoutButtonColor::class)]
+public function show(CheckoutButtonVariant $variant): View
+{
+    return match ($variant) {
+        CheckoutButtonVariant::green   => view('checkout.green'),
+        CheckoutButtonVariant::control => view('checkout.default'),
+    };
+}
+```
+
+The middleware resolves the unit from the first `Bucketable` route parameter it finds, falling back to `Auth::user()` if the user implements `Bucketable`. If neither is available the method receives `null`.
 
 ### Null return values
 
@@ -772,7 +827,29 @@ final class NewBillingPageFlag extends FeatureFlag
 }
 ```
 
-At the moment, the flag primitives are present, but the full flag registry and application-facing runtime integration are not yet documented as finished in this package. Treat this as a foundation for upcoming work rather than a fully polished surface.
+### Registering feature flags
+
+Add flags to `config/ab-testing.php` under `feature_flags.register`:
+
+```php
+'feature_flags' => [
+    'register' => [
+        \App\Flags\NewBillingPageFlag::class,
+    ],
+],
+```
+
+Auto-discovery works the same way as experiments: enable `discovery.enabled` and point `discovery.paths` at the directory containing your flag classes.
+
+### Stale flag detection
+
+A flag is considered stale when it is still enabled but has not been modified for longer than the configured threshold. Stale flags surface with an amber badge on the feature flags dashboard page.
+
+```php
+'feature_flags' => [
+    'stale_threshold_days' => 90, // set to 0 to disable
+],
+```
 
 ## Architecture
 

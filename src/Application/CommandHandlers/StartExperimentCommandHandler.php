@@ -5,14 +5,18 @@ declare(strict_types=1);
 namespace ABTests\Application\CommandHandlers;
 
 use ABTests\Application\Commands\StartExperimentCommand;
+use ABTests\Enums\ApprovalStatus;
 use ABTests\Enums\ExperimentStatus;
+use ABTests\Exceptions\ApprovalRequired;
 use ABTests\Exceptions\ExperimentNotFound;
 use ABTests\Exceptions\InvalidStateTransition;
 use ABTests\Infrastructure\Database\Models\AuditLogModel;
+use ABTests\Infrastructure\Database\Models\ExperimentApprovalModel;
 use ABTests\Infrastructure\Database\Models\ExperimentModel;
 use ABTests\Infrastructure\Database\Models\VariantModel;
 use ABTests\Registry\ExperimentRegistry;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 final readonly class StartExperimentCommandHandler
@@ -34,6 +38,33 @@ final readonly class StartExperimentCommandHandler
 
         if (! $currentStatus->canTransitionTo(ExperimentStatus::running)) {
             throw new InvalidStateTransition($currentStatus, ExperimentStatus::running);
+        }
+
+        // Approval gate: when governance.approval_required is true, the experiment
+        // must have an approved review before it can start.
+        if (config('ab-testing.governance.approval_required', false)) {
+            $hasApproval = ExperimentApprovalModel::query()
+                ->where('experiment_key', $command->experimentKey)
+                ->where('status', ApprovalStatus::approved->value)
+                ->exists();
+
+            if (! $hasApproval) {
+                throw new ApprovalRequired($command->experimentKey);
+            }
+        }
+
+        // Power-analysis gate: warn or block depending on configuration.
+        $powerAnalysisMode = config('ab-testing.governance.require_power_analysis', 'warn');
+
+        if ($powerAnalysisMode !== 'off' && empty($model->target_sample_size)) {
+            $message = "Experiment [{$command->experimentKey}] has no target_sample_size set. " .
+                'Run a power analysis (ab:power-analysis or the dashboard) before starting.';
+
+            if ($powerAnalysisMode === 'block') {
+                throw new \DomainException($message);
+            }
+
+            Log::warning("[ABTesting] {$message}");
         }
 
         $beforeState = ['status' => $model->status, 'started_at' => $model->started_at];

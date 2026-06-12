@@ -17,6 +17,7 @@ use ABTests\Definitions\ExperimentDefinition;
 use ABTests\Definitions\FeatureFlagDefinition;
 use ABTests\Definitions\MetricBinding;
 use ABTests\Enums\MetricRole;
+use ABTests\Enums\MetricType;
 use ABTests\Experiment;
 use ABTests\FeatureFlag;
 use ABTests\Values\Allocation;
@@ -102,6 +103,49 @@ final readonly class AttributeReader
             unitType: $unitType,
             defaultValue: $asFlag->defaultValue,
         );
+    }
+
+    /**
+     * Build a map of metric key → MetricType for the given experiment class.
+     * Used by the rollup job to decide which metrics need the delta-method
+     * sufficient statistics. Returns an empty array for runtime-defined classes.
+     *
+     * @param class-string $experimentClass
+     * @return array<string, MetricType>
+     */
+    public function readMetricTypes(string $experimentClass): array
+    {
+        $reflector = new ReflectionClass($experimentClass);
+        $types = [];
+
+        $metricAttributes = array_merge(
+            $reflector->getAttributes(PrimaryMetric::class),
+            $reflector->getAttributes(SecondaryMetric::class),
+            $reflector->getAttributes(Guardrail::class),
+        );
+
+        foreach ($metricAttributes as $attr) {
+            /** @var PrimaryMetric|SecondaryMetric|Guardrail $binding */
+            $binding = $attr->newInstance();
+            $metricClass = $binding->metric;
+
+            if (! class_exists($metricClass)) {
+                continue;
+            }
+
+            $metricReflector = new ReflectionClass($metricClass);
+            $metricAttrs = $metricReflector->getAttributes(AsMetric::class);
+
+            if ($metricAttrs === []) {
+                continue;
+            }
+
+            /** @var AsMetric $asMetric */
+            $asMetric = $metricAttrs[0]->newInstance();
+            $types[$asMetric->key] = $asMetric->type;
+        }
+
+        return $types;
     }
 
     // -------------------------------------------------------------------------

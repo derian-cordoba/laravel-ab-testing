@@ -43,30 +43,12 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Registered feature flags
-    |--------------------------------------------------------------------------
-    |
-    | List every FeatureFlag subclass decorated with #[AsFeatureFlag] that the
-    | package should resolve. The service provider reads these at boot and
-    | populates the FeatureFlagRegistry via AttributeReader.
-    |
-    | Example:
-    |   'feature_flags' => [
-    |       \App\Flags\NewCheckoutFlag::class,
-    |   ],
-    |
-    */
-
-    'feature_flags' => [],
-
-    /*
-    |--------------------------------------------------------------------------
     | Auto-discovery
     |--------------------------------------------------------------------------
     |
     | When enabled, the service provider will scan the listed paths at boot and
     | register any Experiment or FeatureFlag subclass it finds — so you don't
-    | have to list every class in 'experiments' or 'feature_flags' above.
+    | have to list every class in 'experiments' or 'flags.register' above.
     | `php artisan ab:cache` also honors these paths when building the manifest.
     |
     | Disabled by default to avoid unexpected behavior on boot.
@@ -121,5 +103,134 @@ return [
         'batch_size' => (int) env('AB_TESTING_EVENT_BATCH_SIZE', 500),
         'queue_connection' => env('AB_TESTING_QUEUE_CONNECTION', 'sync'),
         'queue_name' => env('AB_TESTING_QUEUE_NAME', 'default'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Feature flags
+    |--------------------------------------------------------------------------
+    |
+    |   register             — List every FeatureFlag subclass decorated with
+    |                          #[AsFeatureFlag] that the package should resolve.
+    |                          The service provider reads these at boot and
+    |                          populates the FeatureFlagRegistry via AttributeReader.
+    |
+    |                          Example:
+    |                            'register' => [
+    |                                \App\Flags\NewCheckoutFlag::class,
+    |                            ],
+    |
+    |   stale_threshold_days — A flag that is still enabled but has not been
+    |                          evaluated (or touched) in this many days is
+    |                          marked stale in the dashboard. Set to 0 to
+    |                          disable stale detection entirely.
+    |
+    */
+
+    'feature_flags' => [
+        'register'            => [],
+        'stale_threshold_days' => (int) env('AB_TESTING_STALE_FLAG_DAYS', 90),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Governance
+    |--------------------------------------------------------------------------
+    |
+    |   approval_required     — When true, an experiment must receive an
+    |                           explicit Approve action before it can transition
+    |                           from draft/scheduled → running. The StartExperiment
+    |                           command will throw if no approval record exists.
+    |
+    |   require_power_analysis — When true, StartExperiment will emit a warning
+    |                            (but not block) if target_sample_size has not
+    |                            been set on the experiment. Set to 'block' to
+    |                            hard-block the transition instead.
+    |
+    */
+
+    'governance' => [
+        'approval_required' => (bool) env('AB_TESTING_APPROVAL_REQUIRED', false),
+        'require_power_analysis' => env('AB_TESTING_REQUIRE_POWER_ANALYSIS', 'warn'), // 'off' | 'warn' | 'block'
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Privacy
+    |--------------------------------------------------------------------------
+    |
+    |   consent_resolver — Optional fully-qualified class name implementing
+    |                      ABTests\Contracts\ConsentResolver, or null to skip
+    |                      consent checks. When set, the event sink will call
+    |                      resolver->hasConsented($unitType, $unitKey) before
+    |                      writing any tracking event. Units without consent
+    |                      are still assigned a variant (bucketing still runs)
+    |                      but no events are recorded for them.
+    |
+    */
+
+    'privacy' => [
+        'consent_resolver' => env('AB_TESTING_CONSENT_RESOLVER'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Data retention
+    |--------------------------------------------------------------------------
+    |
+    |   days             — Events belonging to archived experiments older than
+    |                      this many days are deleted by PruneEventDataJob.
+    |                      Rollup rows are kept indefinitely (they are tiny).
+    |                      Set to 0 to disable automatic pruning.
+    |
+    |   auto_schedule    — Register PruneEventDataJob in the Laravel scheduler
+    |                      automatically (weekly, on Sundays at midnight).
+    |
+    */
+
+    'retention' => [
+        'days' => (int) env('AB_TESTING_RETENTION_DAYS', 365),
+        'auto_schedule' => (bool) env('AB_TESTING_AUTO_SCHEDULE_PRUNING', true),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Public API
+    |--------------------------------------------------------------------------
+    |
+    | Versioned API configuration. Each version key (v1, v2, …) declares the
+    | vendor media type that callers must send in their Accept header, shared
+    | middleware applied to every endpoint within that version, and the set of
+    | individual endpoints.
+    |
+    |   accept_type  — Vendor media type for this API version. Using a versioned
+    |                  vendor type prevents casual browser access and provides
+    |                  implicit versioning. In production unrecognised requests
+    |                  receive a 404; in other environments a 406.
+    |
+    |   middleware   — Additional middleware applied to every endpoint in this
+    |                  version. The dashboard middleware stack is always prepended.
+    |
+    |   endpoints
+    |     assignments — Expose server-resolved assignments for the current request
+    |                   so front-end code can read the same variant without
+    |                   re-hashing.
+    |
+    |       enabled  — Register the GET /{path} route for this endpoint.
+    |       path     — URL path relative to the dashboard prefix.
+    |
+    */
+
+    'api' => [
+        'v1' => [
+            'accept_type' => env('AB_TESTING_ACCEPT_TYPE', 'application/vnd.ab-testing.v1+json'),
+            'middleware'  => [],
+            'endpoints'   => [
+                'assignments' => [
+                    'enabled' => (bool) env('AB_TESTING_ASSIGNMENTS_ENDPOINT', true),
+                    'path'    => 'assignments',
+                ],
+            ],
+        ],
     ],
 ];

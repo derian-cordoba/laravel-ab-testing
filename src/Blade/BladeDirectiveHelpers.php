@@ -6,6 +6,7 @@ namespace ABTests\Blade;
 
 use ABTests\Contracts\Bucketable;
 use ABTests\Experiments;
+use ABTests\Infrastructure\Database\Models\AssignmentModel;
 use ABTests\Infrastructure\Database\Models\FeatureFlagStateModel;
 use ABTests\Values\GenericUnit;
 use Illuminate\Support\Facades\Auth;
@@ -86,6 +87,34 @@ final class BladeDirectiveHelpers
     public static function featureDisabled(string $flagKey): bool
     {
         return ! self::featureEnabled($flagKey);
+    }
+
+    /**
+     * Renders a <meta name="ab-assignments"> tag containing all current
+     * experiment assignments for the given unit as a JSON blob. Front-end code
+     * can read this tag on page load and bootstrap without a network round-trip.
+     *
+     * Usage in Blade: @abAssignmentsJson('user', $user->id)
+     */
+    public static function assignmentsMetaTag(string $unitType, string|int $unitKey): string
+    {
+        try {
+            $assignments = AssignmentModel::query()
+                ->where('unit_type', $unitType)
+                ->where('unit_key', (string) $unitKey)
+                ->pluck('variant_key', 'experiment_key')
+                ->all();
+
+            $json = htmlspecialchars(
+                json_encode($assignments, JSON_THROW_ON_ERROR),
+                ENT_QUOTES,
+                'UTF-8',
+            );
+
+            return "<meta name=\"ab-assignments\" content='$json'>";
+        } catch (Throwable) {
+            return '';
+        }
     }
 
     // ── Private ───────────────────────────────────────────────────────────────

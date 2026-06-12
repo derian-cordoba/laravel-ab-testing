@@ -4,7 +4,13 @@ declare(strict_types=1);
 
 namespace ABTests;
 
+use ABTests\Application\CommandHandlers\ForgetUnitCommandHandler;
+use ABTests\Application\CommandHandlers\RecordCovariateCommandHandler;
+use ABTests\Application\Commands\ForgetUnitCommand;
+use ABTests\Application\Commands\RecordCovariateCommand;
 use ABTests\Attributes\AsFeatureFlag;
+use ABTests\Attributes\AsMetric;
+use Illuminate\Support\Carbon;
 use RuntimeException;
 use Throwable;
 use ABTests\Contracts\AssignmentRepository;
@@ -130,6 +136,70 @@ final class Experiments
         self::for($for)->track($metricClassOrKey, $value);
     }
 
+    /**
+     * Record a pre-experiment covariate value for CUPED variance reduction.
+     *
+     * Call this for each unit before the experiment starts (e.g. via a nightly
+     * job that computes last-30-day metric values). The analysis engine will
+     * automatically use these values to reduce variance when results are computed.
+     *
+     * @param class-string<Metric>|string $metricClassOrKey
+     */
+    public static function recordCovariate(
+        string $metricClassOrKey,
+        string $experimentKey,
+        string $unitType,
+        string $unitKey,
+        float $value,
+    ): void {
+        // Resolve class-string to key if needed.
+        $metricKey = $metricClassOrKey;
+
+        if (class_exists($metricClassOrKey)) {
+            try {
+                $reflector = new \ReflectionClass($metricClassOrKey);
+                $attrs = $reflector->getAttributes(AsMetric::class);
+
+                if ($attrs !== []) {
+                    $metricKey = $attrs[0]->newInstance()->key;
+                }
+            } catch (\Throwable) {
+                // Keep the class-string as-is.
+            }
+        }
+
+        app(RecordCovariateCommandHandler::class)->handle(
+            new RecordCovariateCommand(
+                experimentKey: $experimentKey,
+                metricKey: $metricKey,
+                unitType: $unitType,
+                unitKey: $unitKey,
+                value: $value,
+            )
+        );
+    }
+
+    /**
+     * Right-to-erasure (GDPR forget). Deletes all events and assignments for the
+     * given unit across every experiment and returns the row counts deleted.
+     * Rollup figures will self-correct on the next RefreshRollupsJob cycle.
+     *
+     * @return array{deleted_events: int, deleted_assignments: int}
+     */
+    public static function forget(
+        string $unitType,
+        string $unitKey,
+        string $actorIdentifier = 'system',
+    ): array {
+        return app(ForgetUnitCommandHandler::class)->handle(
+            new ForgetUnitCommand(
+                unitType: $unitType,
+                unitKey: $unitKey,
+                actorIdentifier: $actorIdentifier,
+            )
+        );
+    }
+
     // -------------------------------------------------------------------------
     // Instance accessors (useful when injected via the container)
     // -------------------------------------------------------------------------
@@ -177,6 +247,10 @@ final class Experiments
         if (! $this->unitMatchesConditions($unit, $state->conditions ?? [])) {
             return $definition->defaultValue;
         }
+
+        // Stamp the last evaluation time for stale-flag detection. We do this
+        // before the rollout gate so any qualifying resolution counts.
+        $state->updateQuietly(['last_evaluated_at' => Carbon::now()]);
 
         // Compute a stable position and build the resolution context.
         $position = $this->bucketingStrategy->position($definition->key, $unit);

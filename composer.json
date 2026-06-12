@@ -43,6 +43,7 @@
         "phpstan/phpstan": "^2.2",
         "larastan/larastan": "^3.10",
         "phpunit/phpunit": "^13.2",
-        "illuminate/database": "^13.0"
+        "illuminate/database": "^13.0",
+        "vlucas/phpdotenv": "^5.6"
     }
 }

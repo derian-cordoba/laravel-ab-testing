@@ -58,10 +58,25 @@
             @livewire('ab-testing::experiment-trust-panel', ['experimentKey' => $model->key])
         </div>
 
+        {{-- Power analysis --}}
+        <div class="mt-8">
+            @livewire('ab-testing::experiment-power-analysis', ['experimentKey' => $model->key])
+        </div>
+
+        {{-- Approval --}}
+        <div class="mt-8">
+            @livewire('ab-testing::experiment-approval-panel', ['experimentKey' => $model->key])
+        </div>
+
         {{-- Controls sub-component --}}
         <div class="mt-8">
             <h2 class="mb-4 text-lg font-semibold text-gray-100">Controls</h2>
             @livewire('ab-testing::experiment-controls', ['experimentKey' => $model->key])
+        </div>
+
+        {{-- Export --}}
+        <div class="mt-8">
+            @livewire('ab-testing::experiment-export', ['experimentKey' => $model->key])
         </div>
 
         {{-- Audit log --}}

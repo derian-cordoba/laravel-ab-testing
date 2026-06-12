@@ -9,14 +9,17 @@ use ABTests\Definitions\ExperimentDefinition;
 use ABTests\Enums\StatisticalEngine;
 use ABTests\Values\MetricSummary;
 use ABTests\Values\VerdictResult;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Orchestrates a full analysis run for one (control, treatment) pair.
  *
  * Given pre-aggregated MetricSummary objects it:
- *  1. Runs the engine(s) specified in ExperimentDefinition::$analysis.
- *  2. Checks for sample-ratio mismatch.
- *  3. Delegates to VerdictResolver for the final ship / doNotShip / inconclusive
+ *  1. Optionally applies CUPED variance reduction when pre-experiment covariate
+ *     data is available for the metric.
+ *  2. Runs the engine(s) specified in ExperimentDefinition::$analysis.
+ *  3. Checks for sample-ratio mismatch.
+ *  4. Delegates to VerdictResolver for the final ship / doNotShip / inconclusive
  *     decision.
  *
  * All engines are injected so they can be replaced or faked in tests without
@@ -37,13 +40,28 @@ final readonly class AnalysisService
      *
      * @param list<MetricSummary> $allSummaries All variant summaries for SRM detection
      *                                          (include both control and treatment).
+     * @param string|null         $metricKey    When provided, CUPED covariate data is
+     *                                          looked up for this metric and the
+     *                                          experiment key derived from the definition.
      */
     public function analyse(
         ExperimentDefinition $definition,
         MetricSummary $control,
         MetricSummary $treatment,
         array $allSummaries,
+        ?string $metricKey = null,
     ): VerdictResult {
+        // Apply CUPED if covariate data is available for this metric.
+        if ($metricKey !== null) {
+            [$control, $treatment, $allSummaries] = $this->applyRatioReduction(
+                $definition->key,
+                $metricKey,
+                $control,
+                $treatment,
+                $allSummaries,
+            );
+        }
+
         $configuration = $definition->analysis;
         $engine = $configuration->engine;
 
@@ -66,5 +84,56 @@ final readonly class AnalysisService
             srm: $srm,
             configuration: $configuration,
         );
+    }
+
+    // -------------------------------------------------------------------------
+    // Private helpers
+    // -------------------------------------------------------------------------
+
+    /**
+     * Apply CUPED variance reduction when covariate rows exist for the metric.
+     * Returns the (possibly adjusted) control, treatment, and full allSummaries.
+     *
+     * @param list<MetricSummary> $allSummaries
+     * @return array{0: MetricSummary, 1: MetricSummary, 2: list<MetricSummary>}
+     */
+    private function applyRatioReduction(
+        string $experimentKey,
+        string $metricKey,
+        MetricSummary $control,
+        MetricSummary $treatment,
+        array $allSummaries,
+    ): array {
+        // Check cheaply whether any covariate rows exist before instantiating CUPED.
+        $hasCovariates = DB::table('ab_testing_covariates')
+            ->where('experiment_key', $experimentKey)
+            ->where('metric_key', $metricKey)
+            ->exists();
+
+        if (! $hasCovariates) {
+            return [$control, $treatment, $allSummaries];
+        }
+
+        $cuped = new CupedVarianceReduction();
+        $adjustedSummaries = $cuped->adjust($allSummaries, $experimentKey, $metricKey);
+
+        // Re-locate control and treatment in the adjusted array (same order, same variant).
+        $controlKey   = $control->variant->key();
+        $treatmentKey = $treatment->variant->key();
+
+        $adjustedControl   = $control;
+        $adjustedTreatment = $treatment;
+
+        foreach ($adjustedSummaries as $adjusted) {
+            if ($adjusted->variant->key() === $controlKey) {
+                $adjustedControl = $adjusted;
+            }
+
+            if ($adjusted->variant->key() === $treatmentKey) {
+                $adjustedTreatment = $adjusted;
+            }
+        }
+
+        return [$adjustedControl, $adjustedTreatment, $adjustedSummaries];
     }
 }

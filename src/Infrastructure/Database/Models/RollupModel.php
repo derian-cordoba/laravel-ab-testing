@@ -17,6 +17,9 @@ use Illuminate\Support\Carbon;
  * @property float       $sum_of_values
  * @property float       $sum_of_squared_values
  * @property int         $conversions
+ * @property float|null  $sum_of_denominators
+ * @property float|null  $sum_of_squared_denominators
+ * @property float|null  $sum_of_numerator_denominator
  * @property Carbon|null $updated_through_at
  * @property Carbon|null $updated_at
  */
@@ -35,6 +38,9 @@ final class RollupModel extends Model
         'sum_of_values',
         'sum_of_squared_values',
         'conversions',
+        'sum_of_denominators',
+        'sum_of_squared_denominators',
+        'sum_of_numerator_denominator',
         'updated_through_at',
         'updated_at',
     ];

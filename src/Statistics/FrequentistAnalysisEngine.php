@@ -40,13 +40,20 @@ final readonly class FrequentistAnalysisEngine implements AnalysisEngine
         $delta = $treatment->mean - $control->mean;
         $alpha = $configuration->confidence->significanceThreshold;
 
+        // For ratio metrics (MetricType::Ratio), use the delta-method variance so
+        // the ratio-of-means is compared with the correct sampling variance rather
+        // than the naive mean-of-ratios approximation. For all other metric types,
+        // fall back to the standard sample variance.
+        $controlVariance   = $control->isRatioMetric ? $control->deltaMethodVariance   : $control->variance;
+        $treatmentVariance = $treatment->isRatioMetric ? $treatment->deltaMethodVariance : $treatment->variance;
+
         // Variance of (μ_T - μ_C); guard against zero-count arms.
         $varControl = $control->countOfUnits > 0
-            ? max($control->variance, 0.0) / $control->countOfUnits
+            ? max($controlVariance, 0.0) / $control->countOfUnits
             : 0.0;
 
         $varTreatment = $treatment->countOfUnits > 0
-            ? max($treatment->variance, 0.0) / $treatment->countOfUnits
+            ? max($treatmentVariance, 0.0) / $treatment->countOfUnits
             : 0.0;
 
         $varDelta = $varControl + $varTreatment;

@@ -16,6 +16,7 @@ use Illuminate\Support\Carbon;
  * @property int                                                              $rollout_percentage
  * @property list<array{attribute:string,operator:string,expected:mixed}>|null $conditions
  * @property Carbon|null                                                      $killed_at
+ * @property Carbon|null                                                      $last_evaluated_at
  */
 final class FeatureFlagStateModel extends Model
 {
@@ -27,11 +28,13 @@ final class FeatureFlagStateModel extends Model
         'rollout_percentage',
         'conditions',
         'killed_at',
+        'last_evaluated_at',
     ];
 
     protected $casts = [
-        'is_enabled'  => 'boolean',
-        'conditions'  => 'array',
-        'killed_at'   => 'datetime',
+        'is_enabled'        => 'boolean',
+        'conditions'        => 'array',
+        'killed_at'         => 'datetime',
+        'last_evaluated_at' => 'datetime',
     ];
 }

@@ -8,6 +8,7 @@ use ABTests\Dashboard\Livewire\ExperimentDetail;
 use ABTests\Dashboard\Livewire\ExperimentsOverview;
 use ABTests\Dashboard\Livewire\FeatureFlagDetail;
 use ABTests\Dashboard\Livewire\FeatureFlagsOverview;
+use ABTests\Http\Controllers\AssignmentsController;
 use Illuminate\Support\Facades\Route;
 
 $prefix = config('ab-testing.dashboard.path', 'ab-testing');
@@ -25,4 +26,19 @@ Route::prefix($prefix)
         Route::get('/experiments/{key}', ExperimentDetail::class)->name('experiments.show');
         Route::get('/feature-flags', FeatureFlagsOverview::class)->name('feature-flags.index');
         Route::get('/feature-flags/{key}', FeatureFlagDetail::class)->name('feature-flag.show');
+
+        // Assignment exposure endpoint — allows front-end JS to read server-resolved
+        // assignments for a given unit without re-hashing.
+        if (config('ab-testing.api.v1.endpoints.assignments.enabled', true)) {
+            $assignmentMiddleware = [
+                ...config('ab-testing.dashboard.middleware', ['web']),
+                ...config('ab-testing.api.v1.middleware', []),
+            ];
+
+            $endpointPath = config('ab-testing.api.v1.endpoints.assignments.path', 'assignments');
+
+            Route::middleware($assignmentMiddleware)
+                ->get("/$endpointPath", AssignmentsController::class)
+                ->name('assignments');
+        }
     });

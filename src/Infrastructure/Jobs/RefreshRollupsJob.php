@@ -8,9 +8,11 @@ use ABTests\Definitions\MetricBinding;
 use ABTests\Domain\Events\GuardrailBreachedEvent;
 use ABTests\Enums\EventType;
 use ABTests\Enums\ExperimentStatus;
+use ABTests\Enums\MetricType;
 use ABTests\Infrastructure\Database\Models\ExperimentModel;
 use ABTests\Infrastructure\Database\Models\GuardrailBreachModel;
 use ABTests\Infrastructure\Database\Models\RollupModel;
+use ABTests\Registry\AttributeReader;
 use ABTests\Registry\ExperimentRegistry;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -80,6 +82,10 @@ final class RefreshRollupsJob implements ShouldQueue
             return;
         }
 
+        // Build a set of metric keys whose MetricType is Ratio so processEventChunk
+        // knows which metrics need the extra delta-method sufficient statistics.
+        $ratioMetricKeys = $this->resolveRatioMetricKeys($definition->metrics, $registry, $experiment->key);
+
         // Determine watermark: the oldest updated_through_at across all rollup
         // rows for this experiment, or null if none exist yet.
         $watermark = RollupModel::query()
@@ -92,8 +98,8 @@ final class RefreshRollupsJob implements ShouldQueue
 
         $latestOccurredAt = null;
 
-        $query->orderBy('occurred_at')->chunk(5000, function ($events) use ($experiment, $metricKeys, &$latestOccurredAt): void {
-            $this->processEventChunk($events, $experiment->key, $metricKeys, $latestOccurredAt);
+        $query->orderBy('occurred_at')->chunk(5000, function ($events) use ($experiment, $metricKeys, $ratioMetricKeys, &$latestOccurredAt): void {
+            $this->processEventChunk($events, $experiment->key, $metricKeys, $ratioMetricKeys, $latestOccurredAt);
         });
 
         if ($latestOccurredAt !== null) {
@@ -110,12 +116,14 @@ final class RefreshRollupsJob implements ShouldQueue
 
     /**
      * @param iterable<object> $events
-     * @param list<string> $metricKeys
+     * @param list<string>     $metricKeys
+     * @param array<string, true> $ratioMetricKeys Keys that are MetricType::Ratio
      */
     private function processEventChunk(
         iterable $events,
         string $experimentKey,
         array $metricKeys,
+        array $ratioMetricKeys,
         mixed &$latestOccurredAt,
     ): void {
         // Accumulate deltas grouped by (variant_key, metric_key).
@@ -132,14 +140,20 @@ final class RefreshRollupsJob implements ShouldQueue
 
             foreach ($metricKeys as $metricKey) {
                 $groupKey = "$variantKey|$metricKey";
+                $isRatio  = isset($ratioMetricKeys[$metricKey]);
 
                 $deltas[$groupKey] ??= [
                     'variant_key' => $variantKey,
                     'metric_key' => $metricKey,
+                    'is_ratio' => $isRatio,
                     'exposures_delta' => 0,
                     'sum_of_values_delta' => 0.0,
                     'sum_of_squared_values_delta' => 0.0,
                     'conversions_delta' => 0,
+                    // Ratio-specific accumulators.
+                    'sum_of_denominators_delta' => 0.0,
+                    'sum_of_squared_denominators_delta' => 0.0,
+                    'sum_of_numerator_denominator_delta' => 0.0,
                 ];
 
                 if ($type === EventType::exposure) {
@@ -158,16 +172,30 @@ final class RefreshRollupsJob implements ShouldQueue
                     $deltas[$groupKey]['conversions_delta']++;
                     $deltas[$groupKey]['sum_of_values_delta'] += $value;
                     $deltas[$groupKey]['sum_of_squared_values_delta'] += $value * $value;
+
+                    // For ratio metrics the event properties carry a 'denominator'
+                    // field. The numerator is the event value. When no denominator
+                    // is present (e.g. a plain conversion), we default to 1.
+                    if ($isRatio) {
+                        $properties = is_string($event->properties ?? null)
+                            ? (array) json_decode($event->properties, true)
+                            : [];
+                        $denominator = isset($properties['denominator'])
+                            ? (float) $properties['denominator']
+                            : 1.0;
+
+                        $deltas[$groupKey]['sum_of_denominators_delta'] += $denominator;
+                        $deltas[$groupKey]['sum_of_squared_denominators_delta'] += $denominator * $denominator;
+                        $deltas[$groupKey]['sum_of_numerator_denominator_delta'] += $value * $denominator;
+                    }
                 }
             }
         }
 
         foreach ($deltas as $delta) {
-            // insertOrIgnore creates the row on first run. On subsequent runs the
-            // UNIQUE constraint fires and 0 rows are inserted, which is the signal
-            // to ADD the deltas to the existing row instead. DB::raw increment
-            // expressions are only valid in UPDATE statements, not in INSERT.
-            $inserted = DB::table('ab_testing_rollups')->insertOrIgnore([
+            $isRatio = $delta['is_ratio'];
+
+            $insertRow = [
                 'experiment_key'       => $experimentKey,
                 'variant_key'          => $delta['variant_key'],
                 'metric_key'           => $delta['metric_key'],
@@ -177,22 +205,84 @@ final class RefreshRollupsJob implements ShouldQueue
                 'conversions'          => $delta['conversions_delta'],
                 'updated_through_at'   => $latestOccurredAt,
                 'updated_at'           => Carbon::now(),
-            ]);
+            ];
+
+            if ($isRatio) {
+                $insertRow['sum_of_denominators']         = $delta['sum_of_denominators_delta'];
+                $insertRow['sum_of_squared_denominators'] = $delta['sum_of_squared_denominators_delta'];
+                $insertRow['sum_of_numerator_denominator'] = $delta['sum_of_numerator_denominator_delta'];
+            }
+
+            // insertOrIgnore creates the row on first run. On subsequent runs the
+            // UNIQUE constraint fires and 0 rows are inserted, which is the signal
+            // to ADD the deltas to the existing row instead. DB::raw increment
+            // expressions are only valid in UPDATE statements, not in INSERT.
+            $inserted = DB::table('ab_testing_rollups')->insertOrIgnore($insertRow);
 
             if ($inserted === 0) {
+                $updateFields = [
+                    'exposures'            => DB::raw("exposures + {$delta['exposures_delta']}"),
+                    'sum_of_values'        => DB::raw("sum_of_values + {$delta['sum_of_values_delta']}"),
+                    'sum_of_squared_values' => DB::raw("sum_of_squared_values + {$delta['sum_of_squared_values_delta']}"),
+                    'conversions'          => DB::raw("conversions + {$delta['conversions_delta']}"),
+                    'updated_through_at'   => $latestOccurredAt,
+                    'updated_at'           => Carbon::now(),
+                ];
+
+                if ($isRatio) {
+                    $updateFields['sum_of_denominators'] = DB::raw(
+                        "COALESCE(sum_of_denominators, 0) + {$delta['sum_of_denominators_delta']}"
+                    );
+                    $updateFields['sum_of_squared_denominators'] = DB::raw(
+                        "COALESCE(sum_of_squared_denominators, 0) + {$delta['sum_of_squared_denominators_delta']}"
+                    );
+                    $updateFields['sum_of_numerator_denominator'] = DB::raw(
+                        "COALESCE(sum_of_numerator_denominator, 0) + {$delta['sum_of_numerator_denominator_delta']}"
+                    );
+                }
+
                 DB::table('ab_testing_rollups')
                     ->where('experiment_key', $experimentKey)
                     ->where('variant_key', $delta['variant_key'])
                     ->where('metric_key', $delta['metric_key'])
-                    ->update([
-                        'exposures'            => DB::raw("exposures + {$delta['exposures_delta']}"),
-                        'sum_of_values'        => DB::raw("sum_of_values + {$delta['sum_of_values_delta']}"),
-                        'sum_of_squared_values' => DB::raw("sum_of_squared_values + {$delta['sum_of_squared_values_delta']}"),
-                        'conversions'          => DB::raw("conversions + {$delta['conversions_delta']}"),
-                        'updated_through_at'   => $latestOccurredAt,
-                        'updated_at'           => Carbon::now(),
-                    ]);
+                    ->update($updateFields);
             }
+        }
+    }
+
+    /**
+     * Build a lookup of metric keys whose type is MetricType::Ratio.
+     * Used to decide whether to populate the delta-method sufficient statistics
+     * columns in the rollup table.
+     *
+     * @param list<MetricBinding> $metrics
+     * @param ExperimentRegistry  $registry
+     * @param string              $experimentKey
+     * @return array<string, true>
+     */
+    private function resolveRatioMetricKeys(array $metrics, ExperimentRegistry $registry, string $experimentKey): array
+    {
+        // Find the original experiment class so we can read #[AsMetric] types.
+        $experimentClass = $registry->findClassByKey($experimentKey);
+
+        if ($experimentClass === null) {
+            return []; // Runtime-defined experiment — no code attributes to read.
+        }
+
+        try {
+            $reader = new AttributeReader();
+            $metricTypes = $reader->readMetricTypes($experimentClass);
+
+            $ratioKeys = [];
+            foreach ($metricTypes as $key => $type) {
+                if ($type === MetricType::ratio) {
+                    $ratioKeys[$key] = true;
+                }
+            }
+
+            return $ratioKeys;
+        } catch (Throwable) {
+            return [];
         }
     }
 
