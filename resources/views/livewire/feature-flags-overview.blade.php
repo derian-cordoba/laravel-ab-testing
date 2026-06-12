@@ -6,8 +6,16 @@
             <h1 class="text-2xl font-semibold text-white">Feature Flags</h1>
             <p class="mt-1 text-sm text-gray-400">All registered feature flags and their current operational state.</p>
         </div>
+        <div class="mt-3 sm:mt-0 flex items-center gap-3">
+        <a href="{{ route('ab-testing.feature-flags.create') }}"
+           class="inline-flex items-center gap-1.5 rounded-md bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-500 transition-colors">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+            New Feature Flag
+        </a>
         @if($staleCount > 0)
-            <span class="mt-3 sm:mt-0 inline-flex items-center gap-1.5 rounded-full bg-amber-900/50 border border-amber-700/60 px-3 py-1.5 text-xs font-medium text-amber-300">
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-900/50 border border-amber-700/60 px-3 py-1.5 text-xs font-medium text-amber-300">
                 <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round"
                           d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"/>
@@ -15,14 +23,20 @@
                 {{ $staleCount }} stale {{ $staleCount === 1 ? 'flag' : 'flags' }} — unchanged for {{ $staleThresholdDays }}+ days
             </span>
         @endif
-    </div>
+        </div>{{-- /.flex items-center gap-3 --}}
+    </div>{{-- /.mb-6 header --}}
 
     @if(empty($rows))
         <div class="rounded-lg border border-gray-700 bg-gray-800/50 p-8 text-center">
             <p class="text-sm text-gray-300">No feature flags found in the database yet.</p>
-            <p class="mt-1 text-xs text-gray-500">Register flags in <code
-                        class="text-violet-400">config/ab-testing.php</code> and run <code class="text-violet-400">php
-                    artisan ab:cache</code>.</p>
+            <p class="mt-1 text-xs text-gray-500">Register flags in <code class="text-violet-400">config/ab-testing.php</code> and run <code class="text-violet-400">php artisan ab:cache</code>, or create one from the dashboard.</p>
+            <a href="{{ route('ab-testing.feature-flags.create') }}"
+               class="mt-4 inline-flex items-center gap-1.5 rounded-md bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-500 transition-colors">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+                Create your first feature flag
+            </a>
         </div>
     @else
         <div class="space-y-3">

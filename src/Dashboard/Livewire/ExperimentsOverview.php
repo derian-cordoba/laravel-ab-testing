@@ -46,9 +46,10 @@ final class ExperimentsOverview extends Component
             }
 
             return [
-                'model'     => $model,
-                'definition' => $definition,
-                'variants'  => self::normalizeVariants($model, $definition),
+                'model'       => $model,
+                'definition'  => $definition,
+                'variants'    => self::normalizeVariants($model, $definition),
+                'displayName' => $definition?->name ?? $model->name ?? $model->key,
             ];
         }, $experiments);
 

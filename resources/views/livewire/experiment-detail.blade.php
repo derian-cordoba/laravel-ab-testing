@@ -68,6 +68,12 @@
             @livewire('ab-testing::experiment-approval-panel', ['experimentKey' => $model->key])
         </div>
 
+        {{-- Settings panel --}}
+        <div class="mt-8">
+            <h2 class="mb-4 text-lg font-semibold text-gray-100">Settings</h2>
+            @livewire('ab-testing::edit-experiment', ['experimentKey' => $model->key])
+        </div>
+
         {{-- Controls sub-component --}}
         <div class="mt-8">
             <h2 class="mb-4 text-lg font-semibold text-gray-100">Controls</h2>

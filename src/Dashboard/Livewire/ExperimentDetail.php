@@ -44,9 +44,9 @@ final class ExperimentDetail extends Component
         if ($model !== null) {
             try {
                 $definition  = app(ExperimentRegistry::class)->findByKey($this->key);
-                $displayName = $definition->name ?? $this->key;
+                $displayName = $definition->name ?? $model->name ?? $this->key;
             } catch (Throwable) {
-                $displayName = $model->key;
+                $displayName = $model->name ?? $model->key;
             }
         }
 

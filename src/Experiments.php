@@ -11,6 +11,7 @@ use ABTests\Application\Commands\RecordCovariateCommand;
 use ABTests\Attributes\AsFeatureFlag;
 use ABTests\Attributes\AsMetric;
 use Illuminate\Support\Carbon;
+use ReflectionClass;
 use RuntimeException;
 use Throwable;
 use ABTests\Contracts\AssignmentRepository;
@@ -157,7 +158,7 @@ final class Experiments
 
         if (class_exists($metricClassOrKey)) {
             try {
-                $reflector = new \ReflectionClass($metricClassOrKey);
+                $reflector = new ReflectionClass($metricClassOrKey);
                 $attrs = $reflector->getAttributes(AsMetric::class);
 
                 if ($attrs !== []) {
@@ -312,7 +313,7 @@ final class Experiments
     private function defaultForFlagClass(string $flagClass): mixed
     {
         try {
-            $reflector = new \ReflectionClass($flagClass);
+            $reflector = new ReflectionClass($flagClass);
             $attrs = $reflector->getAttributes(AsFeatureFlag::class);
 
             if ($attrs !== []) {

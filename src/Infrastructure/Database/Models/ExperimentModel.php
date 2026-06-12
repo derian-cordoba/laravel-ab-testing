@@ -15,6 +15,7 @@ use Illuminate\Support\Carbon;
  * Structural definition (variants, allocation) lives in code, not here.
  *
  * @property string                      $key
+ * @property string|null                 $name
  * @property int                         $version
  * @property string|null                 $layer
  * @property string                      $status
@@ -31,6 +32,7 @@ final class ExperimentModel extends Model
 
     protected $fillable = [
         'key',
+        'name',
         'version',
         'layer',
         'status',

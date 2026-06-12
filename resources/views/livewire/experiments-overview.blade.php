@@ -2,16 +2,31 @@
 @use(ABTests\Infrastructure\Database\Models\ExperimentModel)
 
 <div>
-    <div class="mb-6">
-        <h1 class="text-2xl font-semibold text-white">Experiments</h1>
-        <p class="mt-1 text-sm text-gray-400">All registered experiments and their current operational state.</p>
+    <div class="mb-6 sm:flex sm:items-end sm:justify-between">
+        <div>
+            <h1 class="text-2xl font-semibold text-white">Experiments</h1>
+            <p class="mt-1 text-sm text-gray-400">All registered experiments and their current operational state.</p>
+        </div>
+        <a href="{{ route('ab-testing.experiments.create') }}"
+           class="mt-3 sm:mt-0 inline-flex items-center gap-1.5 rounded-md bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-500 transition-colors">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+            New Experiment
+        </a>
     </div>
 
     @if(empty($rows))
         <div class="rounded-lg border border-gray-700 bg-gray-800/50 p-8 text-center">
             <p class="text-sm text-gray-300">No experiments found in the database yet.</p>
-            <p class="mt-1 text-xs text-gray-500">Register experiments in your config or run migrations to get
-                started.</p>
+            <p class="mt-1 text-xs text-gray-500">Register experiments in your config or create one from the dashboard.</p>
+            <a href="{{ route('ab-testing.experiments.create') }}"
+               class="mt-4 inline-flex items-center gap-1.5 rounded-md bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-500 transition-colors">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+                Create your first experiment
+            </a>
         </div>
     @else
         <div class="space-y-3">
@@ -21,7 +36,7 @@
                     $model       = $row['model'];
                     $definition  = $row['definition'];
                     $variants    = $row['variants'];
-                    $displayName = $definition?->name ?? $model->key;
+                    $displayName = $row['displayName'];
                     $statusEnum  = ExperimentStatus::tryFrom($model->status);
                 @endphp
 

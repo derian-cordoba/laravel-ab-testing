@@ -92,6 +92,7 @@ abstract class DatabaseTestCase extends TestCase
         DB::schema()->create('ab_testing_experiments', static function ($table): void {
             $table->id();
             $table->string('key')->unique();
+            $table->string('name')->nullable();
             $table->unsignedInteger('version')->default(1);
             $table->string('layer')->nullable();
             $table->string('status')->default('draft');
