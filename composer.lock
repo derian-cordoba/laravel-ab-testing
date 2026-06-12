@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3e71dd4a3471f1d5d1bc236bf1f4184b",
+    "content-hash": "9c1bb6fb2827a560351b4e91241a06a3",
     "packages": [
         {
             "name": "brick/math",
@@ -5212,6 +5212,54 @@
                 "source": "https://github.com/iamcal/SQLParser/tree/v0.7"
             },
             "time": "2026-01-28T22:20:33+00:00"
+        },
+        {
+            "name": "illuminate/config",
+            "version": "v13.15.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/illuminate/config.git",
+                "reference": "f2735fbb977b14951ab87d38df85a92be534ac44"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/illuminate/config/zipball/f2735fbb977b14951ab87d38df85a92be534ac44",
+                "reference": "f2735fbb977b14951ab87d38df85a92be534ac44",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/collections": "^13.0",
+                "illuminate/contracts": "^13.0",
+                "php": "^8.3"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "13.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Illuminate\\Config\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Taylor Otwell",
+                    "email": "taylor@laravel.com"
+                }
+            ],
+            "description": "The Illuminate Config package.",
+            "homepage": "https://laravel.com",
+            "support": {
+                "issues": "https://github.com/laravel/framework/issues",
+                "source": "https://github.com/laravel/framework"
+            },
+            "time": "2026-02-26T15:31:28+00:00"
         },
         {
             "name": "larastan/larastan",

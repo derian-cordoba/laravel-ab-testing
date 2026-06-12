@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace ABTests\Tests\Integration;
 
 use ABTests\Tests\Support\TestApplication;
+use Illuminate\Config\Repository as ConfigRepository;
+use Illuminate\Container\Container;
 use Illuminate\Database\Capsule\Manager as DB;
 use Illuminate\Events\Dispatcher;
 use Illuminate\Support\Facades\Facade;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\NullLogger;
 
 /**
  * Base class for integration tests that need a real database. Bootstraps an
@@ -62,6 +65,21 @@ abstract class DatabaseTestCase extends TestCase
 
         $container->instance('db', $capsule->getDatabaseManager());
         $container->instance('events', $capsule->getEventDispatcher());
+
+        // Register a config repository so global config() calls (e.g. in
+        // command handlers) resolve against the package defaults instead of
+        // throwing "Call to undefined function config()".
+        $container->instance('config', new ConfigRepository([
+            'ab-testing' => ['governance' => ['approval_required' => false]],
+        ]));
+
+        // Bind a null logger so Log facade calls (e.g. Log::warning()) in
+        // command handlers do not throw a BindingResolutionException.
+        $container->instance('log', new NullLogger());
+
+        // Set this container as the global IoC instance so that app() and
+        // config() helpers resolve against it during integration tests.
+        Container::setInstance($container);
 
         // Enable foreign-key enforcement for SQLite (off by default).
         $capsule->getConnection()->statement('PRAGMA foreign_keys = ON');
@@ -176,6 +194,7 @@ abstract class DatabaseTestCase extends TestCase
             $table->unsignedInteger('rollout_percentage')->default(100);
             $table->json('conditions')->nullable();
             $table->timestamp('killed_at')->nullable();
+            $table->timestamp('last_evaluated_at')->nullable();
             $table->timestamps();
         });
     }
