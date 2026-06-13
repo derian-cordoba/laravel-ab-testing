@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ABTests\Infrastructure\Database\Models;
 
+use ABTests\Enums\ConditionsLogic;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
@@ -15,6 +16,7 @@ use Illuminate\Support\Carbon;
  * @property bool                                                             $is_enabled
  * @property int                                                              $rollout_percentage
  * @property list<array{attribute:string,operator:string,expected:mixed}>|null $conditions
+ * @property ConditionsLogic                                                  $conditions_logic
  * @property Carbon|null                                                      $killed_at
  * @property Carbon|null                                                      $last_evaluated_at
  */
@@ -27,6 +29,7 @@ final class FeatureFlagStateModel extends Model
         'is_enabled',
         'rollout_percentage',
         'conditions',
+        'conditions_logic',
         'killed_at',
         'last_evaluated_at',
     ];
@@ -34,6 +37,7 @@ final class FeatureFlagStateModel extends Model
     protected $casts = [
         'is_enabled'        => 'boolean',
         'conditions'        => 'array',
+        'conditions_logic'  => ConditionsLogic::class,
         'killed_at'         => 'datetime',
         'last_evaluated_at' => 'datetime',
     ];

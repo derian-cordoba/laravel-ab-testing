@@ -118,14 +118,33 @@
 
             {{-- Targeting conditions --}}
             <div class="border-t border-gray-700/60 pt-5">
-                <div class="flex items-center justify-between mb-1">
+                <div class="flex items-center justify-between mb-3">
                     <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Targeting Conditions</p>
-                    @if(count($this->conditions) > 0)
-                        <span class="text-xs text-gray-500">All conditions must match (AND)</span>
-                    @endif
+
+                    {{-- AND / OR toggle --}}
+                    <div class="inline-flex rounded-md border border-gray-700 overflow-hidden text-xs font-medium">
+                        <button type="button"
+                                wire:click="$set('conditionsLogic', 'all')"
+                                class="px-3 py-1.5 transition-colors
+                                    {{ $conditionsLogic === 'all'
+                                        ? 'bg-violet-700 text-violet-100'
+                                        : 'bg-gray-800 text-gray-400 hover:text-gray-200' }}">
+                            AND
+                        </button>
+                        <button type="button"
+                                wire:click="$set('conditionsLogic', 'any')"
+                                class="px-3 py-1.5 border-l border-gray-700 transition-colors
+                                    {{ $conditionsLogic === 'any'
+                                        ? 'bg-violet-700 text-violet-100'
+                                        : 'bg-gray-800 text-gray-400 hover:text-gray-200' }}">
+                            OR
+                        </button>
+                    </div>
                 </div>
                 <p class="mb-4 text-xs text-gray-500">
-                    Restrict this flag to units whose attributes satisfy every condition.
+                    {{ $conditionsLogic === 'any'
+                        ? 'Flag applies to units that match at least one condition below.'
+                        : 'Flag applies to units that match every condition below.' }}
                     Leave empty to target all eligible units.
                 </p>
 

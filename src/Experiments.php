@@ -19,13 +19,14 @@ use ABTests\Contracts\Bucketable;
 use ABTests\Contracts\BucketingStrategy;
 use ABTests\Contracts\EventSink;
 use ABTests\Contracts\ResolvesVariant;
+use ABTests\Enums\ConditionsLogic;
 use ABTests\Enums\Environment;
 use ABTests\Enums\Operator;
 use ABTests\Infrastructure\Database\Models\FeatureFlagStateModel;
 use ABTests\Registry\ExperimentRegistry;
 use ABTests\Registry\FeatureFlagRegistry;
 use ABTests\Values\Context;
-use ABTests\Values\Segment;
+use ABTests\Values\Criterion;
 
 /**
  * Primary entry point for the A/B testing framework.
@@ -243,9 +244,11 @@ final class Experiments
             return $definition->defaultValue;
         }
 
-        // Evaluate targeting conditions (attribute-based AND logic) before
-        // computing the bucketing position, since attribute checks are cheap.
-        if (! $this->unitMatchesConditions($unit, $state->conditions ?? [])) {
+        // Evaluate targeting conditions before computing the bucketing position,
+        // since attribute checks are cheap. Logic (AND/OR) is stored per-flag.
+        $logic = $state->conditions_logic ?? ConditionsLogic::all;
+
+        if (! $this->unitMatchesConditions($unit, $state->conditions ?? [], $logic)) {
             return $definition->defaultValue;
         }
 
@@ -278,33 +281,41 @@ final class Experiments
     }
 
     /**
-     * Deserializes a stored conditions array into Criterion objects and
-     * evaluates them as a conjunction (AND) against the unit's attributes.
+     * Deserializes stored conditions into Criterion objects and evaluates them
+     * against the unit's attributes using the specified logic:
+     * - ConditionsLogic::all — AND conjunction: every criterion must match.
+     * - ConditionsLogic::any — OR disjunction: at least one criterion must match.
      * Returns true when there are no conditions (open targeting).
      *
      * @param list<array{attribute: string, operator: string, expected: mixed}> $conditions
      */
-    private function unitMatchesConditions(Bucketable $unit, array $conditions): bool
-    {
+    private function unitMatchesConditions(
+        Bucketable $unit,
+        array $conditions,
+        ConditionsLogic $logic = ConditionsLogic::all,
+    ): bool {
         if ($conditions === []) {
             return true;
         }
 
-        $segment = array_reduce(
-            $conditions,
-            static function (Segment $carry, array $raw): Segment {
-                $operator = Operator::tryFrom($raw['operator'] ?? '') ?? Operator::equals;
+        $attributes = $unit->attributes();
 
-                return $carry->and(
-                    attribute: $raw['attribute'],
-                    value: $raw['expected'],
-                    operator: $operator,
-                );
-            },
-            Segment::any(),
-        );
+        foreach ($conditions as $raw) {
+            $operator  = Operator::tryFrom($raw['operator'] ?? '') ?? Operator::equals;
+            $criterion = new Criterion($raw['attribute'], $operator, $raw['expected']);
+            $matches   = $criterion->matches($attributes);
 
-        return $segment->matches($unit);
+            if ($logic === ConditionsLogic::any && $matches) {
+                return true;  // short-circuit: one match is enough
+            }
+
+            if ($logic === ConditionsLogic::all && ! $matches) {
+                return false; // short-circuit: one miss is enough
+            }
+        }
+
+        // AND: every criterion passed; OR: no criterion matched
+        return $logic === ConditionsLogic::all;
     }
 
     /**

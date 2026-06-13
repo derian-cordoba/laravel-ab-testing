@@ -194,6 +194,7 @@ abstract class DatabaseTestCase extends TestCase
             $table->boolean('is_enabled')->default(false);
             $table->unsignedInteger('rollout_percentage')->default(100);
             $table->json('conditions')->nullable();
+            $table->string('conditions_logic')->default('all');
             $table->timestamp('killed_at')->nullable();
             $table->timestamp('last_evaluated_at')->nullable();
             $table->timestamps();

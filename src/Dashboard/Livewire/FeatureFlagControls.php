@@ -10,6 +10,7 @@ use ABTests\Application\Commands\SetFlagConditionsCommand;
 use ABTests\Application\Commands\SetFlagRolloutPercentageCommand;
 use ABTests\Application\Commands\ToggleFlagKillSwitchCommand;
 use ABTests\Contracts\CommandBus;
+use ABTests\Enums\ConditionsLogic;
 use ABTests\Enums\Operator;
 use ABTests\Infrastructure\Database\Models\FeatureFlagStateModel;
 use Illuminate\Contracts\View\View;
@@ -37,6 +38,8 @@ final class FeatureFlagControls extends Component
     /** @var list<array{attribute: string, operator: string, expected: mixed}> */
     public array $conditions = [];
 
+    public string $conditionsLogic = 'all';
+
     public string $newAttribute = '';
     public string $newOperator = 'equals';
     public string $newValue = '';
@@ -52,7 +55,8 @@ final class FeatureFlagControls extends Component
 
         if ($model !== null) {
             $this->rolloutPercentage = $model->rollout_percentage;
-            $this->conditions = $model->conditions ?? [];
+            $this->conditions        = $model->conditions ?? [];
+            $this->conditionsLogic   = ($model->conditions_logic ?? ConditionsLogic::all)->value;
         }
     }
 
@@ -133,10 +137,13 @@ final class FeatureFlagControls extends Component
      */
     public function saveConditions(): void
     {
+        $logic = ConditionsLogic::tryFrom($this->conditionsLogic) ?? ConditionsLogic::all;
+
         $this->dispatchCommand(new SetFlagConditionsCommand(
             flagKey: $this->flagKey,
             conditions: $this->conditions,
             actorIdentifier: $this->actorIdentifier(),
+            conditionsLogic: $logic,
         ));
     }
 

@@ -13,7 +13,10 @@ final readonly class SetFlagConditionsCommandHandler
     {
         FeatureFlagStateModel::query()->updateOrCreate(
             ['key' => $command->flagKey],
-            ['conditions' => $command->conditions ?: null],
+            [
+                'conditions'       => $command->conditions ?: null,
+                'conditions_logic' => $command->conditionsLogic,
+            ],
         );
     }
 }

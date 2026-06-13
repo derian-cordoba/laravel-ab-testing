@@ -251,6 +251,49 @@ final class FlagResolutionTest extends DatabaseTestCase
     }
 
     #[Test]
+    public function any_condition_suffices_with_or_logic(): void
+    {
+        FeatureFlagStateModel::query()->create([
+            'key'                => 'test-flag',
+            'is_enabled'         => true,
+            'rollout_percentage' => 100,
+            'conditions_logic'   => 'any',
+            'conditions'         => [
+                ['attribute' => 'plan',    'operator' => 'equals', 'expected' => 'enterprise'],
+                ['attribute' => 'country', 'operator' => 'equals', 'expected' => 'US'],
+            ],
+        ]);
+
+        // Only plan matches → on (any is enough)
+        $planOnly = Experiments::flag(TestFeatureFlag::class, new TestUnit('u1', ['plan' => 'enterprise', 'country' => 'GB']));
+        self::assertTrue($planOnly);
+
+        // Only country matches → on
+        $countryOnly = Experiments::flag(TestFeatureFlag::class, new TestUnit('u2', ['plan' => 'free', 'country' => 'US']));
+        self::assertTrue($countryOnly);
+
+        // Neither matches → off
+        $neither = Experiments::flag(TestFeatureFlag::class, new TestUnit('u3', ['plan' => 'free', 'country' => 'GB']));
+        self::assertFalse($neither);
+    }
+
+    #[Test]
+    public function or_logic_with_no_conditions_returns_true(): void
+    {
+        FeatureFlagStateModel::query()->create([
+            'key'                => 'test-flag',
+            'is_enabled'         => true,
+            'rollout_percentage' => 100,
+            'conditions_logic'   => 'any',
+            'conditions'         => null,
+        ]);
+
+        $result = $this->resolveWithPosition(0.0);
+
+        self::assertTrue($result);
+    }
+
+    #[Test]
     public function conditions_support_in_operator(): void
     {
         FeatureFlagStateModel::query()->create([

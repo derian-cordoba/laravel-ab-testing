@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace ABTests\Application\Commands;
 
+use ABTests\Enums\ConditionsLogic;
+
 final readonly class SetFlagConditionsCommand
 {
     /**
@@ -13,6 +15,7 @@ final readonly class SetFlagConditionsCommand
         public string $flagKey,
         public array $conditions,
         public string $actorIdentifier,
+        public ConditionsLogic $conditionsLogic = ConditionsLogic::all,
         public string $actorType = 'user',
     ) {
         //
