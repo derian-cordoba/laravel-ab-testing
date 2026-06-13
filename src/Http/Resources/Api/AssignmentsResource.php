@@ -30,10 +30,16 @@ final class AssignmentsResource extends JsonApiResource
     }
 
     /**
-     * @return array{unit_type: string, unit_key: string, assignments: array<string, string>}
+     * @return array{unit_type: string, unit_key: string, assignments: array<string, string>|object}
      */
     public function toAttributes(Request $request): array
     {
-        return $this->resource->toArray();
+        $attributes = $this->resource->toArray();
+
+        if ($attributes['assignments'] === []) {
+            $attributes['assignments'] = (object) [];
+        }
+
+        return $attributes;
     }
 }

@@ -57,7 +57,7 @@ final class AssignmentsControllerTest extends FeatureTestCase
         $response->assertStatus(200);
         $response->assertJsonPath('data.type', 'assignments');
         $response->assertJsonPath('data.id', 'user:404');
-        $response->assertJsonPath('data.attributes.assignments', []);
+        self::assertStringContainsString('"assignments":{}', $response->getContent());
     }
 
     #[Test]
