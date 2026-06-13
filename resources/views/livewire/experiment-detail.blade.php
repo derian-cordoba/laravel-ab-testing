@@ -12,7 +12,7 @@
     @else
         {{-- Breadcrumb --}}
         <nav class="mb-5 flex items-center gap-1.5 text-sm text-gray-500">
-            <a href="{{ route('ab-testing.index') }}" class="hover:text-gray-300 transition-colors">Experiments</a>
+            <a href="{{ route('ab-testing.experiments.index') }}" class="hover:text-gray-300 transition-colors">Experiments</a>
             <svg class="h-3.5 w-3.5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
             </svg>
@@ -32,64 +32,97 @@
                         Kill switch active
                     </span>
                 @endif
+                @if($model->layer)
+                    <span class="inline-flex items-center rounded bg-gray-800 border border-gray-700 px-2.5 py-1 text-xs text-gray-400">
+                        layer: <span class="ml-1 font-mono text-gray-300">{{ $model->layer }}</span>
+                    </span>
+                @endif
+                <span class="inline-flex items-center rounded bg-gray-800 border border-gray-700 px-2.5 py-1 text-xs tabular-nums text-gray-400">
+                    {{ $model->traffic_percentage }}% traffic
+                </span>
+                @if($model->started_at)
+                    <span class="inline-flex items-center rounded bg-gray-800 border border-gray-700 px-2.5 py-1 text-xs text-gray-500" title="{{ $model->started_at->toDateTimeString() }} UTC">
+                        Started {{ $model->started_at->diffForHumans() }}
+                    </span>
+                @endif
             </div>
         </div>
 
-        {{-- Verdict banner --}}
+        {{-- Verdict banner — full width --}}
         <div class="mb-6">
             @livewire('ab-testing::experiment-verdict-banner', ['experimentKey' => $model->key])
         </div>
 
-        {{-- Variants panel --}}
-        <div class="mb-8">
-            @livewire('ab-testing::experiment-variant-manager', ['experimentKey' => $model->key])
+        {{-- Results table — full width, open by default --}}
+        <div class="mb-6">
+            @livewire('ab-testing::experiment-results-table', ['experimentKey' => $model->key])
         </div>
 
-        {{-- Results table sub-component --}}
-        @livewire('ab-testing::experiment-results-table', ['experimentKey' => $model->key])
+        {{-- Controls + Variants — two columns --}}
+        <div class="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <div>
+                @livewire('ab-testing::experiment-controls', ['experimentKey' => $model->key])
+            </div>
+            <div>
+                @livewire('ab-testing::experiment-variant-manager', ['experimentKey' => $model->key])
+            </div>
+        </div>
 
-        {{-- Time-series chart --}}
-        <div class="mt-8">
+        {{-- Chart — full width, collapsed by default --}}
+        <div class="mb-6">
             @livewire('ab-testing::experiment-time-series-chart', ['experimentKey' => $model->key])
         </div>
 
-        {{-- Trust panel --}}
-        <div class="mt-8">
+        {{-- Trust — full width, collapsed by default --}}
+        <div class="mb-6">
             @livewire('ab-testing::experiment-trust-panel', ['experimentKey' => $model->key])
         </div>
 
-        {{-- Power analysis --}}
-        <div class="mt-8">
-            @livewire('ab-testing::experiment-power-analysis', ['experimentKey' => $model->key])
+        {{-- Power Analysis + Export — two columns, both collapsed by default --}}
+        <div class="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <div>
+                @livewire('ab-testing::experiment-power-analysis', ['experimentKey' => $model->key])
+            </div>
+            <div>
+                @livewire('ab-testing::experiment-export', ['experimentKey' => $model->key])
+            </div>
         </div>
 
-        {{-- Approval --}}
-        <div class="mt-8">
-            @livewire('ab-testing::experiment-approval-panel', ['experimentKey' => $model->key])
+        {{-- Settings + Approval — two columns --}}
+        <div class="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <div>
+                @livewire('ab-testing::edit-experiment', ['experimentKey' => $model->key])
+            </div>
+            <div>
+                @livewire('ab-testing::experiment-approval-panel', ['experimentKey' => $model->key])
+            </div>
         </div>
 
-        {{-- Settings panel --}}
-        <div class="mt-8">
-            <h2 class="mb-4 text-lg font-semibold text-gray-100">Settings</h2>
-            @livewire('ab-testing::edit-experiment', ['experimentKey' => $model->key])
-        </div>
-
-        {{-- Controls sub-component --}}
-        <div class="mt-8">
-            <h2 class="mb-4 text-lg font-semibold text-gray-100">Controls</h2>
-            @livewire('ab-testing::experiment-controls', ['experimentKey' => $model->key])
-        </div>
-
-        {{-- Export --}}
-        <div class="mt-8">
-            @livewire('ab-testing::experiment-export', ['experimentKey' => $model->key])
-        </div>
-
-        {{-- Audit log --}}
+        {{-- Audit log — full width --}}
         @if($auditLog->isNotEmpty())
-            <div class="mt-8">
-                <h2 class="mb-4 text-lg font-semibold text-gray-100">Audit Log</h2>
-                <div class="overflow-hidden rounded-lg border border-gray-700 bg-gray-900">
+            <div x-data="{ open: false }" class="overflow-hidden rounded-lg border border-gray-700 bg-gray-900">
+                <div @click="open = !open"
+                     role="button" tabindex="0" @keydown.enter="open = !open"
+                     class="flex items-center justify-between min-h-[3.5rem] px-6 py-4 cursor-pointer select-none hover:bg-gray-800/40 transition-colors"
+                     :class="open ? 'border-b border-gray-700/60' : ''">
+                    <div class="flex items-center gap-3">
+                        <h2 class="font-semibold text-gray-100">Audit Log</h2>
+                        <span class="text-xs text-gray-500">{{ $auditLog->count() }} {{ $auditLog->count() === 1 ? 'entry' : 'entries' }}</span>
+                    </div>
+                    <svg :class="open ? 'rotate-180' : ''"
+                         class="h-4 w-4 shrink-0 text-gray-500 transition-transform duration-150"
+                         fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7"/>
+                    </svg>
+                </div>
+
+                <div x-show="open"
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="opacity-0 -translate-y-2"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     x-transition:leave="transition ease-in duration-150"
+                     x-transition:leave-start="opacity-100 translate-y-0"
+                     x-transition:leave-end="opacity-0 -translate-y-2">
                     <table class="min-w-full divide-y divide-gray-700/60">
                         <thead>
                             <tr>

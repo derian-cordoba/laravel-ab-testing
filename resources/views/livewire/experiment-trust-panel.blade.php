@@ -1,30 +1,49 @@
-<div>
-    @if(empty($rows))
-        {{-- No data --}}
-    @else
-        <div class="overflow-hidden rounded-lg border border-gray-700 bg-gray-900">
-            {{-- Header --}}
-            <div class="flex items-center justify-between border-b border-gray-700/60 px-6 py-4">
-                <div class="flex items-center gap-3">
-                    <h2 class="font-semibold text-gray-100">Trust</h2>
-                    <span class="text-xs text-gray-500">Sample ratio mismatch check</span>
-                </div>
+<div x-data="{ open: false }" class="overflow-hidden rounded-lg border border-gray-700 bg-gray-900">
 
-                @if($srmResult !== null)
-                    @if($srmResult->detected)
-                        <span class="inline-flex items-center gap-1.5 rounded-full bg-orange-900/60 px-3 py-1 text-xs font-medium text-orange-300">
-                            <span class="h-1.5 w-1.5 rounded-full bg-orange-400"></span>
-                            SRM detected
-                        </span>
-                    @else
-                        <span class="inline-flex items-center gap-1.5 rounded-full bg-green-900/60 px-3 py-1 text-xs font-medium text-green-300">
-                            <span class="h-1.5 w-1.5 rounded-full bg-green-400"></span>
-                            No SRM
-                        </span>
-                    @endif
+    {{-- Accordion header --}}
+    <div @click="open = !open"
+         role="button" tabindex="0" @keydown.enter="open = !open"
+         class="flex items-center justify-between min-h-[3.5rem] px-6 py-4 cursor-pointer select-none hover:bg-gray-800/40 transition-colors"
+         :class="open ? 'border-b border-gray-700/60' : ''">
+        <div class="flex items-center gap-3">
+            <h2 class="font-semibold text-gray-100">Trust</h2>
+            <span class="text-xs text-gray-500">sample ratio mismatch check</span>
+        </div>
+        <div class="flex items-center gap-2">
+            @if($srmResult !== null)
+                @if($srmResult->detected)
+                    <span class="inline-flex items-center gap-1.5 rounded-full bg-orange-900/60 px-3 py-1 text-xs font-medium text-orange-300">
+                        <span class="h-1.5 w-1.5 rounded-full bg-orange-400"></span>
+                        SRM detected
+                    </span>
+                @else
+                    <span class="inline-flex items-center gap-1.5 rounded-full bg-green-900/60 px-3 py-1 text-xs font-medium text-green-300">
+                        <span class="h-1.5 w-1.5 rounded-full bg-green-400"></span>
+                        No SRM
+                    </span>
                 @endif
-            </div>
+            @endif
+            <svg :class="open ? 'rotate-180' : ''"
+                 class="h-4 w-4 shrink-0 text-gray-500 transition-transform duration-150"
+                 fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7"/>
+            </svg>
+        </div>
+    </div>
 
+    <div x-show="open"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0 -translate-y-2"
+         x-transition:enter-end="opacity-100 translate-y-0"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100 translate-y-0"
+         x-transition:leave-end="opacity-0 -translate-y-2">
+
+        @if(empty($rows))
+            <div class="p-8 text-center">
+                <p class="text-sm text-gray-400">No assignment data yet to check for sample ratio mismatch.</p>
+            </div>
+        @else
             {{-- Per-variant allocation table --}}
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-700/60">
@@ -100,6 +119,6 @@
                     @endif
                 </div>
             @endif
-        </div>
-    @endif
+        @endif
+    </div>
 </div>

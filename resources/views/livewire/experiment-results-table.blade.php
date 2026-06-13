@@ -2,56 +2,83 @@
 @use(ABTests\Application\Data\VariantResultData)
 @use(ABTests\Enums\MetricRole)
 
-<div>
-    @if($results === null)
-        <div class="rounded-lg border border-gray-700 bg-gray-900/50 p-8 text-center">
-            <p class="text-sm text-gray-400">No data available for this experiment yet.</p>
+<div x-data="{ open: true }" class="overflow-hidden rounded-lg border border-gray-700 bg-gray-900">
+
+    {{-- Accordion header --}}
+    <div @click="open = !open"
+         role="button" tabindex="0" @keydown.enter="open = !open"
+         class="flex items-center justify-between min-h-[3.5rem] px-6 py-4 cursor-pointer select-none hover:bg-gray-800/40 transition-colors"
+         :class="open ? 'border-b border-gray-700/60' : ''">
+        <div class="flex items-center gap-3">
+            <h2 class="font-semibold text-gray-100">Results</h2>
+            @if($results !== null && $results->hasResults())
+                <span class="text-xs text-gray-500">
+                    {{ number_format($results->totalAssignedUnits()) }} units
+                    &middot; computed {{ $results->computedAt->format('H:i') }} UTC
+                </span>
+            @else
+                <span class="text-xs text-gray-500">variant comparison</span>
+            @endif
         </div>
-    @else
-        @php
-            /** @var ExperimentResultsData $results */
-            $definition = $results->definition;
-        @endphp
+        <svg :class="open ? 'rotate-180' : ''"
+             class="h-4 w-4 shrink-0 text-gray-500 transition-transform duration-150"
+             fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7"/>
+        </svg>
+    </div>
 
-        {{-- Active guardrail breaches --}}
-        @if($results->activeGuardrailBreaches->isNotEmpty())
-            <div class="mb-6 rounded-lg border border-red-700/50 bg-red-900/20 p-4">
-                <h3 class="text-sm font-semibold text-red-300 mb-2">Active Guardrail Breaches</h3>
-                <ul class="space-y-1">
-                    @foreach($results->activeGuardrailBreaches as $breach)
-                        <li class="text-sm text-red-400">
-                            Metric <strong class="text-red-300">{{ $breach->metric_key }}</strong> — observed
-                            {{ number_format($breach->observed_value, 4) }}, threshold
-                            {{ number_format($breach->threshold_value, 4) }}
-                            on variant <code class="font-mono text-xs text-red-300">{{ $breach->variant_key }}</code>
-                        </li>
-                    @endforeach
-                </ul>
+    <div x-show="open"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0 -translate-y-2"
+         x-transition:enter-end="opacity-100 translate-y-0"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100 translate-y-0"
+         x-transition:leave-end="opacity-0 -translate-y-2">
+
+        @if($results === null)
+            <div class="p-8 text-center">
+                <p class="text-sm text-gray-400">No data available for this experiment yet.</p>
             </div>
-        @endif
+        @else
+            @php
+                /** @var ExperimentResultsData $results */
+                $definition = $results->definition;
+            @endphp
 
-        {{-- SRM warning --}}
-        @if($results->sampleRatioMismatch->detected)
-            <div class="mb-6 rounded-lg border border-orange-700/50 bg-orange-900/20 p-4">
-                <h3 class="text-sm font-semibold text-orange-300">Sample Ratio Mismatch Detected</h3>
-                <p class="mt-1 text-sm text-orange-400/80">
-                    Chi-square: {{ number_format($results->sampleRatioMismatch->chiSquare, 3) }} —
-                    p-value: {{ number_format($results->sampleRatioMismatch->pValue, 4) }}.
-                    Results may not be valid. Investigate assignment before drawing conclusions.
-                </p>
+            <div class="px-6 pt-5 pb-1 space-y-4">
+
+                {{-- Active guardrail breaches --}}
+                @if($results->activeGuardrailBreaches->isNotEmpty())
+                    <div class="rounded-lg border border-red-700/50 bg-red-900/20 p-4">
+                        <h3 class="text-sm font-semibold text-red-300 mb-2">Active Guardrail Breaches</h3>
+                        <ul class="space-y-1">
+                            @foreach($results->activeGuardrailBreaches as $breach)
+                                <li class="text-sm text-red-400">
+                                    Metric <strong class="text-red-300">{{ $breach->metric_key }}</strong> — observed
+                                    {{ number_format($breach->observed_value, 4) }}, threshold
+                                    {{ number_format($breach->threshold_value, 4) }}
+                                    on variant <code class="font-mono text-xs text-red-300">{{ $breach->variant_key }}</code>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                {{-- SRM warning --}}
+                @if($results->sampleRatioMismatch->detected)
+                    <div class="rounded-lg border border-orange-700/50 bg-orange-900/20 p-4">
+                        <h3 class="text-sm font-semibold text-orange-300">Sample Ratio Mismatch Detected</h3>
+                        <p class="mt-1 text-sm text-orange-400/80">
+                            Chi-square: {{ number_format($results->sampleRatioMismatch->chiSquare, 3) }} —
+                            p-value: {{ number_format($results->sampleRatioMismatch->pValue, 4) }}.
+                            Results may not be valid. Investigate assignment before drawing conclusions.
+                        </p>
+                    </div>
+                @endif
             </div>
-        @endif
 
-        {{-- Primary metric results table --}}
-        @if($results->hasResults())
-            <div class="mb-8 overflow-hidden rounded-lg border border-gray-700 bg-gray-900">
-                <div class="px-6 py-4 border-b border-gray-700/60 flex items-center justify-between">
-                    <h2 class="font-semibold text-gray-100">Variant Results</h2>
-                    <span class="text-xs text-gray-500">
-                        {{ number_format($results->totalAssignedUnits()) }} units assigned
-                        &middot; computed {{ $results->computedAt->format('Y-m-d H:i') }} UTC
-                    </span>
-                </div>
+            @if($results->hasResults())
+                {{-- Primary metric results table --}}
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-700/60">
                         <thead>
@@ -125,52 +152,52 @@
                         </tbody>
                     </table>
                 </div>
-            </div>
 
-            {{-- Secondary metrics per variant --}}
-            @php
-                $secondaryBindings = array_values(array_filter(
-                    $definition->metrics,
-                    static fn ($b) => $b->role === MetricRole::secondary
-                ));
-            @endphp
-            @foreach($results->variantResults as $variantResult)
-                @if(!empty($variantResult->secondaryMetricSummaries))
-                    <div class="mb-4 overflow-hidden rounded-lg border border-gray-700 bg-gray-900">
-                        <div class="px-6 py-3 border-b border-gray-700/60">
-                            <h3 class="text-sm font-semibold text-gray-300">
-                                Secondary metrics — <span class="font-mono text-gray-400">{{ $variantResult->variant->key() }}</span>
-                            </h3>
-                        </div>
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-700/40">
-                                <thead>
-                                    <tr>
-                                        <th class="px-6 py-2 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Metric</th>
-                                        <th class="px-6 py-2 text-right text-xs font-medium uppercase tracking-wide text-gray-500">Units</th>
-                                        <th class="px-6 py-2 text-right text-xs font-medium uppercase tracking-wide text-gray-500">Conv. Rate</th>
-                                        <th class="px-6 py-2 text-right text-xs font-medium uppercase tracking-wide text-gray-500">Mean</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-gray-700/30">
-                                    @foreach($variantResult->secondaryMetricSummaries as $i => $secondary)
+                {{-- Secondary metrics per variant --}}
+                @php
+                    $secondaryBindings = array_values(array_filter(
+                        $definition->metrics,
+                        static fn ($b) => $b->role === MetricRole::secondary
+                    ));
+                @endphp
+                @foreach($results->variantResults as $variantResult)
+                    @if(!empty($variantResult->secondaryMetricSummaries))
+                        <div class="border-t border-gray-700/60">
+                            <div class="px-6 py-3 border-b border-gray-700/40">
+                                <h3 class="text-sm font-semibold text-gray-400">
+                                    Secondary metrics — <span class="font-mono">{{ $variantResult->variant->key() }}</span>
+                                </h3>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-700/40">
+                                    <thead>
                                         <tr>
-                                            <td class="px-6 py-3 font-mono text-xs text-gray-400">{{ $secondaryBindings[$i]->metric ?? "secondary-$i" }}</td>
-                                            <td class="px-6 py-3 text-right text-sm text-gray-300 tabular-nums">{{ number_format($secondary->countOfUnits) }}</td>
-                                            <td class="px-6 py-3 text-right text-sm text-gray-300 tabular-nums">{{ number_format($secondary->conversionRate * 100, 2) }}%</td>
-                                            <td class="px-6 py-3 text-right text-sm text-gray-300 tabular-nums">{{ number_format($secondary->mean, 4) }}</td>
+                                            <th class="px-6 py-2 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Metric</th>
+                                            <th class="px-6 py-2 text-right text-xs font-medium uppercase tracking-wide text-gray-500">Units</th>
+                                            <th class="px-6 py-2 text-right text-xs font-medium uppercase tracking-wide text-gray-500">Conv. Rate</th>
+                                            <th class="px-6 py-2 text-right text-xs font-medium uppercase tracking-wide text-gray-500">Mean</th>
                                         </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-700/30">
+                                        @foreach($variantResult->secondaryMetricSummaries as $i => $secondary)
+                                            <tr>
+                                                <td class="px-6 py-3 font-mono text-xs text-gray-400">{{ $secondaryBindings[$i]->metric ?? "secondary-$i" }}</td>
+                                                <td class="px-6 py-3 text-right text-sm text-gray-300 tabular-nums">{{ number_format($secondary->countOfUnits) }}</td>
+                                                <td class="px-6 py-3 text-right text-sm text-gray-300 tabular-nums">{{ number_format($secondary->conversionRate * 100, 2) }}%</td>
+                                                <td class="px-6 py-3 text-right text-sm text-gray-300 tabular-nums">{{ number_format($secondary->mean, 4) }}</td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                    </div>
-                @endif
-            @endforeach
-        @else
-            <div class="rounded-lg border border-gray-700 bg-gray-900/50 p-8 text-center">
-                <p class="text-sm text-gray-400">No rollup data yet. Results will appear once the rollup job has run.</p>
-            </div>
+                    @endif
+                @endforeach
+            @else
+                <div class="p-8 text-center">
+                    <p class="text-sm text-gray-400">No rollup data yet. Results will appear once the rollup job has run.</p>
+                </div>
+            @endif
         @endif
-    @endif
+    </div>
 </div>
