@@ -14,6 +14,10 @@ return [
             'middleware' => [],
             'manage_gate' => 'manageAbTestingApi',
             'endpoints' => [
+                'assignments' => [
+                    'enabled' => true,
+                    'path' => 'assignments',
+                ],
                 'experiments' => [
                     'enabled' => true,
                     'prefix'  => 'api/ab-testing',
