@@ -11,8 +11,7 @@
         </div>
 
         {{-- Controls are shown even when no state record exists yet, so the user can create one. --}}
-        <div class="mt-8">
-            <h2 class="mb-4 text-lg font-semibold text-gray-100">Controls</h2>
+        <div class="mt-6">
             @livewire('ab-testing::feature-flag-controls', ['flagKey' => request()->route('key')])
         </div>
     @else
@@ -44,35 +43,57 @@
             </div>
         </div>
 
-        {{-- State summary cards --}}
-        <div class="grid grid-cols-2 gap-4 sm:grid-cols-4 mb-8">
-            <div class="rounded-lg border border-gray-700 bg-gray-900 p-4">
-                <p class="text-xs text-gray-500 uppercase tracking-wide">Status</p>
-                <p class="mt-1 text-lg font-semibold {{ $model->is_enabled ? 'text-green-400' : 'text-gray-400' }}">
-                    {{ $model->is_enabled ? 'Enabled' : 'Disabled' }}
-                </p>
+        {{-- State summary — accordion, open by default --}}
+        <div x-data="{ open: true }" class="mb-6 overflow-hidden rounded-lg border border-gray-700 bg-gray-900">
+            <div @click="open = !open"
+                 role="button" tabindex="0" @keydown.enter="open = !open"
+                 class="flex items-center justify-between min-h-[3.5rem] px-6 py-4 cursor-pointer select-none hover:bg-gray-800/40 transition-colors"
+                 :class="open ? 'border-b border-gray-700/60' : ''">
+                <div class="flex items-center gap-3">
+                    <h2 class="font-semibold text-gray-100">Overview</h2>
+                    <span class="text-xs text-gray-500">current state</span>
+                </div>
+                <svg :class="open ? 'rotate-180' : ''"
+                     class="h-4 w-4 shrink-0 text-gray-500 transition-transform duration-150"
+                     fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7"/>
+                </svg>
             </div>
-            <div class="rounded-lg border border-gray-700 bg-gray-900 p-4">
-                <p class="text-xs text-gray-500 uppercase tracking-wide">Rollout</p>
-                <p class="mt-1 text-lg font-semibold text-gray-100 tabular-nums">{{ $model->rollout_percentage }}%</p>
-            </div>
-            <div class="rounded-lg border border-gray-700 bg-gray-900 p-4">
-                <p class="text-xs text-gray-500 uppercase tracking-wide">Conditions</p>
-                @php $conditionCount = count($model->conditions ?? []); @endphp
-                <p class="mt-1 text-lg font-semibold {{ $conditionCount > 0 ? 'text-violet-400' : 'text-gray-600' }}">
-                    {{ $conditionCount > 0 ? $conditionCount . ' rule' . ($conditionCount > 1 ? 's' : '') : 'None' }}
-                </p>
-            </div>
-            <div class="rounded-lg border border-gray-700 bg-gray-900 p-4">
-                <p class="text-xs text-gray-500 uppercase tracking-wide">Last Changed</p>
-                <p class="mt-1 text-sm font-medium text-gray-300">{{ $model->updated_at?->diffForHumans() ?? '—' }}</p>
+
+            <div x-show="open"
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0 -translate-y-2"
+                 x-transition:enter-end="opacity-100 translate-y-0"
+                 x-transition:leave="transition ease-in duration-150"
+                 x-transition:leave-start="opacity-100 translate-y-0"
+                 x-transition:leave-end="opacity-0 -translate-y-2">
+                <div class="grid grid-cols-2 gap-px sm:grid-cols-4 bg-gray-700/40">
+                    <div class="bg-gray-900 px-6 py-5">
+                        <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Status</p>
+                        <p class="mt-1.5 text-lg font-semibold {{ $model->is_enabled ? 'text-green-400' : 'text-gray-400' }}">
+                            {{ $model->is_enabled ? 'Enabled' : 'Disabled' }}
+                        </p>
+                    </div>
+                    <div class="bg-gray-900 px-6 py-5">
+                        <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Rollout</p>
+                        <p class="mt-1.5 text-lg font-semibold text-gray-100 tabular-nums">{{ $model->rollout_percentage }}%</p>
+                    </div>
+                    <div class="bg-gray-900 px-6 py-5">
+                        <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Conditions</p>
+                        @php $conditionCount = count($model->conditions ?? []); @endphp
+                        <p class="mt-1.5 text-lg font-semibold {{ $conditionCount > 0 ? 'text-violet-400' : 'text-gray-600' }}">
+                            {{ $conditionCount > 0 ? $conditionCount . ' rule' . ($conditionCount > 1 ? 's' : '') : 'None' }}
+                        </p>
+                    </div>
+                    <div class="bg-gray-900 px-6 py-5">
+                        <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Last Changed</p>
+                        <p class="mt-1.5 text-sm font-medium text-gray-300">{{ $model->updated_at?->diffForHumans() ?? '—' }}</p>
+                    </div>
+                </div>
             </div>
         </div>
 
         {{-- Controls sub-component --}}
-        <div>
-            <h2 class="mb-4 text-lg font-semibold text-gray-100">Controls</h2>
-            @livewire('ab-testing::feature-flag-controls', ['flagKey' => $model->key])
-        </div>
+        @livewire('ab-testing::feature-flag-controls', ['flagKey' => $model->key])
     @endif
 </div>
