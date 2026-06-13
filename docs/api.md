@@ -546,8 +546,14 @@ Returns full per-variant statistics for both analysis engines, the SRM diagnosti
 
 ```json
 {
-  "message": "No results available yet for this experiment.",
-  "experiment_key": "checkout-button-color"
+  "errors": [
+    {
+      "status": "404",
+      "title": "No Results Available",
+      "detail": "No results available yet for this experiment.",
+      "meta": { "experiment_key": "checkout-button-color" }
+    }
+  ]
 }
 ```
 
@@ -561,33 +567,38 @@ GET /api/ab-testing/experiments/{key}/verdict
 
 The CI/CD decision endpoint. Returns the overall recommendation (`ship` / `do_not_ship` / `inconclusive`) and a per-treatment-variant breakdown. Designed to be polled after `POST /stop` and used to drive a ship-or-rollback decision in a deployment pipeline.
 
-Unlike `/results`, this endpoint returns a flat JSON object (not a JSON:API resource wrapper) so it is straightforward to parse in shell scripts and pipeline tools.
+Like all other endpoints, the verdict is wrapped in the standard JSON:API resource envelope under `data.attributes`. The experiment key is the JSON:API resource `id`.
 
 **Response `200` — with data**
 
 ```json
 {
-  "experiment_key": "checkout-button-color",
-  "status": "completed",
-  "srm_detected": false,
-  "overall_recommendation": "ship",
-  "computed_at": "2025-01-20T14:30:00+00:00",
-  "total_units": 1000,
-  "active_guardrail_breaches": 0,
-  "variants": [
-    {
-      "key": "green",
-      "recommendation": "ship",
-      "label": "Ship",
-      "relative_lift": 0.2,
-      "is_significant": true,
-      "p_value": 0.031,
-      "probability_to_beat_control": 0.96,
-      "expected_loss": 0.001,
-      "count_of_units": 500,
-      "conversion_rate": 0.12
+  "data": {
+    "id": "checkout-button-color",
+    "type": "experiment-verdicts",
+    "attributes": {
+      "status": "completed",
+      "srm_detected": false,
+      "overall_recommendation": "ship",
+      "computed_at": "2025-01-20T14:30:00+00:00",
+      "total_units": 1000,
+      "active_guardrail_breaches": 0,
+      "variants": [
+        {
+          "key": "green",
+          "recommendation": "ship",
+          "label": "Ship",
+          "relative_lift": 0.2,
+          "is_significant": true,
+          "p_value": 0.031,
+          "probability_to_beat_control": 0.96,
+          "expected_loss": 0.001,
+          "count_of_units": 500,
+          "conversion_rate": 0.12
+        }
+      ]
     }
-  ]
+  }
 }
 ```
 
@@ -595,12 +606,17 @@ Unlike `/results`, this endpoint returns a flat JSON object (not a JSON:API reso
 
 ```json
 {
-  "experiment_key": "checkout-button-color",
-  "status": "running",
-  "srm_detected": false,
-  "overall_recommendation": "inconclusive",
-  "message": "No results available yet.",
-  "variants": []
+  "data": {
+    "id": "checkout-button-color",
+    "type": "experiment-verdicts",
+    "attributes": {
+      "status": "running",
+      "srm_detected": false,
+      "overall_recommendation": "inconclusive",
+      "message": "No results available yet.",
+      "variants": []
+    }
+  }
 }
 ```
 
@@ -608,12 +624,20 @@ Unlike `/results`, this endpoint returns a flat JSON object (not a JSON:API reso
 
 ```json
 {
-  "experiment_key": "checkout-button-color",
-  "status": "completed",
-  "srm_detected": true,
-  "overall_recommendation": "inconclusive",
-  "message": "Sample ratio mismatch detected. Results are invalid. Investigate before shipping.",
-  "variants": []
+  "data": {
+    "id": "checkout-button-color",
+    "type": "experiment-verdicts",
+    "attributes": {
+      "status": "completed",
+      "srm_detected": true,
+      "overall_recommendation": "inconclusive",
+      "message": "Sample ratio mismatch detected. Results are invalid. Investigate before shipping.",
+      "computed_at": "2025-01-20T14:30:00+00:00",
+      "total_units": 1100,
+      "active_guardrail_breaches": 0,
+      "variants": []
+    }
+  }
 }
 ```
 
@@ -633,13 +657,19 @@ Unlike `/results`, this endpoint returns a flat JSON object (not a JSON:API reso
 
 ## Error responses
 
-All error responses follow a consistent shape. Validation errors (`422`) include a field-level breakdown.
+All error responses follow the JSON:API errors document shape: an `errors` array where each entry carries a `status` (string HTTP code), `title`, and `detail`. Validation errors additionally include a `source.pointer` identifying the offending field.
 
 **`406 Not Acceptable`** — missing or wrong `Accept` header (non-production only; production returns `404`).
 
 ```json
 {
-  "message": "This endpoint requires Accept: application/vnd.ab-testing.v1+json."
+  "errors": [
+    {
+      "status": "406",
+      "title": "Not Acceptable",
+      "detail": "This endpoint requires Accept: application/vnd.ab-testing.v1+json."
+    }
+  ]
 }
 ```
 
@@ -647,7 +677,13 @@ All error responses follow a consistent shape. Validation errors (`422`) include
 
 ```json
 {
-  "message": "Access to the A/B testing API is not authorized."
+  "errors": [
+    {
+      "status": "403",
+      "title": "Forbidden",
+      "detail": "Access to the A/B testing API is not authorized."
+    }
+  ]
 }
 ```
 
@@ -655,18 +691,28 @@ All error responses follow a consistent shape. Validation errors (`422`) include
 
 ```json
 {
-  "message": "Experiment not found."
+  "errors": [
+    {
+      "status": "404",
+      "title": "Not Found",
+      "detail": "The requested resource was not found."
+    }
+  ]
 }
 ```
 
-**`422 Unprocessable Entity`**
+**`422 Unprocessable Entity`** — one entry per failing field.
 
 ```json
 {
-  "message": "The key field is required.",
-  "errors": {
-    "key": ["The key field is required."]
-  }
+  "errors": [
+    {
+      "status": "422",
+      "title": "Validation Error",
+      "detail": "The key field is required.",
+      "source": { "pointer": "/data/attributes/key" }
+    }
+  ]
 }
 ```
 
@@ -721,7 +767,7 @@ curl -sf -X POST "${API_PREFIX}/experiments/${KEY}/stop" \
   -H "Accept: ${ACCEPT}" > /dev/null
 
 VERDICT=$(curl -sf "${API_PREFIX}/experiments/${KEY}/verdict" \
-  -H "Accept: ${ACCEPT}" | jq -r '.overall_recommendation')
+  -H "Accept: ${ACCEPT}" | jq -r '.data.attributes.overall_recommendation')
 
 echo "Verdict: ${VERDICT}"
 
