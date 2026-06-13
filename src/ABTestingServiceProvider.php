@@ -7,7 +7,14 @@ namespace ABTests;
 use ABTests\Application\Listeners\AutoPauseOnGuardrailBreachListener;
 use ABTests\Application\ResultsService;
 use ABTests\Blade\BladeDirectiveHelpers;
+use ABTests\Exceptions\ABTestingException;
+use ABTests\Exceptions\ExperimentNotFound;
+use ABTests\Exceptions\FeatureFlagNotFound;
+use ABTests\Http\Middleware\ApiExceptionHandlerMiddleware;
 use ABTests\Http\Middleware\ExposeAssignmentsMiddleware;
+use ABTests\Http\Middleware\EnforceAcceptHeaderMiddleware;
+use ABTests\Http\Middleware\RequiresApiAccess;
+use ABTests\Http\Middleware\SetApiContentTypeMiddleware;
 use ABTests\Presentation\Middleware\ResolveExperimentMiddleware;
 use ABTests\Application\SynchronousCommandBus;
 use ABTests\Console\CacheDefinitionsCommand;
@@ -49,12 +56,17 @@ use ABTests\Strategies\Sha256BucketingStrategy;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Contracts\Container\BindingResolutionException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Foundation\Exceptions\Handler as FoundationHandler;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\ValidationException;
 use Livewire\Livewire;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
 /**
@@ -266,6 +278,109 @@ final class ABTestingServiceProvider extends ServiceProvider
     }
 
     /**
+     * Register JSON:API error rendering callbacks on the exception handler so
+     * that ModelNotFoundException, ValidationException, and domain exceptions
+     * thrown from API controllers are converted to consistent JSON:API errors
+     * documents. Callbacks are scoped to the configured API prefix and only
+     * fire when the host app uses the Foundation exception handler.
+     *
+     * Illuminate\Routing\Pipeline catches exceptions thrown inside the route
+     * middleware stack and renders them via the exception handler before they
+     * can bubble up to ApiExceptionHandlerMiddleware's try/catch. These
+     * renderable() callbacks intercept them at that render step instead.
+     */
+    private function bootApiExceptionRendering(): void
+    {
+        $this->callAfterResolving(
+            \Illuminate\Contracts\Debug\ExceptionHandler::class,
+            function (object $handler): void {
+                if (! $handler instanceof FoundationHandler) {
+                    return;
+                }
+
+                /** @var string $prefix */
+                $prefix = config(
+                    'ab-testing.api.v1.endpoints.experiments.prefix',
+                    'api/ab-testing',
+                );
+
+                $isApiRequest = static fn (Request $request): bool =>
+                    $request->is($prefix) || $request->is($prefix . '/*');
+
+                $errorResponse = static function (int $status, string $title, string $detail): \Illuminate\Http\JsonResponse {
+                    return response()->json([
+                        'errors' => [
+                            [
+                                'status' => (string) $status,
+                                'title'  => $title,
+                                'detail' => $detail,
+                            ],
+                        ],
+                    ], $status);
+                };
+
+                // ModelNotFoundException → 404
+                $handler->renderable(
+                    static function (ModelNotFoundException $e, Request $request) use ($isApiRequest, $errorResponse): ?\Illuminate\Http\JsonResponse {
+                        if (! $isApiRequest($request)) {
+                            return null;
+                        }
+
+                        return $errorResponse(
+                            Response::HTTP_NOT_FOUND,
+                            'Not Found',
+                            'The requested resource was not found.',
+                        );
+                    }
+                );
+
+                // ValidationException → 422 with per-field JSON:API errors
+                $handler->renderable(
+                    static function (ValidationException $e, Request $request) use ($isApiRequest): ?\Illuminate\Http\JsonResponse {
+                        if (! $isApiRequest($request)) {
+                            return null;
+                        }
+
+                        $errors = [];
+
+                        foreach ($e->errors() as $field => $messages) {
+                            foreach ($messages as $message) {
+                                $errors[] = [
+                                    'status' => (string) Response::HTTP_UNPROCESSABLE_ENTITY,
+                                    'title'  => 'Validation Error',
+                                    'detail' => $message,
+                                    'source' => ['pointer' => '/data/attributes/' . $field],
+                                ];
+                            }
+                        }
+
+                        return response()->json(['errors' => $errors], Response::HTTP_UNPROCESSABLE_ENTITY);
+                    }
+                );
+
+                // ABTestingException → 404 (not-found) or 422 (all others)
+                $handler->renderable(
+                    static function (ABTestingException $e, Request $request) use ($isApiRequest, $errorResponse): ?\Illuminate\Http\JsonResponse {
+                        if (! $isApiRequest($request)) {
+                            return null;
+                        }
+
+                        $isNotFound = $e instanceof ExperimentNotFound || $e instanceof FeatureFlagNotFound;
+
+                        $status = $isNotFound
+                            ? Response::HTTP_NOT_FOUND
+                            : Response::HTTP_UNPROCESSABLE_ENTITY;
+
+                        $title = $isNotFound ? 'Not Found' : 'Unprocessable Entity';
+
+                        return $errorResponse($status, $title, $e->getMessage());
+                    }
+                );
+            }
+        );
+    }
+
+    /**
      * Bind the storage driver contracts to their implementations. 'database' is
      * the production default; 'in_memory' is suitable for tests and local
      * development without a database.
@@ -299,9 +414,11 @@ final class ABTestingServiceProvider extends ServiceProvider
         Experiments::setInstance($this->app->make(Experiments::class));
 
         $this->bootDiscovery();
+        $this->bootApiExceptionRendering();
 
         $this->loadViewsFrom(__DIR__ . '/../resources/views', 'ab-testing');
         $this->loadRoutesFrom(__DIR__ . '/Dashboard/routes.php');
+        $this->loadRoutesFrom(__DIR__ . '/Api/routes.php');
 
         // Register anonymous Blade components under the ab-testing:: prefix so
         // <x-ab-testing::status-badge> and <x-ab-testing::verdict-badge> resolve
@@ -356,6 +473,14 @@ final class ABTestingServiceProvider extends ServiceProvider
             $router->aliasMiddleware('ab-testing.resolve', ResolveExperimentMiddleware::class);
             // ->middleware('ab-testing.expose-assignments') injects server assignments into HTML
             $router->aliasMiddleware('ab-testing.expose-assignments', ExposeAssignmentsMiddleware::class);
+            // ->middleware('ab-testing.api-access') gate-checks the management API
+            $router->aliasMiddleware('ab-testing.api-access', RequiresApiAccess::class);
+            // ->middleware('ab-testing.api-content-type') sets the vendor Content-Type header
+            $router->aliasMiddleware('ab-testing.api-content-type', SetApiContentTypeMiddleware::class);
+            // ->middleware('ab-testing.enforce-accept') rejects requests missing the vendor Accept header
+            $router->aliasMiddleware('ab-testing.enforce-accept', EnforceAcceptHeaderMiddleware::class);
+            // ->middleware('ab-testing.api-exception-handler') converts exceptions to JSON:API errors
+            $router->aliasMiddleware('ab-testing.api-exception-handler', ApiExceptionHandlerMiddleware::class);
         }
 
         // Guardrail breach → auto-pause listener.

@@ -45,6 +45,8 @@
         "larastan/larastan": "^3.10",
         "phpstan/phpstan": "^2.2",
         "phpunit/phpunit": "^13.2",
-        "vlucas/phpdotenv": "^5.6"
+        "vlucas/phpdotenv": "^5.6",
+        "laravel/framework": "^13.0",
+        "mockery/mockery": "^1.6"
     }
 }

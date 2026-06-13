@@ -65,20 +65,6 @@ final readonly class UpdateVariantCommandHandler
             );
         }
 
-        // Weight total check — exclude current variant's weight.
-        $otherWeightsTotal = VariantModel::query()
-            ->where('experiment_id', $model->id)
-            ->where('id', '!=', $command->variantId)
-            ->sum('weight');
-
-        $newTotal = $otherWeightsTotal + $command->weight;
-
-        if ($newTotal > 100) {
-            throw new InvalidVariantOperation(
-                "This weight would bring the total allocation to {$newTotal}%. Reduce other variant weights first."
-            );
-        }
-
         $before = ['key' => $variant->key, 'weight' => $variant->weight, 'is_control' => $variant->is_control];
 
         // If this variant is being promoted to control, demote the existing one.

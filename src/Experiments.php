@@ -165,7 +165,7 @@ final class Experiments
                 if ($attrs !== []) {
                     $metricKey = $attrs[0]->newInstance()->key;
                 }
-            } catch (\Throwable) {
+            } catch (Throwable) {
                 // Keep the class-string as-is.
             }
         }

@@ -47,14 +47,19 @@ final readonly class RemoveVariantCommandHandler
             );
         }
 
-        $totalVariants = VariantModel::query()
-            ->where('experiment_id', $model->id)
-            ->count();
+        // For running or paused experiments, enforce a minimum of 2 variants after
+        // removal so analysis remains valid. Draft/scheduled experiments may be
+        // reduced to a single control variant during setup.
+        if (in_array($status, [ExperimentStatus::running, ExperimentStatus::paused], true)) {
+            $totalVariants = VariantModel::query()
+                ->where('experiment_id', $model->id)
+                ->count();
 
-        if ($totalVariants < 3) {
-            throw new InvalidVariantOperation(
-                'An experiment must have at least 2 variants (one control and one treatment). Cannot remove this variant.'
-            );
+            if ($totalVariants < 3) {
+                throw new InvalidVariantOperation(
+                    'A running or paused experiment must retain at least 2 variants. Cannot remove this variant.'
+                );
+            }
         }
 
         $before = ['key' => $variant->key, 'weight' => $variant->weight];

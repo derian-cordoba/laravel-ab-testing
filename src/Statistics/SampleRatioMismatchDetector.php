@@ -58,11 +58,19 @@ final readonly class SampleRatioMismatchDetector
             $allocation->variants,
         ));
 
+        // Build a lookup of weight by variant key from the allocation, so SRM detection
+        // uses the configured allocation weights rather than MetricSummary variant weights
+        // (which may be zero when summaries are built from rollup data without weight info).
+        $allocationWeights = [];
+        foreach ($allocation->variants as $allocationVariant) {
+            $allocationWeights[$allocationVariant->key()] = $allocationVariant->weight();
+        }
+
         $chiSquare = 0.0;
 
         foreach ($summaries as $summary) {
-            $variant = $summary->variant;
-            $expectedProportion = $variant->weight() / $totalWeight;
+            $weight = $allocationWeights[$summary->variant->key()] ?? $summary->variant->weight();
+            $expectedProportion = $totalWeight > 0 ? $weight / $totalWeight : 0.0;
             $expected = $totalObserved * $expectedProportion;
 
             if ($expected <= 0.0) {

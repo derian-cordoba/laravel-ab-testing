@@ -13,3 +13,6 @@ vendor/
 .phpstan.cache/
 
 coverage/
+
+tests/Application/bootstrap/cache
+tests/Application/storage

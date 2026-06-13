@@ -22,6 +22,7 @@ This package is intentionally not a thin feature-flag helper. It is designed aro
 - [Tracking metrics](#tracking-metrics)
 - [Real-world request flow](#real-world-request-flow)
 - [Dashboard](#dashboard)
+- [Management API](#management-api)
 - [Discovery and caching](#discovery-and-caching)
 - [Running statistical analysis](#running-statistical-analysis)
 - [Feature flags](#feature-flags)
@@ -721,6 +722,25 @@ Or your usual production scheduler:
 ```
 
 For local development, the dashboard can also trigger a manual per-experiment refresh so you do not have to wait for the next scheduled cycle.
+
+## Management API
+
+The package ships a versioned REST API for managing experiments programmatically. It covers the full experiment lifecycle — create, configure variants, start, pause, resume, stop, archive — as well as results polling and CI/CD verdict endpoints.
+
+All endpoints require the configured vendor media type in the `Accept` header:
+
+```http
+Accept: application/vnd.ab-testing.v1+json
+```
+
+Requests that omit it or send a wildcard are rejected before reaching any controller. Every response carries the same value as `Content-Type`. The vendor type is read from `ab-testing.api.v1.accept_type` in your config so changing it propagates everywhere without touching controller code.
+
+See the full reference in **[docs/api.md](docs/api.md)** for:
+
+- media type and versioning details
+- authorization and gate configuration
+- all endpoint signatures and example request/response bodies
+- a ready-to-use CI/CD shell script
 
 ## Discovery and caching
 

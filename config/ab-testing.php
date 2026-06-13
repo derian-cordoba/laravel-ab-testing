@@ -205,7 +205,7 @@ return [
     |
     |   accept_type  — Vendor media type for this API version. Using a versioned
     |                  vendor type prevents casual browser access and provides
-    |                  implicit versioning. In production unrecognised requests
+    |                  implicit versioning. In production unrecognized requests
     |                  receive a 404; in other environments a 406.
     |
     |   middleware   — Additional middleware applied to every endpoint in this
@@ -224,11 +224,47 @@ return [
     'api' => [
         'v1' => [
             'accept_type' => env('AB_TESTING_ACCEPT_TYPE', 'application/vnd.ab-testing.v1+json'),
-            'middleware'  => [],
+            'middleware'  => ['api'],
+
+            /*
+            |--------------------------------------------------------------------------
+            | Management API gate
+            |--------------------------------------------------------------------------
+            |
+            |   manage_gate — Gate name checked by RequiresApiAccess on every write
+            |                 endpoint (create, update, lifecycle, variants). If the
+            |                 gate is not defined, all requests are allowed through.
+            |                 Define the gate in AuthServiceProvider to restrict access.
+            |
+            |                 Example:
+            |                   Gate::define('manageAbTestingApi', fn ($user) => $user->isAdmin());
+            |
+            */
+
+            'manage_gate' => env('AB_TESTING_API_MANAGE_GATE', 'manageAbTestingApi'),
+
             'endpoints'   => [
+
+                /*
+                | assignments — Expose server-resolved assignments for the current
+                |               request so front-end code can read the same variant
+                |               without re-hashing. Mounted under the dashboard prefix.
+                */
                 'assignments' => [
                     'enabled' => (bool) env('AB_TESTING_ASSIGNMENTS_ENDPOINT', true),
                     'path'    => 'assignments',
+                ],
+
+                /*
+                | experiments — Full REST management API. Enables CI/CD integration:
+                |               create, start, stop, check verdict, ship or rollback.
+                |
+                |   prefix — URL prefix for all management API routes.
+                |             Default: api/ab-testing → /api/ab-testing/experiments
+                */
+                'experiments' => [
+                    'enabled' => (bool) env('AB_TESTING_EXPERIMENTS_API_ENABLED', true),
+                    'prefix'  => env('AB_TESTING_API_PREFIX', 'api/ab-testing'),
                 ],
             ],
         ],

@@ -21,9 +21,11 @@ use Illuminate\Support\Carbon;
  * @property string                      $status
  * @property int                         $traffic_percentage
  * @property bool                        $is_killed
- * @property string|null                 $killed_at
+ * @property Carbon|null                 $killed_at
  * @property Carbon|null                 $started_at
  * @property Carbon|null                 $stopped_at
+ * @property Carbon|null                 $created_at
+ * @property Carbon|null                 $updated_at
  * @property Collection<int,VariantModel> $variants
  */
 final class ExperimentModel extends Model
@@ -41,6 +43,7 @@ final class ExperimentModel extends Model
         'killed_at',
         'started_at',
         'stopped_at',
+        'target_sample_size',
     ];
 
     protected $casts = [

@@ -105,7 +105,7 @@ final class ConfigStructureTest extends TestCase
     public function api_v1_middleware_key_exists_and_defaults_to_empty_array(): void
     {
         self::assertArrayHasKey('middleware', $this->config['api']['v1']);
-        self::assertSame([], $this->config['api']['v1']['middleware']);
+        self::assertSame(['api'], $this->config['api']['v1']['middleware']);
     }
 
     #[Test]
