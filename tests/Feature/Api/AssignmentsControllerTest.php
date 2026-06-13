@@ -32,7 +32,10 @@ final class AssignmentsControllerTest extends FeatureTestCase
             'assigned_at' => new DateTimeImmutable(),
         ]);
 
-        $response = $this->getJson('/api/ab-testing/assignments?unit_type=user&unit_key=42');
+        $response = $this->getJson(route('ab-testing.api.v1.assignments', [
+            'unit_type' => 'user',
+            'unit_key' => '42',
+        ]));
 
         $response->assertStatus(200);
         $response->assertJsonPath('data.type', 'assignments');
@@ -46,7 +49,10 @@ final class AssignmentsControllerTest extends FeatureTestCase
     #[Test]
     public function show_returns_empty_assignment_map_when_unit_has_no_assignments(): void
     {
-        $response = $this->getJson('/api/ab-testing/assignments?unit_type=user&unit_key=404');
+        $response = $this->getJson(route('ab-testing.api.v1.assignments', [
+            'unit_type' => 'user',
+            'unit_key' => '404',
+        ]));
 
         $response->assertStatus(200);
         $response->assertJsonPath('data.type', 'assignments');
@@ -75,7 +81,10 @@ final class AssignmentsControllerTest extends FeatureTestCase
             'assigned_at' => new DateTimeImmutable(),
         ]);
 
-        $response = $this->getJson('/api/ab-testing/assignments?unit_type=user&unit_key=42');
+        $response = $this->getJson(route('ab-testing.api.v1.assignments', [
+            'unit_type' => 'user',
+            'unit_key' => '42',
+        ]));
 
         $response->assertStatus(200);
         $response->assertJsonPath('data.attributes.assignments.checkout-button-color', 'green');
@@ -85,7 +94,9 @@ final class AssignmentsControllerTest extends FeatureTestCase
     #[Test]
     public function show_returns_422_when_unit_type_is_missing(): void
     {
-        $response = $this->getJson('/api/ab-testing/assignments?unit_key=42');
+        $response = $this->getJson(route('ab-testing.api.v1.assignments', [
+            'unit_key' => '42',
+        ]));
 
         $response->assertStatus(422);
         $response->assertJsonPath('errors.0.detail', 'The unit type field is required.');
@@ -95,7 +106,9 @@ final class AssignmentsControllerTest extends FeatureTestCase
     #[Test]
     public function show_returns_422_when_unit_key_is_missing(): void
     {
-        $response = $this->getJson('/api/ab-testing/assignments?unit_type=user');
+        $response = $this->getJson(route('ab-testing.api.v1.assignments', [
+            'unit_type' => 'user',
+        ]));
 
         $response->assertStatus(422);
         $response->assertJsonPath('errors.0.detail', 'The unit key field is required.');

@@ -14,7 +14,7 @@ use PHPUnit\Framework\Attributes\Test;
 /**
  * Feature tests for the ExperimentsController (CRUD endpoints).
  *
- * Base URL: /api/ab-testing/experiments
+ * Base URL: route('ab-testing.api.v1.experiments.*')
  */
 final class ExperimentsControllerTest extends FeatureTestCase
 {
@@ -25,7 +25,7 @@ final class ExperimentsControllerTest extends FeatureTestCase
     #[Test]
     public function index_returns_empty_list_when_no_experiments_exist(): void
     {
-        $response = $this->getJson('/api/ab-testing/experiments');
+        $response = $this->getJson(route('ab-testing.api.v1.experiments.index'));
 
         $response->assertStatus(200);
         $response->assertJsonPath('data', []);
@@ -50,7 +50,7 @@ final class ExperimentsControllerTest extends FeatureTestCase
             'is_killed'          => false,
         ]);
 
-        $response = $this->getJson('/api/ab-testing/experiments');
+        $response = $this->getJson(route('ab-testing.api.v1.experiments.index'));
 
         $response->assertStatus(200);
         $response->assertJsonCount(2, 'data');
@@ -68,7 +68,7 @@ final class ExperimentsControllerTest extends FeatureTestCase
             'key' => 'experiment-b', 'status' => ExperimentStatus::running->value, 'is_killed' => false, 'traffic_percentage' => 100,
         ]);
 
-        $response = $this->getJson('/api/ab-testing/experiments?status=running');
+        $response = $this->getJson(route('ab-testing.api.v1.experiments.index', ['status' => 'running']));
 
         $response->assertStatus(200);
         $response->assertJsonCount(1, 'data');
@@ -93,7 +93,7 @@ final class ExperimentsControllerTest extends FeatureTestCase
         VariantModel::query()->create(['experiment_id' => $model->id, 'key' => 'control', 'weight' => 50, 'is_control' => true]);
         VariantModel::query()->create(['experiment_id' => $model->id, 'key' => 'green',   'weight' => 50, 'is_control' => false]);
 
-        $response = $this->getJson('/api/ab-testing/experiments/checkout-button-color');
+        $response = $this->getJson(route('ab-testing.api.v1.experiments.show', ['key' => 'checkout-button-color']));
 
         $response->assertStatus(200);
         $response->assertJsonPath('data.id', 'checkout-button-color');
@@ -105,7 +105,7 @@ final class ExperimentsControllerTest extends FeatureTestCase
     #[Test]
     public function show_returns_404_for_unknown_key(): void
     {
-        $response = $this->getJson('/api/ab-testing/experiments/nonexistent');
+        $response = $this->getJson(route('ab-testing.api.v1.experiments.show', ['key' => 'nonexistent']));
 
         $response->assertStatus(404);
     }
@@ -117,7 +117,7 @@ final class ExperimentsControllerTest extends FeatureTestCase
     #[Test]
     public function store_creates_experiment_in_draft_status(): void
     {
-        $response = $this->postJson('/api/ab-testing/experiments', [
+        $response = $this->postJson(route('ab-testing.api.v1.experiments.store'), [
             'key'                => 'checkout-button-color',
             'name'               => 'Checkout Button Color',
             'layer'              => 'checkout',
@@ -139,7 +139,7 @@ final class ExperimentsControllerTest extends FeatureTestCase
     #[Test]
     public function store_returns_422_when_key_is_missing(): void
     {
-        $response = $this->postJson('/api/ab-testing/experiments', [
+        $response = $this->postJson(route('ab-testing.api.v1.experiments.store'), [
             'name' => 'No Key Experiment',
         ]);
 
@@ -151,7 +151,7 @@ final class ExperimentsControllerTest extends FeatureTestCase
     #[Test]
     public function store_creates_experiment_without_optional_fields(): void
     {
-        $response = $this->postJson('/api/ab-testing/experiments', [
+        $response = $this->postJson(route('ab-testing.api.v1.experiments.store'), [
             'key' => 'minimal-experiment',
         ]);
 
@@ -175,7 +175,7 @@ final class ExperimentsControllerTest extends FeatureTestCase
             'traffic_percentage' => 0,
         ]);
 
-        $response = $this->putJson('/api/ab-testing/experiments/checkout-button-color', [
+        $response = $this->putJson(route('ab-testing.api.v1.experiments.update', ['key' => 'checkout-button-color']), [
             'name'               => 'New Name',
             'target_sample_size' => 5000,
         ]);
@@ -193,7 +193,7 @@ final class ExperimentsControllerTest extends FeatureTestCase
     #[Test]
     public function update_returns_404_for_unknown_key(): void
     {
-        $response = $this->putJson('/api/ab-testing/experiments/nonexistent', [
+        $response = $this->putJson(route('ab-testing.api.v1.experiments.update', ['key' => 'nonexistent']), [
             'name' => 'New Name',
         ]);
 
@@ -214,7 +214,7 @@ final class ExperimentsControllerTest extends FeatureTestCase
             'traffic_percentage' => 100,
         ]);
 
-        $response = $this->deleteJson('/api/ab-testing/experiments/checkout-button-color');
+        $response = $this->deleteJson(route('ab-testing.api.v1.experiments.destroy', ['key' => 'checkout-button-color']));
 
         $response->assertStatus(204);
 
@@ -227,7 +227,7 @@ final class ExperimentsControllerTest extends FeatureTestCase
     #[Test]
     public function destroy_returns_404_for_unknown_key(): void
     {
-        $response = $this->deleteJson('/api/ab-testing/experiments/nonexistent');
+        $response = $this->deleteJson(route('ab-testing.api.v1.experiments.destroy', ['key' => 'nonexistent']));
 
         $response->assertStatus(404);
     }
@@ -241,7 +241,7 @@ final class ExperimentsControllerTest extends FeatureTestCase
     {
         Gate::define('manageAbTestingApi', static fn (): bool => false);
 
-        $response = $this->getJson('/api/ab-testing/experiments');
+        $response = $this->getJson(route('ab-testing.api.v1.experiments.index'));
 
         // In testing env (non-production) returns 403; in production returns 404.
         $response->assertStatus(403);
@@ -251,7 +251,7 @@ final class ExperimentsControllerTest extends FeatureTestCase
     public function gate_allows_access_when_not_defined(): void
     {
         // Gate is not defined by default — middleware short-circuits and allows.
-        $response = $this->getJson('/api/ab-testing/experiments');
+        $response = $this->getJson(route('ab-testing.api.v1.experiments.index'));
 
         $response->assertStatus(200);
     }

@@ -43,7 +43,7 @@ final class ExperimentLifecycleControllerTest extends FeatureTestCase
     {
         $this->createExperiment('my-experiment', ExperimentStatus::draft->value, 0);
 
-        $response = $this->postJson('/api/ab-testing/experiments/my-experiment/start');
+        $response = $this->postJson(route('ab-testing.api.v1.experiments.start', ['key' => 'my-experiment']));
 
         $response->assertStatus(200);
         $response->assertJsonPath('data.attributes.status', 'running');
@@ -59,7 +59,7 @@ final class ExperimentLifecycleControllerTest extends FeatureTestCase
     {
         $this->createExperiment('my-experiment', ExperimentStatus::scheduled->value, 50);
 
-        $response = $this->postJson('/api/ab-testing/experiments/my-experiment/start');
+        $response = $this->postJson(route('ab-testing.api.v1.experiments.start', ['key' => 'my-experiment']));
 
         $response->assertStatus(200);
         $response->assertJsonPath('data.attributes.status', 'running');
@@ -70,7 +70,7 @@ final class ExperimentLifecycleControllerTest extends FeatureTestCase
     {
         $this->createExperiment('my-experiment', ExperimentStatus::draft->value, 0);
 
-        $response = $this->postJson('/api/ab-testing/experiments/my-experiment/start');
+        $response = $this->postJson(route('ab-testing.api.v1.experiments.start', ['key' => 'my-experiment']));
 
         $response->assertStatus(200);
         $response->assertJsonPath('data.attributes.traffic_percentage', 100);
@@ -79,7 +79,7 @@ final class ExperimentLifecycleControllerTest extends FeatureTestCase
     #[Test]
     public function start_returns_404_for_unknown_key(): void
     {
-        $response = $this->postJson('/api/ab-testing/experiments/nonexistent/start');
+        $response = $this->postJson(route('ab-testing.api.v1.experiments.start', ['key' => 'nonexistent']));
 
         $response->assertStatus(404);
     }
@@ -93,7 +93,7 @@ final class ExperimentLifecycleControllerTest extends FeatureTestCase
     {
         $this->createExperiment('my-experiment', ExperimentStatus::running->value);
 
-        $response = $this->postJson('/api/ab-testing/experiments/my-experiment/pause');
+        $response = $this->postJson(route('ab-testing.api.v1.experiments.pause', ['key' => 'my-experiment']));
 
         $response->assertStatus(200);
         $response->assertJsonPath('data.attributes.status', 'paused');
@@ -102,7 +102,7 @@ final class ExperimentLifecycleControllerTest extends FeatureTestCase
     #[Test]
     public function pause_returns_404_for_unknown_key(): void
     {
-        $response = $this->postJson('/api/ab-testing/experiments/nonexistent/pause');
+        $response = $this->postJson(route('ab-testing.api.v1.experiments.pause', ['key' => 'nonexistent']));
 
         $response->assertStatus(404);
     }
@@ -116,7 +116,7 @@ final class ExperimentLifecycleControllerTest extends FeatureTestCase
     {
         $this->createExperiment('my-experiment', ExperimentStatus::paused->value);
 
-        $response = $this->postJson('/api/ab-testing/experiments/my-experiment/resume');
+        $response = $this->postJson(route('ab-testing.api.v1.experiments.resume', ['key' => 'my-experiment']));
 
         $response->assertStatus(200);
         $response->assertJsonPath('data.attributes.status', 'running');
@@ -131,7 +131,7 @@ final class ExperimentLifecycleControllerTest extends FeatureTestCase
     {
         $this->createExperiment('my-experiment', ExperimentStatus::running->value);
 
-        $response = $this->postJson('/api/ab-testing/experiments/my-experiment/stop');
+        $response = $this->postJson(route('ab-testing.api.v1.experiments.stop', ['key' => 'my-experiment']));
 
         $response->assertStatus(200);
         $response->assertJsonPath('data.attributes.status', 'completed');
@@ -142,7 +142,7 @@ final class ExperimentLifecycleControllerTest extends FeatureTestCase
     {
         $this->createExperiment('my-experiment', ExperimentStatus::paused->value);
 
-        $response = $this->postJson('/api/ab-testing/experiments/my-experiment/stop');
+        $response = $this->postJson(route('ab-testing.api.v1.experiments.stop', ['key' => 'my-experiment']));
 
         $response->assertStatus(200);
         $response->assertJsonPath('data.attributes.status', 'completed');
@@ -157,7 +157,7 @@ final class ExperimentLifecycleControllerTest extends FeatureTestCase
     {
         $this->createExperiment('my-experiment', ExperimentStatus::running->value, 10);
 
-        $response = $this->postJson('/api/ab-testing/experiments/my-experiment/traffic', [
+        $response = $this->postJson(route('ab-testing.api.v1.experiments.traffic', ['key' => 'my-experiment']), [
             'traffic_percentage' => 50,
         ]);
 
@@ -175,7 +175,7 @@ final class ExperimentLifecycleControllerTest extends FeatureTestCase
     {
         $this->createExperiment('my-experiment', ExperimentStatus::running->value);
 
-        $response = $this->postJson('/api/ab-testing/experiments/my-experiment/traffic', [
+        $response = $this->postJson(route('ab-testing.api.v1.experiments.traffic', ['key' => 'my-experiment']), [
             'traffic_percentage' => 150,
         ]);
 
@@ -187,7 +187,7 @@ final class ExperimentLifecycleControllerTest extends FeatureTestCase
     {
         $this->createExperiment('my-experiment', ExperimentStatus::running->value);
 
-        $response = $this->postJson('/api/ab-testing/experiments/my-experiment/traffic', []);
+        $response = $this->postJson(route('ab-testing.api.v1.experiments.traffic', ['key' => 'my-experiment']), []);
 
         $response->assertStatus(422);
     }
@@ -201,7 +201,7 @@ final class ExperimentLifecycleControllerTest extends FeatureTestCase
     {
         $this->createExperiment('my-experiment', ExperimentStatus::running->value);
 
-        $response = $this->postJson('/api/ab-testing/experiments/my-experiment/kill-switch', [
+        $response = $this->postJson(route('ab-testing.api.v1.experiments.kill-switch', ['key' => 'my-experiment']), [
             'is_killed' => true,
         ]);
 
@@ -220,7 +220,7 @@ final class ExperimentLifecycleControllerTest extends FeatureTestCase
         $model = $this->createExperiment('my-experiment', ExperimentStatus::running->value);
         $model->update(['is_killed' => true]);
 
-        $response = $this->postJson('/api/ab-testing/experiments/my-experiment/kill-switch/deactivate');
+        $response = $this->postJson(route('ab-testing.api.v1.experiments.kill-switch.deactivate', ['key' => 'my-experiment']));
 
         $response->assertStatus(200);
         $response->assertJsonPath('data.attributes.is_killed', false);
@@ -235,19 +235,19 @@ final class ExperimentLifecycleControllerTest extends FeatureTestCase
     {
         $this->createExperiment('lifecycle-test', ExperimentStatus::draft->value, 0);
 
-        $this->postJson('/api/ab-testing/experiments/lifecycle-test/start')->assertStatus(200);
+        $this->postJson(route('ab-testing.api.v1.experiments.start', ['key' => 'lifecycle-test']))->assertStatus(200);
         $this->assertDatabaseHas('ab_testing_experiments', ['key' => 'lifecycle-test', 'status' => 'running']);
 
-        $this->postJson('/api/ab-testing/experiments/lifecycle-test/pause')->assertStatus(200);
+        $this->postJson(route('ab-testing.api.v1.experiments.pause', ['key' => 'lifecycle-test']))->assertStatus(200);
         $this->assertDatabaseHas('ab_testing_experiments', ['key' => 'lifecycle-test', 'status' => 'paused']);
 
-        $this->postJson('/api/ab-testing/experiments/lifecycle-test/resume')->assertStatus(200);
+        $this->postJson(route('ab-testing.api.v1.experiments.resume', ['key' => 'lifecycle-test']))->assertStatus(200);
         $this->assertDatabaseHas('ab_testing_experiments', ['key' => 'lifecycle-test', 'status' => 'running']);
 
-        $this->postJson('/api/ab-testing/experiments/lifecycle-test/stop')->assertStatus(200);
+        $this->postJson(route('ab-testing.api.v1.experiments.stop', ['key' => 'lifecycle-test']))->assertStatus(200);
         $this->assertDatabaseHas('ab_testing_experiments', ['key' => 'lifecycle-test', 'status' => 'completed']);
 
-        $this->deleteJson('/api/ab-testing/experiments/lifecycle-test')->assertStatus(204);
+        $this->deleteJson(route('ab-testing.api.v1.experiments.destroy', ['key' => 'lifecycle-test']))->assertStatus(204);
         $this->assertDatabaseHas('ab_testing_experiments', ['key' => 'lifecycle-test', 'status' => 'archived']);
     }
 }

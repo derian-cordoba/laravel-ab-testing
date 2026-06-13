@@ -260,11 +260,11 @@ return [
                 |               create, start, stop, check verdict, ship or rollback.
                 |
                 |   prefix — URL prefix for all management API routes.
-                |             Default: api/ab-testing → /api/ab-testing/experiments
+                |             Default: api/v1/ab-testing → /api/v1/ab-testing/experiments
                 */
                 'experiments' => [
                     'enabled' => (bool) env('AB_TESTING_EXPERIMENTS_API_ENABLED', true),
-                    'prefix'  => env('AB_TESTING_API_PREFIX', 'api/ab-testing'),
+                    'prefix'  => env('AB_TESTING_API_PREFIX', 'api/v1/ab-testing'),
                 ],
             ],
         ],

@@ -301,7 +301,7 @@ final class ABTestingServiceProvider extends ServiceProvider
                 /** @var string $prefix */
                 $prefix = config(
                     'ab-testing.api.v1.endpoints.experiments.prefix',
-                    'api/ab-testing',
+                    'api/v1/ab-testing',
                 );
 
                 $isApiRequest = static fn (Request $request): bool =>

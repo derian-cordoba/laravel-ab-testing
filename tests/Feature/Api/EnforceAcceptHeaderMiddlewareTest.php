@@ -23,14 +23,14 @@ final class EnforceAcceptHeaderMiddlewareTest extends FeatureTestCase
     public function request_with_wrong_accept_header_is_rejected(): void
     {
         // Non-production: 406 Not Acceptable.
-        $this->getJson('/api/ab-testing/experiments', ['Accept' => 'application/json'])
+        $this->getJson(route('ab-testing.api.v1.experiments.index'), ['Accept' => 'application/json'])
             ->assertStatus(406);
     }
 
     #[Test]
     public function request_with_wildcard_accept_header_is_rejected(): void
     {
-        $this->getJson('/api/ab-testing/experiments', ['Accept' => '*/*'])
+        $this->getJson(route('ab-testing.api.v1.experiments.index'), ['Accept' => '*/*'])
             ->assertStatus(406);
     }
 
@@ -39,14 +39,14 @@ final class EnforceAcceptHeaderMiddlewareTest extends FeatureTestCase
     {
         $acceptType = config('ab-testing.api.v1.accept_type', 'application/vnd.ab-testing.v1+json');
 
-        $this->getJson('/api/ab-testing/experiments', ['Accept' => $acceptType])
+        $this->getJson(route('ab-testing.api.v1.experiments.index'), ['Accept' => $acceptType])
             ->assertStatus(200);
     }
 
     #[Test]
     public function enforcement_applies_to_post_endpoints_too(): void
     {
-        $this->postJson('/api/ab-testing/experiments', ['key' => 'test-experiment'], ['Accept' => 'text/html'])
+        $this->postJson(route('ab-testing.api.v1.experiments.store'), ['key' => 'test-experiment'], ['Accept' => 'text/html'])
             ->assertStatus(406);
     }
 }

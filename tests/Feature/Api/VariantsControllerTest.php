@@ -41,7 +41,7 @@ final class VariantsControllerTest extends FeatureTestCase
     #[Test]
     public function store_adds_a_control_variant(): void
     {
-        $response = $this->postJson('/api/ab-testing/experiments/checkout-button-color/variants', [
+        $response = $this->postJson(route('ab-testing.api.v1.experiments.variants.store', ['key' => 'checkout-button-color']), [
             'key'        => 'control',
             'weight'     => 50,
             'is_control' => true,
@@ -66,7 +66,7 @@ final class VariantsControllerTest extends FeatureTestCase
             'is_control'    => true,
         ]);
 
-        $response = $this->postJson('/api/ab-testing/experiments/checkout-button-color/variants', [
+        $response = $this->postJson(route('ab-testing.api.v1.experiments.variants.store', ['key' => 'checkout-button-color']), [
             'key'    => 'green',
             'weight' => 50,
         ]);
@@ -80,7 +80,7 @@ final class VariantsControllerTest extends FeatureTestCase
     #[Test]
     public function store_returns_404_for_unknown_experiment(): void
     {
-        $response = $this->postJson('/api/ab-testing/experiments/nonexistent/variants', [
+        $response = $this->postJson(route('ab-testing.api.v1.experiments.variants.store', ['key' => 'nonexistent']), [
             'key'    => 'control',
             'weight' => 100,
         ]);
@@ -91,7 +91,7 @@ final class VariantsControllerTest extends FeatureTestCase
     #[Test]
     public function store_returns_422_when_key_is_missing(): void
     {
-        $response = $this->postJson('/api/ab-testing/experiments/checkout-button-color/variants', [
+        $response = $this->postJson(route('ab-testing.api.v1.experiments.variants.store', ['key' => 'checkout-button-color']), [
             'weight' => 50,
         ]);
 
@@ -103,7 +103,7 @@ final class VariantsControllerTest extends FeatureTestCase
     #[Test]
     public function store_returns_422_when_weight_is_missing(): void
     {
-        $response = $this->postJson('/api/ab-testing/experiments/checkout-button-color/variants', [
+        $response = $this->postJson(route('ab-testing.api.v1.experiments.variants.store', ['key' => 'checkout-button-color']), [
             'key' => 'control',
         ]);
 
@@ -115,7 +115,7 @@ final class VariantsControllerTest extends FeatureTestCase
     #[Test]
     public function store_returns_422_when_weight_exceeds_100(): void
     {
-        $response = $this->postJson('/api/ab-testing/experiments/checkout-button-color/variants', [
+        $response = $this->postJson(route('ab-testing.api.v1.experiments.variants.store', ['key' => 'checkout-button-color']), [
             'key'    => 'control',
             'weight' => 150,
         ]);
@@ -145,7 +145,7 @@ final class VariantsControllerTest extends FeatureTestCase
         ]);
 
         $response = $this->putJson(
-            "/api/ab-testing/experiments/checkout-button-color/variants/{$variant->id}",
+            route('ab-testing.api.v1.experiments.variants.update', ['key' => 'checkout-button-color', 'id' => $variant->id]),
             ['key' => 'control', 'weight' => 60, 'is_control' => true],
         );
 
@@ -176,7 +176,7 @@ final class VariantsControllerTest extends FeatureTestCase
 
         // Try to update the other experiment's variant via checkout-button-color path.
         $response = $this->putJson(
-            "/api/ab-testing/experiments/checkout-button-color/variants/{$otherVariant->id}",
+            route('ab-testing.api.v1.experiments.variants.update', ['key' => 'checkout-button-color', 'id' => $otherVariant->id]),
             ['key' => 'control', 'weight' => 100, 'is_control' => true],
         );
 
@@ -205,7 +205,7 @@ final class VariantsControllerTest extends FeatureTestCase
         ]);
 
         $response = $this->deleteJson(
-            "/api/ab-testing/experiments/checkout-button-color/variants/{$treatment->id}",
+            route('ab-testing.api.v1.experiments.variants.destroy', ['key' => 'checkout-button-color', 'id' => $treatment->id]),
         );
 
         $response->assertStatus(204);
@@ -219,7 +219,7 @@ final class VariantsControllerTest extends FeatureTestCase
     public function destroy_returns_404_for_unknown_variant(): void
     {
         $response = $this->deleteJson(
-            '/api/ab-testing/experiments/checkout-button-color/variants/99999',
+            route('ab-testing.api.v1.experiments.variants.destroy', ['key' => 'checkout-button-color', 'id' => 99999]),
         );
 
         $response->assertStatus(404);

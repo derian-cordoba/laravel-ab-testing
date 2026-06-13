@@ -133,6 +133,15 @@ final class ConfigStructureTest extends TestCase
     }
 
     #[Test]
+    public function api_v1_experiments_prefix_defaults_to_versioned_path(): void
+    {
+        self::assertSame(
+            'api/v1/ab-testing',
+            $this->config['api']['v1']['endpoints']['experiments']['prefix'],
+        );
+    }
+
+    #[Test]
     public function assignments_key_no_longer_exists_at_top_level(): void
     {
         self::assertArrayNotHasKey('assignments', $this->config);

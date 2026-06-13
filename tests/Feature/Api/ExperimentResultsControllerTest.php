@@ -30,7 +30,7 @@ final class ExperimentResultsControllerTest extends FeatureTestCase
     #[Test]
     public function results_returns_404_when_experiment_does_not_exist(): void
     {
-        $response = $this->getJson('/api/ab-testing/experiments/nonexistent/results');
+        $response = $this->getJson(route('ab-testing.api.v1.experiments.results', ['key' => 'nonexistent']));
 
         $response->assertStatus(404);
     }
@@ -45,7 +45,7 @@ final class ExperimentResultsControllerTest extends FeatureTestCase
             'is_killed'          => false,
         ]);
 
-        $response = $this->getJson('/api/ab-testing/experiments/checkout-button-color/results');
+        $response = $this->getJson(route('ab-testing.api.v1.experiments.results', ['key' => 'checkout-button-color']));
 
         $response->assertStatus(404);
         $response->assertJsonStructure([
@@ -63,7 +63,7 @@ final class ExperimentResultsControllerTest extends FeatureTestCase
     {
         $this->seedExperimentWithRollups('checkout-button-color');
 
-        $response = $this->getJson('/api/ab-testing/experiments/checkout-button-color/results');
+        $response = $this->getJson(route('ab-testing.api.v1.experiments.results', ['key' => 'checkout-button-color']));
 
         $response->assertStatus(200);
         $response->assertJsonStructure([
@@ -90,7 +90,7 @@ final class ExperimentResultsControllerTest extends FeatureTestCase
     {
         $this->seedExperimentWithRollups('checkout-button-color');
 
-        $response = $this->getJson('/api/ab-testing/experiments/checkout-button-color/results');
+        $response = $this->getJson(route('ab-testing.api.v1.experiments.results', ['key' => 'checkout-button-color']));
 
         $response->assertStatus(200);
 
@@ -107,7 +107,7 @@ final class ExperimentResultsControllerTest extends FeatureTestCase
     {
         $this->seedExperimentWithRollups('checkout-button-color');
 
-        $response = $this->getJson('/api/ab-testing/experiments/checkout-button-color/results');
+        $response = $this->getJson(route('ab-testing.api.v1.experiments.results', ['key' => 'checkout-button-color']));
 
         $response->assertStatus(200);
         $response->assertJsonStructure([
@@ -126,7 +126,7 @@ final class ExperimentResultsControllerTest extends FeatureTestCase
     #[Test]
     public function verdict_returns_404_when_experiment_does_not_exist(): void
     {
-        $response = $this->getJson('/api/ab-testing/experiments/nonexistent/verdict');
+        $response = $this->getJson(route('ab-testing.api.v1.experiments.verdict', ['key' => 'nonexistent']));
 
         $response->assertStatus(404);
     }
@@ -141,7 +141,7 @@ final class ExperimentResultsControllerTest extends FeatureTestCase
             'is_killed'          => false,
         ]);
 
-        $response = $this->getJson('/api/ab-testing/experiments/checkout-button-color/verdict');
+        $response = $this->getJson(route('ab-testing.api.v1.experiments.verdict', ['key' => 'checkout-button-color']));
 
         $response->assertStatus(200);
         $response->assertJsonPath('data.id', 'checkout-button-color');
@@ -155,7 +155,7 @@ final class ExperimentResultsControllerTest extends FeatureTestCase
     {
         $this->seedExperimentWithRollups('checkout-button-color');
 
-        $response = $this->getJson('/api/ab-testing/experiments/checkout-button-color/verdict');
+        $response = $this->getJson(route('ab-testing.api.v1.experiments.verdict', ['key' => 'checkout-button-color']));
 
         $response->assertStatus(200);
         $response->assertJsonStructure([
@@ -218,7 +218,7 @@ final class ExperimentResultsControllerTest extends FeatureTestCase
             'sum_of_squared_values' => 50.0,
         ]);
 
-        $response = $this->getJson('/api/ab-testing/experiments/srm-experiment/verdict');
+        $response = $this->getJson(route('ab-testing.api.v1.experiments.verdict', ['key' => 'srm-experiment']));
 
         $response->assertStatus(200);
         $response->assertJsonPath('data.attributes.srm_detected', true);
@@ -230,7 +230,7 @@ final class ExperimentResultsControllerTest extends FeatureTestCase
     {
         $this->seedExperimentWithRollups('checkout-button-color', ExperimentStatus::completed->value);
 
-        $response = $this->getJson('/api/ab-testing/experiments/checkout-button-color/verdict');
+        $response = $this->getJson(route('ab-testing.api.v1.experiments.verdict', ['key' => 'checkout-button-color']));
 
         $response->assertStatus(200);
 

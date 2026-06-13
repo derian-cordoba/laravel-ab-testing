@@ -8,6 +8,7 @@ use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\TestCase;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Testing\TestResponse;
 
@@ -38,6 +39,12 @@ abstract class FeatureTestCase extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        // Package routes are loaded during service-provider boot. Refresh the
+        // route-name/action lookup tables so route('...') resolves correctly
+        // inside tests against the current application instance.
+        Route::getRoutes()->refreshNameLookups();
+        Route::getRoutes()->refreshActionLookups();
 
         // Ensure the gate is not defined so RequiresApiAccess always allows
         // access unless a test explicitly defines it.

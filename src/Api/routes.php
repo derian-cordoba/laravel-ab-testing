@@ -13,7 +13,7 @@ use ABTests\Http\Middleware\RequiresApiAccess;
 use ABTests\Http\Middleware\SetApiContentTypeMiddleware;
 use Illuminate\Support\Facades\Route;
 
-$prefix = config('ab-testing.api.v1.endpoints.experiments.prefix', 'api/ab-testing');
+$prefix = config('ab-testing.api.v1.endpoints.experiments.prefix', 'api/v1/ab-testing');
 
 $middleware = [
     ...config('ab-testing.api.v1.middleware', ['api']),
@@ -25,7 +25,7 @@ $middleware = [
 
 Route::prefix($prefix)
     ->middleware($middleware)
-    ->name('ab-testing.api.')
+    ->name('ab-testing.api.v1.')
     ->group(function (): void {
         if (config('ab-testing.api.v1.endpoints.assignments.enabled', true)) {
             $path = config('ab-testing.api.v1.endpoints.assignments.path', 'assignments');
