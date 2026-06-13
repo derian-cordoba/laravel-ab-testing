@@ -13,3 +13,14 @@ vendor/
 .phpstan.cache/
 
 coverage/
+
+tests/Application/bootstrap/cache/*
+!tests/Application/bootstrap/cache/.gitkeep
+tests/Application/storage/framework/cache/*
+!tests/Application/storage/framework/cache/.gitkeep
+tests/Application/storage/framework/sessions/*
+!tests/Application/storage/framework/sessions/.gitkeep
+tests/Application/storage/framework/views/*
+!tests/Application/storage/framework/views/.gitkeep
+tests/Application/storage/logs/*
+!tests/Application/storage/logs/.gitkeep
