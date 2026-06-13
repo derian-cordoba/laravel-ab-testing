@@ -6,6 +6,8 @@ use ABTests\Http\Controllers\Api\AssignmentsController;
 use ABTests\Http\Controllers\Api\ExperimentLifecycleController;
 use ABTests\Http\Controllers\Api\ExperimentResultsController;
 use ABTests\Http\Controllers\Api\ExperimentsController;
+use ABTests\Http\Controllers\Api\FeatureFlagLifecycleController;
+use ABTests\Http\Controllers\Api\FeatureFlagsController;
 use ABTests\Http\Controllers\Api\VariantsController;
 use ABTests\Http\Middleware\ApiExceptionHandlerMiddleware;
 use ABTests\Http\Middleware\EnforceAcceptHeaderMiddleware;
@@ -55,6 +57,23 @@ Route::prefix($prefix)
                 Route::post('/{key}/variants', [VariantsController::class, 'store'])->name('variants.store');
                 Route::put('/{key}/variants/{id}', [VariantsController::class, 'update'])->name('variants.update');
                 Route::delete('/{key}/variants/{id}', [VariantsController::class, 'destroy'])->name('variants.destroy');
+            });
+        }
+
+        if (config('ab-testing.api.v1.endpoints.feature_flags.enabled', true)) {
+            Route::prefix('/feature-flags')->as('feature-flags.')->group(static function () {
+                Route::get('/', [FeatureFlagsController::class, 'index'])->name('index');
+                Route::post('/', [FeatureFlagsController::class, 'store'])->name('store');
+                Route::get('/{key}', [FeatureFlagsController::class, 'show'])->name('show');
+                Route::delete('/{key}', [FeatureFlagsController::class, 'destroy'])->name('destroy');
+
+                Route::post('/{key}/enable', [FeatureFlagLifecycleController::class, 'enable'])->name('enable');
+                Route::post('/{key}/disable', [FeatureFlagLifecycleController::class, 'disable'])->name('disable');
+                Route::post('/{key}/rollout', [FeatureFlagLifecycleController::class, 'rollout'])->name('rollout');
+                Route::post('/{key}/kill-switch', [FeatureFlagLifecycleController::class, 'killSwitch'])->name('kill-switch');
+                Route::post('/{key}/kill-switch/deactivate', [FeatureFlagLifecycleController::class, 'deactivateKillSwitch'])->name('kill-switch.deactivate');
+                Route::post('/{key}/conditions', [FeatureFlagLifecycleController::class, 'conditions'])->name('conditions');
+                Route::delete('/{key}/conditions', [FeatureFlagLifecycleController::class, 'clearConditions'])->name('conditions.clear');
             });
         }
     });

@@ -29,6 +29,18 @@ The package exposes a versioned HTTP API for experiment lifecycle management, va
 - [Results](#results)
   - [Get results](#get-results)
   - [Get verdict](#get-verdict)
+- [Feature flags](#feature-flags)
+  - [List feature flags](#list-feature-flags)
+  - [Create a feature flag](#create-a-feature-flag)
+  - [Get a feature flag](#get-a-feature-flag)
+  - [Delete a feature flag](#delete-a-feature-flag)
+  - [Enable](#enable)
+  - [Disable](#disable)
+  - [Set rollout percentage](#set-rollout-percentage)
+  - [Flag kill switch](#flag-kill-switch)
+  - [Deactivate flag kill switch](#deactivate-flag-kill-switch)
+  - [Set targeting conditions](#set-targeting-conditions)
+  - [Clear targeting conditions](#clear-targeting-conditions)
 - [Error responses](#error-responses)
 - [CI/CD integration example](#cicd-integration-example)
 
@@ -127,11 +139,15 @@ When the gate denies access, the API returns `403` in non-production environment
 
         'endpoints' => [
             'experiments' => [
-                // Set to false to disable all management API routes entirely.
+                // Set to false to disable all experiment management API routes.
                 'enabled' => (bool) env('AB_TESTING_EXPERIMENTS_API_ENABLED', true),
 
-                // URL prefix. Default: api/ab-testing → /api/ab-testing/experiments
-                'prefix'  => env('AB_TESTING_API_PREFIX', 'api/ab-testing'),
+                // URL prefix. Default: api/v1/ab-testing → /api/v1/ab-testing/experiments
+                'prefix'  => env('AB_TESTING_API_PREFIX', 'api/v1/ab-testing'),
+            ],
+            'feature_flags' => [
+                // Set to false to disable all feature flag API routes.
+                'enabled' => (bool) env('AB_TESTING_FEATURE_FLAGS_API_ENABLED', true),
             ],
         ],
     ],
@@ -652,6 +668,279 @@ Like all other endpoints, the verdict is wrapped in the standard JSON:API resour
 | Otherwise | `inconclusive` |
 
 **Response `404`** — experiment key does not exist.
+
+---
+
+## Feature flags
+
+Feature flags control exposure (release management). Unlike experiments, flags resolve to a value rather than measuring outcomes — there are no variants, no analysis, no verdict. The flag's lifecycle is simpler: it is either enabled or disabled, optionally scoped to a rollout percentage and/or targeting conditions.
+
+A flag's resource identifier in the JSON:API response is its `key`. The resource type is `feature-flags`.
+
+---
+
+### List feature flags
+
+```
+GET /api/v1/ab-testing/feature-flags
+```
+
+Returns a paginated list of all feature flag state records, ordered by most recently updated.
+
+**Query parameters**
+
+| Parameter    | Type    | Description                                                                     |
+|--------------|---------|---------------------------------------------------------------------------------|
+| `is_enabled` | boolean | Filter by enabled state (`1` / `true` for enabled, `0` / `false` for disabled). |
+| `page`       | integer | Page number (default: 1). Page size is fixed at 25.                             |
+
+**Response `200`**
+
+```json
+{
+  "data": [
+    {
+      "id": "dark-mode",
+      "type": "feature-flags",
+      "attributes": {
+        "is_enabled": true,
+        "rollout_percentage": 50,
+        "conditions": [],
+        "conditions_logic": "all",
+        "is_killed": false,
+        "killed_at": null,
+        "last_evaluated_at": null,
+        "created_at": "2025-01-14T09:00:00+00:00",
+        "updated_at": "2025-01-15T10:00:00+00:00"
+      }
+    }
+  ],
+  "links": { "first": "...", "last": "...", "prev": null, "next": null },
+  "meta": { "current_page": 1, "total": 1 }
+}
+```
+
+---
+
+### Create a feature flag
+
+```
+POST /api/v1/ab-testing/feature-flags
+```
+
+Creates a new feature flag state record. The flag is disabled by default.
+
+**Request body**
+
+| Field                | Type    | Required | Description                                                                    |
+|----------------------|---------|----------|--------------------------------------------------------------------------------|
+| `key`                | string  | yes      | Stable, kebab-case identifier. Must be unique.                                 |
+| `is_enabled`         | boolean | no       | Initial enabled state. Defaults to `false`.                                    |
+| `rollout_percentage` | integer | no       | Percentage of eligible units that receive the flag (0–100). Defaults to `100`. |
+
+```json
+{
+  "key": "dark-mode",
+  "is_enabled": false,
+  "rollout_percentage": 100
+}
+```
+
+**Response `201`** — same shape as [Get a feature flag](#get-a-feature-flag).
+
+**Response `422`** — validation error when `key` is missing or `rollout_percentage` is out of range.
+
+---
+
+### Get a feature flag
+
+```
+GET /api/v1/ab-testing/feature-flags/{key}
+```
+
+Returns the current operational state of a feature flag.
+
+**Response `200`**
+
+```json
+{
+  "data": {
+    "id": "dark-mode",
+    "type": "feature-flags",
+    "attributes": {
+      "is_enabled": true,
+      "rollout_percentage": 50,
+      "conditions": [
+        { "attribute": "plan", "operator": "equals", "expected": "pro" }
+      ],
+      "conditions_logic": "all",
+      "is_killed": false,
+      "killed_at": null,
+      "last_evaluated_at": "2025-01-15T10:00:00+00:00",
+      "created_at": "2025-01-14T09:00:00+00:00",
+      "updated_at": "2025-01-15T10:00:00+00:00"
+    }
+  }
+}
+```
+
+**Response `404`** — flag key does not exist.
+
+---
+
+### Delete a feature flag
+
+```
+DELETE /api/v1/ab-testing/feature-flags/{key}
+```
+
+Permanently removes the feature flag state record. This action is irreversible.
+
+**Response `204`** — deleted successfully, no body.
+
+**Response `404`** — flag key does not exist.
+
+---
+
+### Enable
+
+```
+POST /api/v1/ab-testing/feature-flags/{key}/enable
+```
+
+Sets `is_enabled` to `true`. Units within the `rollout_percentage` will receive the flag's active value on the next resolution. Idempotent when the flag is already enabled.
+
+**Response `200`** — updated flag resource.
+
+**Response `404`** — flag key does not exist.
+
+---
+
+### Disable
+
+```
+POST /api/v1/ab-testing/feature-flags/{key}/disable
+```
+
+Sets `is_enabled` to `false`. All units receive the flag's default value regardless of rollout percentage. Idempotent when the flag is already disabled.
+
+**Response `200`** — updated flag resource.
+
+**Response `404`** — flag key does not exist.
+
+---
+
+### Set rollout percentage
+
+```
+POST /api/v1/ab-testing/feature-flags/{key}/rollout
+```
+
+Updates the percentage of eligible units that receive the enabled flag. Useful for gradual rollouts without toggling the flag on and off: start at `10`, verify, ramp to `50`, then `100`.
+
+**Request body**
+
+| Field                | Type    | Required | Description                        |
+|----------------------|---------|----------|------------------------------------|
+| `rollout_percentage` | integer | yes      | Target rollout percentage (0–100). |
+
+```json
+{ "rollout_percentage": 25 }
+```
+
+**Response `200`** — updated flag resource.
+
+**Response `404`** — flag key does not exist.
+
+**Response `422`** — `rollout_percentage` is missing or outside 0–100.
+
+---
+
+### Flag kill switch
+
+```
+POST /api/v1/ab-testing/feature-flags/{key}/kill-switch
+```
+
+Activates or deactivates the kill switch. When active, all units immediately receive the flag's default value, bypassing `is_enabled` and `rollout_percentage`.
+
+**Request body**
+
+| Field       | Type    | Default | Description                                |
+|-------------|---------|---------|--------------------------------------------|
+| `is_killed` | boolean | `true`  | `true` to activate, `false` to deactivate. |
+
+```json
+{ "is_killed": true }
+```
+
+**Response `200`** — updated flag resource.
+
+**Response `404`** — flag key does not exist.
+
+---
+
+### Deactivate flag kill switch
+
+```
+POST /api/v1/ab-testing/feature-flags/{key}/kill-switch/deactivate
+```
+
+Convenience alias that always deactivates the kill switch, returning the flag to its normal enabled/disabled + rollout behaviour. Equivalent to `POST /kill-switch` with `{ "is_killed": false }`. Idempotent when the kill switch is not active.
+
+**Response `200`** — updated flag resource.
+
+**Response `404`** — flag key does not exist.
+
+---
+
+### Set targeting conditions
+
+```
+POST /api/v1/ab-testing/feature-flags/{key}/conditions
+```
+
+Replaces the flag's targeting conditions. Only units whose attributes satisfy every condition (with `conditions_logic: "all"`) or at least one condition (with `conditions_logic: "any"`) are eligible for the flag within the rollout percentage. Replaces any previously set conditions entirely.
+
+**Request body**
+
+| Field                    | Type   | Required | Description                                                                  |
+|--------------------------|--------|----------|------------------------------------------------------------------------------|
+| `conditions`             | array  | yes      | List of condition objects. Pass an empty array to clear conditions.          |
+| `conditions.*.attribute` | string | yes      | Unit attribute key to evaluate.                                              |
+| `conditions.*.operator`  | string | yes      | One of: `equals`, `not_equals`, `in`, `not_in`, `greater_than`, `less_than`. |
+| `conditions.*.expected`  | mixed  | yes      | Value to compare against. Use an array for `in` / `not_in`.                  |
+| `conditions_logic`       | string | no       | `"all"` (AND, default) or `"any"` (OR).                                      |
+
+```json
+{
+  "conditions": [
+    { "attribute": "plan",    "operator": "equals", "expected": "pro" },
+    { "attribute": "country", "operator": "in",     "expected": ["US", "CA"] }
+  ],
+  "conditions_logic": "all"
+}
+```
+
+**Response `200`** — updated flag resource with the new conditions embedded.
+
+**Response `404`** — flag key does not exist.
+
+**Response `422`** — `conditions` is missing, a condition entry is malformed, or `conditions_logic` is not `"all"` or `"any"`.
+
+---
+
+### Clear targeting conditions
+
+```
+DELETE /api/v1/ab-testing/feature-flags/{key}/conditions
+```
+
+Removes all targeting conditions. Every unit within the rollout percentage becomes eligible. Idempotent when no conditions are set.
+
+**Response `204`** — cleared successfully, no body.
+
+**Response `404`** — flag key does not exist.
 
 ---
 
