@@ -12,7 +12,9 @@ use ABTests\Dashboard\Livewire\ExperimentsOverview;
 use ABTests\Dashboard\Livewire\FeatureFlagDetail;
 use ABTests\Dashboard\Livewire\FeatureFlagsOverview;
 use ABTests\Dashboard\Livewire\LayersMap;
+use ABTests\Dashboard\Livewire\MetricsCatalog;
 use ABTests\Dashboard\Livewire\QaOverrides;
+use ABTests\Dashboard\Livewire\SegmentsOverview;
 use Illuminate\Support\Facades\Route;
 
 $prefix = config('ab-testing.dashboard.path', 'ab-testing');
@@ -35,4 +37,6 @@ Route::prefix($prefix)
         Route::get('/audit-log', AuditLog::class)->name('audit-log');
         Route::get('/qa-overrides', QaOverrides::class)->name('qa-overrides');
         Route::get('/layers', LayersMap::class)->name('layers');
+        Route::get('/metrics', MetricsCatalog::class)->name('metrics');
+        Route::get('/segments', SegmentsOverview::class)->name('segments');
     });

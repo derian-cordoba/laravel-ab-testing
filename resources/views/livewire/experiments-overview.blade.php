@@ -196,8 +196,25 @@
                         @if($statusEnum !== ExperimentStatus::archived)
                             <div class="px-5 py-5">
                                 <div class="flex items-center justify-between mb-4">
-                                    <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wide">
-                                        Controls</h2>
+                                    <div class="flex items-center gap-3">
+                                        <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wide">Controls</h2>
+                                        <div x-data="{ copied: false }" class="flex items-center gap-1">
+                                            <code class="font-mono text-xs text-gray-600">{{ $model->key }}</code>
+                                            <button
+                                                type="button"
+                                                title="Copy key"
+                                                @click="navigator.clipboard && navigator.clipboard.writeText('{{ $model->key }}'); copied = true; setTimeout(() => copied = false, 1500)"
+                                                class="rounded p-0.5 text-gray-700 hover:text-gray-400 transition-colors"
+                                            >
+                                                <svg x-show="!copied" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184"/>
+                                                </svg>
+                                                <svg x-show="copied" class="h-3 w-3 text-green-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
                                     <a href="{{ route('ab-testing.experiments.show', $model->key) }}"
                                        class="text-xs text-violet-400 hover:text-violet-200 transition-colors">
                                         Full detail →
