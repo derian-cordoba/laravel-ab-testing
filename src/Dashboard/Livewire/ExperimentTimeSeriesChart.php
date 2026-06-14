@@ -20,6 +20,9 @@ final class ExperimentTimeSeriesChart extends Component
 {
     public string $experimentKey = '';
 
+    /** Set by refresh() so render() knows to dispatch the post-morph signal. */
+    private bool $shouldDispatchRefresh = false;
+
     public function mount(string $experimentKey): void
     {
         $this->experimentKey = $experimentKey;
@@ -28,12 +31,22 @@ final class ExperimentTimeSeriesChart extends Component
     #[On('experiment-updated')]
     public function refresh(): void
     {
-        // Re-renders automatically.
+        // Mark that render() should dispatch 'chart-data-refreshed' after the
+        // next morph. Doing the dispatch here would require a second buildSeries()
+        // call, since render() runs immediately after this method returns.
+        $this->shouldDispatchRefresh = true;
     }
 
     public function render(): View
     {
         ['series' => $series, 'dates' => $dates] = $this->buildSeries();
+
+        if ($this->shouldDispatchRefresh) {
+            // Dispatched after the DOM morph commits, so Alpine can safely read
+            // the updated carrier element when it receives the browser event.
+            $this->dispatch('chart-data-refreshed', hasData: !empty($series) && count($dates) >= 2);
+            $this->shouldDispatchRefresh = false;
+        }
 
         return view('ab-testing::livewire.experiment-time-series-chart', compact('series', 'dates'));
     }

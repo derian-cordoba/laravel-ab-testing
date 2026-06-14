@@ -205,8 +205,10 @@ final readonly class ResultsService
     /**
      * Build a minimal ExperimentDefinition from rollup rows when the experiment
      * is not registered in the code registry (runtime-defined or DB-only).
-     * Variant keys and metric keys are inferred from rollup data. The first
-     * variant key encountered (alphabetically) is treated as control.
+     *
+     * Variant weight and control designation are read from the ab_testing_variants
+     * snapshot table when available — this is its purpose. Alphabetical fallback
+     * inference (first key = control) only applies when no snapshot exists.
      */
     private function buildDefinitionFromRollups(string $experimentKey, ExperimentModel $model): ?ExperimentDefinition
     {
@@ -230,19 +232,39 @@ final readonly class ResultsService
             );
         }
 
+        // Prefer the variants snapshot over alphabetical inference. The snapshot
+        // is populated on experiment registration / start and is the authoritative
+        // source for weight and control designation for DB-only experiments.
+        $snapshots = $model->variants->keyBy('key');
+
         $variantKeys = $rollups->pluck('variant_key')->unique()->sort()->values();
         $metricKeys  = $rollups->pluck('metric_key')->unique()->values();
 
         $variantCount = $variantKeys->count();
-        $weight       = (int) floor(100 / $variantCount);
-        $remainder    = 100 - ($weight * $variantCount);
+        $evenWeight   = (int) floor(100 / $variantCount);
+        $remainder    = 100 - ($evenWeight * $variantCount);
 
-        $variants = $variantKeys->map(static function (string $key, int $index) use ($weight, $remainder, $variantKeys): GenericVariant {
-            $isControl     = $index === 0;
-            $variantWeight = $isControl ? $weight + $remainder : $weight;
+        $variants = $variantKeys->map(
+            static function (string $key, int $index) use ($evenWeight, $remainder, $snapshots): GenericVariant {
+                $snapshot = $snapshots->get($key);
 
-            return new GenericVariant(key: $key, weight: $variantWeight, isControl: $isControl);
-        })->values()->all();
+                if ($snapshot !== null) {
+                    return new GenericVariant(
+                        key: $key,
+                        weight: (int) $snapshot->weight,
+                        isControl: (bool) $snapshot->is_control,
+                    );
+                }
+
+                // Fallback: no snapshot — infer control from alphabetical position.
+                $isControl = $index === 0;
+                return new GenericVariant(
+                    key: $key,
+                    weight: $isControl ? $evenWeight + $remainder : $evenWeight,
+                    isControl: $isControl,
+                );
+            }
+        )->values()->all();
 
         $metrics = $metricKeys->map(static fn (string $key, int $index): MetricBinding => new MetricBinding(
             metric: $key,
