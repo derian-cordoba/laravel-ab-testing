@@ -71,9 +71,10 @@
 <script>window._abRoutes = {!! $abPaletteRoutes !!};</script>
 
 <div x-data="{
-        open:   false,
-        query:  '',
-        routes: window._abRoutes,
+        open:          false,
+        query:         '',
+        activeIndex:   0,
+        routes:        window._abRoutes,
         get filtered() {
             var q = this.query.toLowerCase().trim();
             if (!q) return this.routes;
@@ -81,11 +82,38 @@
                 return r.label.toLowerCase().includes(q) || r.group.toLowerCase().includes(q);
             });
         },
-        show() { this.open = true; this.query = ''; this.$nextTick(function() { document.getElementById('ab-palette-input') && document.getElementById('ab-palette-input').focus(); }); },
+        show() {
+            this.open = true; this.query = ''; this.activeIndex = 0;
+            this.$nextTick(function() { document.getElementById('ab-palette-input') && document.getElementById('ab-palette-input').focus(); });
+        },
         hide() { this.open = false; },
+        moveDown() {
+            if (this.filtered.length === 0) return;
+            this.activeIndex = (this.activeIndex + 1) % this.filtered.length;
+            this.scrollActiveIntoView();
+        },
+        moveUp() {
+            if (this.filtered.length === 0) return;
+            this.activeIndex = (this.activeIndex - 1 + this.filtered.length) % this.filtered.length;
+            this.scrollActiveIntoView();
+        },
+        go() {
+            var r = this.filtered[this.activeIndex];
+            if (r) { this.hide(); window.location.href = r.url; }
+        },
+        scrollActiveIntoView() {
+            this.$nextTick(function() {
+                var el = document.getElementById('ab-palette-list');
+                var active = el && el.querySelector('[data-active]');
+                if (active) active.scrollIntoView({ block: 'nearest' });
+            });
+        },
     }"
      @ab:open-palette.document="show()"
      @keydown.escape.window="hide()"
+     @keydown.arrow-down.window.prevent="if (open) moveDown()"
+     @keydown.arrow-up.window.prevent="if (open) moveUp()"
+     @keydown.enter.window.prevent="if (open) go()"
      x-show="open"
      x-transition:enter="transition ease-out duration-150"
      x-transition:enter-start="opacity-0"
@@ -110,7 +138,8 @@
             </svg>
             <input
                 id="ab-palette-input"
-                x-model="query"
+                x-model.debounce.100ms="query"
+                @input="activeIndex = 0"
                 type="text"
                 placeholder="Search pages…"
                 autocomplete="off"
@@ -119,17 +148,23 @@
         </div>
 
         {{-- Results --}}
-        <div class="max-h-80 overflow-y-auto py-2">
+        <div id="ab-palette-list" class="max-h-80 overflow-y-auto py-2">
             <template x-if="filtered.length === 0">
                 <p class="px-4 py-6 text-center text-sm text-gray-500">No pages match.</p>
             </template>
             <template x-for="(r, i) in filtered" :key="i">
                 <a :href="r.url"
                    @click="hide()"
-                   class="flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-gray-800/60 transition-colors">
+                   @mouseenter="activeIndex = i"
+                   :data-active="i === activeIndex ? true : undefined"
+                   :class="i === activeIndex ? 'bg-gray-800/70' : 'hover:bg-gray-800/40'"
+                   class="flex items-center gap-3 px-4 py-2.5 text-sm transition-colors">
                     <span class="text-xs text-gray-600 w-24 shrink-0 truncate" x-text="r.group"></span>
-                    <span class="text-gray-200 flex-1" x-text="r.label"></span>
-                    <svg class="h-3.5 w-3.5 shrink-0 text-gray-600" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <span class="flex-1" :class="i === activeIndex ? 'text-white' : 'text-gray-200'" x-text="r.label"></span>
+                    <svg x-show="i === activeIndex" class="h-3.5 w-3.5 shrink-0 text-violet-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/>
+                    </svg>
+                    <svg x-show="i !== activeIndex" class="h-3.5 w-3.5 shrink-0 text-gray-600" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/>
                     </svg>
                 </a>
