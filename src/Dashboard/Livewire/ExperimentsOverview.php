@@ -11,6 +11,7 @@ use ABTests\Registry\ExperimentRegistry;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\On;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Throwable;
 
@@ -21,6 +22,12 @@ use Throwable;
  */
 final class ExperimentsOverview extends Component
 {
+    #[Url(as: 'q', except: '')]
+    public string $search = '';
+
+    #[Url(as: 'status', except: '')]
+    public string $statusFilter = '';
+
     /** Re-render so card headers reflect the updated state after any action. */
     #[On('experiment-updated')]
     public function onExperimentUpdated(): void {
@@ -29,10 +36,21 @@ final class ExperimentsOverview extends Component
 
     public function render(): View
     {
-        $experiments = ExperimentModel::query()
-            ->orderByDesc('created_at')
-            ->get()
-            ->all();
+        $query = ExperimentModel::query()->orderByDesc('created_at');
+
+        if ($this->search !== '') {
+            $term = '%' . $this->search . '%';
+            $query->where(static fn ($q) => $q
+                ->where('key', 'like', $term)
+                ->orWhere('name', 'like', $term)
+            );
+        }
+
+        if ($this->statusFilter !== '') {
+            $query->where('status', $this->statusFilter);
+        }
+
+        $experiments = $query->get()->all();
 
         $registry = app(ExperimentRegistry::class);
 

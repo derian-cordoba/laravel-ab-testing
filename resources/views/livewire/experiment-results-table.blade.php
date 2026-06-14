@@ -78,6 +78,46 @@
             </div>
 
             @if($results->hasResults())
+                @php
+                    // Sample size gauge
+                    $targetSampleSize = $results->model->target_sample_size;
+                    $currentUnits     = $results->totalAssignedUnits();
+                    $samplePct        = $targetSampleSize
+                        ? (int) min(100, round($currentUnits / $targetSampleSize * 100))
+                        : null;
+
+                    // CI bar scale: find max absolute bound across all treatment variants,
+                    // floor at 0.15 so even tiny CIs render visibly.
+                    $ciMaxBound = 0.15;
+                    foreach ($results->variantResults as $vr) {
+                        $interval = $vr->verdictResult?->frequentist?->interval ?? null;
+                        if ($interval !== null) {
+                            $ciMaxBound = max($ciMaxBound, abs($interval[0]), abs($interval[1]));
+                        }
+                    }
+                    $ciMaxBound = min($ciMaxBound, 1.0);
+                @endphp
+
+                {{-- Sample size progress gauge --}}
+                @if($samplePct !== null)
+                    <div class="border-b border-gray-700/60 px-6 py-3">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="text-xs text-gray-500 font-medium uppercase tracking-wide">Sample Size Progress</span>
+                            <span class="text-xs tabular-nums text-gray-400">
+                                {{ number_format($currentUnits) }} / {{ number_format($targetSampleSize) }}
+                                <span class="ml-1.5 {{ $samplePct >= 100 ? 'text-green-400' : 'text-gray-500' }}">{{ $samplePct }}%</span>
+                            </span>
+                        </div>
+                        <div class="h-2 rounded-full bg-gray-700/70 overflow-hidden">
+                            <div class="h-full rounded-full transition-all duration-500 {{ $samplePct >= 100 ? 'bg-green-500' : ($samplePct >= 50 ? 'bg-violet-500' : 'bg-violet-600/70') }}"
+                                 style="width: {{ $samplePct }}%"></div>
+                        </div>
+                        @if($samplePct >= 100)
+                            <p class="mt-1 text-xs text-green-500/80">Target reached — results are fully powered.</p>
+                        @endif
+                    </div>
+                @endif
+
                 {{-- Primary metric results table --}}
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-700/60">
@@ -87,6 +127,7 @@
                                 <th class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wide text-gray-500">Units</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wide text-gray-500">Conv. Rate</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wide text-gray-500">Lift</th>
+                                <th class="px-5 py-3 text-center text-xs font-medium uppercase tracking-wide text-gray-500">95% CI</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wide text-gray-500">p-value</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wide text-gray-500">Prob. to beat</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Verdict</th>
@@ -95,10 +136,11 @@
                         <tbody class="divide-y divide-gray-700/40">
                             @foreach($results->variantResults as $variantResult)
                                 @php
-                                    $primary = $variantResult->primaryMetricSummary;
-                                    $verdict = $variantResult->verdictResult;
+                                    $primary   = $variantResult->primaryMetricSummary;
+                                    $verdict   = $variantResult->verdictResult;
                                     $isControl = $variantResult->variant->isControl();
-                                    $lift = $verdict?->frequentist?->relativeLift ?? $verdict?->bayesian?->relativeLift;
+                                    $lift      = $verdict?->frequentist?->relativeLift ?? $verdict?->bayesian?->relativeLift;
+                                    $interval  = $verdict?->frequentist?->interval ?? null;
                                 @endphp
                                 <tr class="hover:bg-gray-800/40 transition-colors">
                                     <td class="px-6 py-4">
@@ -124,6 +166,57 @@
                                             <span class="text-gray-600">—</span>
                                         @endif
                                     </td>
+
+                                    {{-- 95% CI inline bar chart --}}
+                                    <td class="px-5 py-4">
+                                        @if($interval !== null && ! $isControl)
+                                            @php
+                                                // Map relative-lift values to pixel positions [0..120].
+                                                // Zero line sits at x=60 (centre). Scale is ±$ciMaxBound.
+                                                $svgW    = 120;
+                                                $midX    = $svgW / 2;
+                                                $toX     = static fn (float $v): float
+                                                    => max(0.0, min((float) $svgW, $midX + ($v / $ciMaxBound) * $midX));
+
+                                                $lowerX  = $toX($interval[0]);
+                                                $upperX  = $toX($interval[1]);
+                                                $liftX   = $toX($lift ?? 0.0);
+                                                $barW    = max(2.0, $upperX - $lowerX);
+
+                                                // Colour: green when fully positive, red when fully negative, gray otherwise.
+                                                $ciColor = $interval[0] >= 0
+                                                    ? '#22c55e'
+                                                    : ($interval[1] <= 0 ? '#ef4444' : '#94a3b8');
+                                            @endphp
+                                            <div class="flex flex-col items-center gap-0.5">
+                                                <svg width="{{ $svgW }}" height="18" viewBox="0 0 {{ $svgW }} 18"
+                                                     class="overflow-visible">
+                                                    {{-- Background track --}}
+                                                    <rect x="0" y="8" width="{{ $svgW }}" height="2" rx="1" fill="#1f2937"/>
+                                                    {{-- CI interval bar --}}
+                                                    <rect x="{{ $lowerX }}" y="6" width="{{ $barW }}" height="6" rx="2"
+                                                          fill="{{ $ciColor }}" opacity="0.55"/>
+                                                    {{-- Zero line --}}
+                                                    <rect x="{{ $midX - 0.75 }}" y="3" width="1.5" height="12" rx="0.5" fill="#4b5563"/>
+                                                    {{-- Lift point --}}
+                                                    <circle cx="{{ $liftX }}" cy="9" r="3.5" fill="{{ $ciColor }}"/>
+                                                    {{-- CI whiskers --}}
+                                                    <rect x="{{ $lowerX }}" y="4" width="1.5" height="10" rx="0.5" fill="{{ $ciColor }}" opacity="0.8"/>
+                                                    <rect x="{{ $upperX - 1.5 }}" y="4" width="1.5" height="10" rx="0.5" fill="{{ $ciColor }}" opacity="0.8"/>
+                                                </svg>
+                                                <span class="text-[10px] tabular-nums text-gray-600 leading-none">
+                                                    {{ $interval[0] >= 0 ? '+' : '' }}{{ number_format($interval[0] * 100, 1) }}%
+                                                    …
+                                                    {{ $interval[1] >= 0 ? '+' : '' }}{{ number_format($interval[1] * 100, 1) }}%
+                                                </span>
+                                            </div>
+                                        @else
+                                            <div class="flex justify-center">
+                                                <span class="text-gray-700 text-sm">—</span>
+                                            </div>
+                                        @endif
+                                    </td>
+
                                     <td class="px-6 py-4 text-right text-sm text-gray-300 tabular-nums">
                                         @if($verdict?->frequentist !== null)
                                             {{ number_format($verdict->frequentist->pValue ?? 1.0, 4) }}

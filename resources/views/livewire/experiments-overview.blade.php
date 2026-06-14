@@ -16,17 +16,53 @@
         </a>
     </div>
 
+    {{-- Search + filter bar --}}
+    <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div class="relative flex-1">
+            <svg class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500"
+                 fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/>
+            </svg>
+            <input wire:model.live.debounce.300ms="search"
+                   type="search"
+                   placeholder="Search by key or name…"
+                   class="w-full rounded-lg border border-gray-700 bg-gray-900 py-2 pl-9 pr-4 text-sm text-gray-200 placeholder-gray-600 focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500/40">
+        </div>
+        <div class="flex items-center gap-1.5 flex-wrap">
+            @foreach(['' => 'All', 'draft' => 'Draft', 'running' => 'Running', 'paused' => 'Paused', 'completed' => 'Completed', 'archived' => 'Archived'] as $value => $label)
+                <button wire:click="$set('statusFilter', '{{ $value }}')"
+                        type="button"
+                        class="rounded-md px-3 py-1.5 text-xs font-medium transition-colors
+                            {{ $statusFilter === $value
+                                ? 'bg-violet-600 text-white'
+                                : 'border border-gray-700 bg-gray-900 text-gray-400 hover:border-gray-600 hover:text-gray-200' }}">
+                    {{ $label }}
+                </button>
+            @endforeach
+        </div>
+    </div>
+
     @if(empty($rows))
         <div class="rounded-lg border border-gray-700 bg-gray-800/50 p-8 text-center">
-            <p class="text-sm text-gray-300">No experiments found in the database yet.</p>
-            <p class="mt-1 text-xs text-gray-500">Register experiments in your config or create one from the dashboard.</p>
-            <a href="{{ route('ab-testing.experiments.create') }}"
-               class="mt-4 inline-flex items-center gap-1.5 rounded-md bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-500 transition-colors">
-                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                </svg>
-                Create your first experiment
-            </a>
+            @if($search !== '' || $statusFilter !== '')
+                <p class="text-sm text-gray-300">No experiments match your filters.</p>
+                <button wire:click="$set('search', '')" wire:click="$set('statusFilter', '')"
+                        type="button"
+                        class="mt-3 text-sm text-violet-400 hover:text-violet-200 transition-colors">
+                    Clear filters
+                </button>
+            @else
+                <p class="text-sm text-gray-300">No experiments found in the database yet.</p>
+                <p class="mt-1 text-xs text-gray-500">Register experiments in your config or create one from the dashboard.</p>
+                <a href="{{ route('ab-testing.experiments.create') }}"
+                   class="mt-4 inline-flex items-center gap-1.5 rounded-md bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-500 transition-colors">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                    </svg>
+                    Create your first experiment
+                </a>
+            @endif
         </div>
     @else
         <div class="space-y-3">

@@ -1,4 +1,4 @@
-<div>
+<div @if($isRunning) wire:poll.30s="pollRefresh" @endif>
     @if($model === null)
         <div class="rounded-lg border border-yellow-700/50 bg-yellow-900/20 p-6">
             <h2 class="text-sm font-medium text-yellow-300">Experiment not found</h2>
@@ -48,8 +48,44 @@
             </div>
         </div>
 
+        {{-- Guardrail breach alert strip (shown when there are active unacknowledged breaches) --}}
+        @if($activeBreachCount > 0)
+            <div class="mb-5 flex items-start gap-3 rounded-lg border border-red-700/60 bg-red-900/20 px-5 py-4">
+                <svg class="mt-0.5 h-5 w-5 shrink-0 text-red-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"/>
+                </svg>
+                <div class="min-w-0 flex-1">
+                    <p class="text-sm font-semibold text-red-300">
+                        {{ $activeBreachCount }} active guardrail {{ $activeBreachCount === 1 ? 'breach' : 'breaches' }}
+                    </p>
+                    <p class="mt-0.5 text-sm text-red-400/80">
+                        One or more guardrail metrics have exceeded their maximum allowed regression.
+                        Review the Results section below and consider pausing this experiment.
+                    </p>
+                </div>
+                @if($isRunning)
+                    <a href="#results"
+                       class="shrink-0 rounded-md border border-red-700 bg-red-900/40 px-3 py-1.5 text-xs font-medium text-red-300 hover:bg-red-800/50 transition-colors">
+                        Review
+                    </a>
+                @endif
+            </div>
+        @endif
+
+        {{-- Live polling indicator (only shown when running) --}}
+        @if($isRunning)
+            <div class="mb-5 flex items-center gap-2 text-xs text-gray-600">
+                <span class="relative flex h-2 w-2">
+                    <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-500 opacity-60"></span>
+                    <span class="relative inline-flex h-2 w-2 rounded-full bg-green-500"></span>
+                </span>
+                Live — refreshing every 30 s
+            </div>
+        @endif
+
         {{-- Verdict banner — full width --}}
-        <div class="mb-6">
+        <div class="mb-6" id="results">
             @livewire('ab-testing::experiment-verdict-banner', ['experimentKey' => $model->key])
         </div>
 
