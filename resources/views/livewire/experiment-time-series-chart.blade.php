@@ -32,26 +32,50 @@
             const canvas = this.$refs.canvas;
             if (!canvas) return;
 
-            const { series, dates } = this._read();
+            const { series, dates, boundaries } = this._read();
             if (!dates.length || !series.length) return;
+
+            const datasets = series.map(function(s) {
+                return {
+                    label:            s.key,
+                    data:             s.points,
+                    borderColor:      s.color,
+                    backgroundColor:  s.color + '1a',
+                    borderWidth:      2,
+                    pointRadius:      dates.length <= 30 ? 3 : 0,
+                    pointHoverRadius: 5,
+                    tension:          0.2,
+                    fill:             false,
+                };
+            });
+
+            // O'Brien-Fleming sequential testing boundary lines (only present when
+            // target_sample_size is set on the experiment).
+            if (boundaries) {
+                const boundaryStyle = {
+                    borderColor:      'rgba(148,163,184,0.45)',
+                    borderDash:       [6, 4],
+                    borderWidth:      1.5,
+                    pointRadius:      0,
+                    pointHoverRadius: 0,
+                    fill:             false,
+                    tension:          0.2,
+                };
+                datasets.push(Object.assign({}, boundaryStyle, {
+                    label: 'Upper boundary (O\'B-F)',
+                    data:  boundaries.upper,
+                }));
+                datasets.push(Object.assign({}, boundaryStyle, {
+                    label: 'Lower boundary (O\'B-F)',
+                    data:  boundaries.lower,
+                }));
+            }
 
             this._chart = new Chart(canvas, {
                 type: 'line',
                 data: {
-                    labels: dates.map(function(d) { return d.slice(5); }),
-                    datasets: series.map(function(s) {
-                        return {
-                            label:            s.key,
-                            data:             s.points,
-                            borderColor:      s.color,
-                            backgroundColor:  s.color + '1a',
-                            borderWidth:      2,
-                            pointRadius:      dates.length <= 30 ? 3 : 0,
-                            pointHoverRadius: 5,
-                            tension:          0.2,
-                            fill:             false,
-                        };
-                    }),
+                    labels:   dates.map(function(d) { return d.slice(5); }),
+                    datasets: datasets,
                 },
                 options: {
                     animation:            false,
@@ -63,12 +87,15 @@
                             position: 'top',
                             align:    'start',
                             labels: {
-                                color:          '#9ca3af',
-                                padding:        16,
-                                boxWidth:       10,
-                                font:           { size: 11 },
-                                usePointStyle:  true,
+                                color:           '#9ca3af',
+                                padding:         16,
+                                boxWidth:        10,
+                                font:            { size: 11 },
+                                usePointStyle:   true,
                                 pointStyleWidth: 8,
+                                filter: function(item) {
+                                    return !item.text.includes('boundary');
+                                },
                             },
                         },
                         tooltip: {
@@ -78,6 +105,9 @@
                             titleColor:      '#f3f4f6',
                             bodyColor:       '#9ca3af',
                             padding:         10,
+                            filter: function(item) {
+                                return !item.dataset.label.includes('boundary');
+                            },
                             callbacks: {
                                 label: function(ctx) {
                                     return ' ' + ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(2) + '%';
@@ -126,7 +156,7 @@
 >
     {{-- Hidden data carrier — morphdom keeps this in sync; Alpine reads it on demand --}}
     <script type="application/json" x-ref="carrier">
-        @json(['series' => $series, 'dates' => $dates])
+        @json(['series' => $series, 'dates' => $dates, 'boundaries' => $boundaries])
     </script>
 
     {{-- ── Accordion header ───────────────────────────────────────────────── --}}

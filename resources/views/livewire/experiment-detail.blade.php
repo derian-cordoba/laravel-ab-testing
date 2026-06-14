@@ -104,9 +104,14 @@
             </div>
         </div>
 
-        {{-- Chart — full width, collapsed by default --}}
+        {{-- Conversion rate time-series — full width, collapsed by default --}}
         <div class="mb-6">
             @livewire('ab-testing::experiment-time-series-chart', ['experimentKey' => $model->key])
+        </div>
+
+        {{-- Bayesian posterior distributions — full width, collapsed by default --}}
+        <div class="mb-6">
+            @livewire('ab-testing::experiment-bayesian-chart', ['experimentKey' => $model->key])
         </div>
 
         {{-- Trust — full width, collapsed by default --}}

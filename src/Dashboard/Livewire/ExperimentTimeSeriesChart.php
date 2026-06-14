@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace ABTests\Dashboard\Livewire;
 
 use ABTests\Infrastructure\Database\Models\EventModel;
+use ABTests\Infrastructure\Database\Models\ExperimentModel;
+use ABTests\Infrastructure\Database\Models\VariantModel;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\On;
@@ -39,7 +41,7 @@ final class ExperimentTimeSeriesChart extends Component
 
     public function render(): View
     {
-        ['series' => $series, 'dates' => $dates] = $this->buildSeries();
+        ['series' => $series, 'dates' => $dates, 'boundaries' => $boundaries] = $this->buildSeries();
 
         if ($this->shouldDispatchRefresh) {
             // Dispatched after the DOM morph commits, so Alpine can safely read
@@ -48,17 +50,24 @@ final class ExperimentTimeSeriesChart extends Component
             $this->shouldDispatchRefresh = false;
         }
 
-        return view('ab-testing::livewire.experiment-time-series-chart', compact('series', 'dates'));
+        return view('ab-testing::livewire.experiment-time-series-chart', compact('series', 'dates', 'boundaries'));
     }
 
     // ── Private ───────────────────────────────────────────────────────────────
 
     /**
-     * Returns per-variant cumulative conversion-rate series and the sorted date
-     * labels. Each series entry:
-     *   ['key' => string, 'color' => string, 'points' => list<float>]
+     * Returns per-variant cumulative conversion-rate series, sorted date labels,
+     * and optional O'Brien-Fleming sequential testing boundary lines.
      *
-     * @return array{series: list<array{key:string,color:string,points:list<float>}>, dates: list<string>}
+     * Each series entry: ['key' => string, 'color' => string, 'points' => list<float>]
+     * Boundaries (null when target_sample_size is not set):
+     *   ['upper' => list<float|null>, 'lower' => list<float|null>]
+     *
+     * @return array{
+     *   series: list<array{key:string,color:string,points:list<float>}>,
+     *   dates: list<string>,
+     *   boundaries: array{upper:list<float|null>,lower:list<float|null>}|null
+     * }
      */
     private function buildSeries(): array
     {
@@ -71,17 +80,17 @@ final class ExperimentTimeSeriesChart extends Component
             ->get();
 
         if ($rows->isEmpty()) {
-            return ['series' => [], 'dates' => []];
+            return ['series' => [], 'dates' => [], 'boundaries' => null];
         }
 
         // Index by [date][variant][type] = count
-        $indexed = [];
-        $allDates = [];
+        $indexed     = [];
+        $allDates    = [];
         $allVariants = [];
 
         foreach ($rows as $row) {
             $indexed[$row->day][$row->variant_key][$row->type] = (int) $row->unit_count;
-            $allDates[$row->day] = true;
+            $allDates[$row->day]    = true;
             $allVariants[$row->variant_key] = true;
         }
 
@@ -90,7 +99,7 @@ final class ExperimentTimeSeriesChart extends Component
         sort($dates);
 
         if (count($dates) < 2) {
-            return ['series' => [], 'dates' => []];
+            return ['series' => [], 'dates' => [], 'boundaries' => null];
         }
 
         $colors = ['#94a3b8', '#8b5cf6', '#06b6d4', '#f59e0b', '#10b981', '#f43f5e'];
@@ -121,6 +130,72 @@ final class ExperimentTimeSeriesChart extends Component
             ];
         }
 
-        return ['series' => $series, 'dates' => $dates];
+        $boundaries = $this->buildSequentialBoundary($indexed, $dates, $variants);
+
+        return ['series' => $series, 'dates' => $dates, 'boundaries' => $boundaries];
+    }
+
+    /**
+     * Compute O'Brien-Fleming sequential testing boundaries for the conversion
+     * rate chart. At information fraction τ = n_control / target_per_arm the
+     * critical z-score is z_α/2 / √τ, giving boundary lines that tighten as
+     * sample size grows. Returns null when target_sample_size is not set.
+     *
+     * @param  array<string, array<string, array<string, int>>> $indexed   [date][variant][type] → count
+     * @param  list<string>                                     $dates     sorted date strings
+     * @param  list<string>                                     $variants  variant keys (control first)
+     * @return array{upper:list<float|null>,lower:list<float|null>}|null
+     */
+    private function buildSequentialBoundary(array $indexed, array $dates, array $variants): ?array
+    {
+        $experiment = ExperimentModel::query()
+            ->where('key', $this->experimentKey)
+            ->first(['target_sample_size']);
+
+        $targetSampleSize = $experiment?->target_sample_size;
+
+        if (! $targetSampleSize || count($variants) < 2) {
+            return null;
+        }
+
+        // Identify the control key from the variants snapshot; fall back to $variants[0].
+        $controlKey = VariantModel::query()
+            ->whereHas('experiment', fn ($q) => $q->where('key', $this->experimentKey))
+            ->where('is_control', true)
+            ->value('key') ?? $variants[0];
+
+        $numArms      = count($variants);
+        $targetPerArm = $targetSampleSize / $numArms;
+        $zAlpha2      = 1.959964; // z_{0.025}
+
+        $cumulativeControlN           = 0;
+        $cumulativeControlConversions = 0;
+        $boundaryUpper                = [];
+        $boundaryLower                = [];
+
+        foreach ($dates as $date) {
+            $cumulativeControlN           += $indexed[$date][$controlKey]['exposure']   ?? 0;
+            $cumulativeControlConversions += $indexed[$date][$controlKey]['conversion'] ?? 0;
+
+            if ($cumulativeControlN < 5) {
+                // Too few data points — suppress boundary to avoid visual noise.
+                $boundaryUpper[] = null;
+                $boundaryLower[] = null;
+                continue;
+            }
+
+            $tau          = $cumulativeControlN / $targetPerArm;
+            // O'Brien-Fleming: z_t = z_α/2 / √τ; cap at z_α/2 once fully powered.
+            $zBoundary    = $tau < 1.0 ? min(10.0, $zAlpha2 / sqrt($tau)) : $zAlpha2;
+            $controlRate  = $cumulativeControlConversions / $cumulativeControlN;
+            $se           = $controlRate > 0.0 && $controlRate < 1.0
+                ? sqrt($controlRate * (1.0 - $controlRate) / $cumulativeControlN)
+                : 0.0;
+
+            $boundaryUpper[] = round(min(100.0, ($controlRate + $zBoundary * $se) * 100.0), 3);
+            $boundaryLower[] = round(max(0.0,   ($controlRate - $zBoundary * $se) * 100.0), 3);
+        }
+
+        return ['upper' => $boundaryUpper, 'lower' => $boundaryLower];
     }
 }
