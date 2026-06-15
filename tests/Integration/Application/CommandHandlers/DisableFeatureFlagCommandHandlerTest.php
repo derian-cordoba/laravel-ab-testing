@@ -6,8 +6,10 @@ namespace ABTests\Tests\Integration\Application\CommandHandlers;
 
 use ABTests\Application\CommandHandlers\DisableFeatureFlagCommandHandler;
 use ABTests\Application\Commands\DisableFeatureFlagCommand;
+use ABTests\Domain\Events\FeatureFlagDisabledEvent;
 use ABTests\Infrastructure\Database\Models\FeatureFlagStateModel;
 use ABTests\Tests\Integration\DatabaseTestCase;
+use Illuminate\Container\Container;
 use PHPUnit\Framework\Attributes\Test;
 
 final class DisableFeatureFlagCommandHandlerTest extends DatabaseTestCase
@@ -61,5 +63,27 @@ final class DisableFeatureFlagCommandHandlerTest extends DatabaseTestCase
         self::assertFalse(
             FeatureFlagStateModel::query()->firstWhere('key', 'my-flag')->is_enabled
         );
+    }
+
+    #[Test]
+    public function dispatches_feature_flag_disabled_event(): void
+    {
+        /** @var list<FeatureFlagDisabledEvent> $fired */
+        $fired = [];
+        Container::getInstance()->make('events')->listen(
+            FeatureFlagDisabledEvent::class,
+            static function (FeatureFlagDisabledEvent $event) use (&$fired): void {
+                $fired[] = $event;
+            },
+        );
+
+        new DisableFeatureFlagCommandHandler()->handle(new DisableFeatureFlagCommand(
+            flagKey: 'my-flag',
+            actorIdentifier: 'alice',
+        ));
+
+        self::assertCount(1, $fired);
+        self::assertSame('my-flag', $fired[0]->flagKey);
+        self::assertSame('alice', $fired[0]->actorIdentifier);
     }
 }

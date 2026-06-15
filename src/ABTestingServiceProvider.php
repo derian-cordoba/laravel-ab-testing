@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ABTests;
 
 use ABTests\Application\Listeners\AutoPauseOnGuardrailBreachListener;
+use ABTests\Application\Listeners\DispatchNotificationListener;
 use ABTests\Application\ResultsService;
 use ABTests\Blade\BladeDirectiveHelpers;
 use ABTests\Exceptions\ABTestingException;
@@ -26,7 +27,18 @@ use ABTests\Contracts\BucketingStrategy;
 use ABTests\Contracts\CommandBus;
 use ABTests\Contracts\EventSink;
 use ABTests\Contracts\ExperimentStateRepository;
+use ABTests\Domain\Events\ExperimentPausedEvent;
+use ABTests\Domain\Events\ExperimentResumedEvent;
+use ABTests\Domain\Events\ExperimentStartedEvent;
+use ABTests\Domain\Events\ExperimentStoppedEvent;
+use ABTests\Domain\Events\FeatureFlagDisabledEvent;
+use ABTests\Domain\Events\FeatureFlagEnabledEvent;
 use ABTests\Domain\Events\GuardrailBreachedEvent;
+use ABTests\Domain\Events\KillSwitchActivatedEvent;
+use ABTests\Notifications\Channels\MailChannel;
+use ABTests\Notifications\Channels\SlackChannel;
+use ABTests\Notifications\Channels\WebhookChannel;
+use ABTests\Notifications\NotificationDispatcher;
 use ABTests\Infrastructure\AlwaysRunningExperimentStateRepository;
 use ABTests\Infrastructure\Database\DatabaseAssignmentRepository;
 use ABTests\Infrastructure\Database\DatabaseEventSink;
@@ -485,6 +497,29 @@ final class ABTestingServiceProvider extends ServiceProvider
 
         // Guardrail breach → auto-pause listener.
         Event::listen(GuardrailBreachedEvent::class, AutoPauseOnGuardrailBreachListener::class);
+
+        // Register the NotificationDispatcher singleton so channels are
+        // instantiated once and reused across the queued job.
+        $this->app->singleton(NotificationDispatcher::class, fn (): NotificationDispatcher => new NotificationDispatcher(
+            webhook: new WebhookChannel(),
+            slack: new SlackChannel(),
+            mail: new MailChannel(),
+        ));
+
+        // Outbound notification listeners — one central listener handles all
+        // supported event types and converts them to a NotificationPayload.
+        foreach ([
+            ExperimentStartedEvent::class,
+            ExperimentPausedEvent::class,
+            ExperimentResumedEvent::class,
+            ExperimentStoppedEvent::class,
+            FeatureFlagEnabledEvent::class,
+            FeatureFlagDisabledEvent::class,
+            KillSwitchActivatedEvent::class,
+            GuardrailBreachedEvent::class,
+        ] as $eventClass) {
+            Event::listen($eventClass, DispatchNotificationListener::class);
+        }
 
         // Flush the DatabaseEventSink buffer at the end of every request.
         /** @var string $driver */

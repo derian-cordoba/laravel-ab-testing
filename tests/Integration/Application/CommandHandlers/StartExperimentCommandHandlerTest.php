@@ -6,10 +6,12 @@ namespace ABTests\Tests\Integration\Application\CommandHandlers;
 
 use ABTests\Application\CommandHandlers\StartExperimentCommandHandler;
 use ABTests\Application\Commands\StartExperimentCommand;
+use ABTests\Domain\Events\ExperimentStartedEvent;
 use ABTests\Enums\ExperimentStatus;
 use ABTests\Infrastructure\Database\Models\ExperimentModel;
 use ABTests\Registry\ExperimentRegistry;
 use ABTests\Tests\Integration\DatabaseTestCase;
+use Illuminate\Container\Container;
 use PHPUnit\Framework\Attributes\Test;
 
 final class StartExperimentCommandHandlerTest extends DatabaseTestCase
@@ -57,5 +59,35 @@ final class StartExperimentCommandHandlerTest extends DatabaseTestCase
         self::assertNotNull($model);
         self::assertSame(ExperimentStatus::running->value, $model->status);
         self::assertSame(25, $model->traffic_percentage);
+    }
+
+    #[Test]
+    public function dispatches_experiment_started_event(): void
+    {
+        ExperimentModel::query()->create([
+            'key'                => 'checkout-button-color',
+            'status'             => ExperimentStatus::draft->value,
+            'traffic_percentage' => 0,
+            'is_killed'          => false,
+        ]);
+
+        /** @var list<ExperimentStartedEvent> $fired */
+        $fired = [];
+        Container::getInstance()->make('events')->listen(
+            ExperimentStartedEvent::class,
+            static function (ExperimentStartedEvent $event) use (&$fired): void {
+                $fired[] = $event;
+            },
+        );
+
+        new StartExperimentCommandHandler(new ExperimentRegistry())->handle(new StartExperimentCommand(
+            experimentKey: 'checkout-button-color',
+            actorIdentifier: 'alice',
+        ));
+
+        self::assertCount(1, $fired);
+        self::assertSame('checkout-button-color', $fired[0]->experimentKey);
+        self::assertSame('alice', $fired[0]->actorIdentifier);
+        self::assertSame(100, $fired[0]->trafficPercentage);
     }
 }

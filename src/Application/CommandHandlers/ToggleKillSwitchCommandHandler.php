@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace ABTests\Application\CommandHandlers;
 
 use ABTests\Application\Commands\ToggleKillSwitchCommand;
+use ABTests\Domain\Events\KillSwitchActivatedEvent;
 use ABTests\Exceptions\ExperimentNotFound;
 use ABTests\Infrastructure\Database\Models\AuditLogModel;
 use ABTests\Infrastructure\Database\Models\ExperimentModel;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Event;
 
 final readonly class ToggleKillSwitchCommandHandler
 {
@@ -37,5 +39,12 @@ final readonly class ToggleKillSwitchCommandHandler
             'occurred_at' => Carbon::now(),
         ]);
 
+        Event::dispatch(new KillSwitchActivatedEvent(
+            experimentKey: $command->experimentKey,
+            flagKey: null,
+            activated: $command->isKilled,
+            actorIdentifier: $command->actorIdentifier,
+            actorType: $command->actorType,
+        ));
     }
 }

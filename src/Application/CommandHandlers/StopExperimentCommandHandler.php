@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace ABTests\Application\CommandHandlers;
 
 use ABTests\Application\Commands\StopExperimentCommand;
+use ABTests\Domain\Events\ExperimentStoppedEvent;
 use ABTests\Enums\ExperimentStatus;
 use ABTests\Exceptions\ExperimentNotFound;
 use ABTests\Exceptions\InvalidStateTransition;
 use ABTests\Infrastructure\Database\Models\AuditLogModel;
 use ABTests\Infrastructure\Database\Models\ExperimentModel;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Event;
 
 final readonly class StopExperimentCommandHandler
 {
@@ -45,5 +47,10 @@ final readonly class StopExperimentCommandHandler
             'occurred_at' => Carbon::now(),
         ]);
 
+        Event::dispatch(new ExperimentStoppedEvent(
+            experimentKey: $command->experimentKey,
+            actorIdentifier: $command->actorIdentifier,
+            actorType: $command->actorType,
+        ));
     }
 }

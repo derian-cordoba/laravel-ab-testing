@@ -6,8 +6,10 @@ namespace ABTests\Tests\Integration\Application\CommandHandlers;
 
 use ABTests\Application\CommandHandlers\ToggleFlagKillSwitchCommandHandler;
 use ABTests\Application\Commands\ToggleFlagKillSwitchCommand;
+use ABTests\Domain\Events\KillSwitchActivatedEvent;
 use ABTests\Infrastructure\Database\Models\FeatureFlagStateModel;
 use ABTests\Tests\Integration\DatabaseTestCase;
+use Illuminate\Container\Container;
 use PHPUnit\Framework\Attributes\Test;
 
 final class ToggleFlagKillSwitchCommandHandlerTest extends DatabaseTestCase
@@ -85,5 +87,64 @@ final class ToggleFlagKillSwitchCommandHandlerTest extends DatabaseTestCase
         self::assertTrue(
             FeatureFlagStateModel::query()->firstWhere('key', 'my-flag')->is_enabled
         );
+    }
+
+    #[Test]
+    public function dispatches_kill_switch_activated_event_with_flag_key(): void
+    {
+        FeatureFlagStateModel::query()->create([
+            'key'        => 'my-flag',
+            'is_enabled' => true,
+            'killed_at'  => null,
+        ]);
+
+        /** @var list<KillSwitchActivatedEvent> $fired */
+        $fired = [];
+        Container::getInstance()->make('events')->listen(
+            KillSwitchActivatedEvent::class,
+            static function (KillSwitchActivatedEvent $event) use (&$fired): void {
+                $fired[] = $event;
+            },
+        );
+
+        new ToggleFlagKillSwitchCommandHandler()->handle(new ToggleFlagKillSwitchCommand(
+            flagKey: 'my-flag',
+            isKilled: true,
+            actorIdentifier: 'alice',
+        ));
+
+        self::assertCount(1, $fired);
+        self::assertNull($fired[0]->experimentKey);
+        self::assertSame('my-flag', $fired[0]->flagKey);
+        self::assertTrue($fired[0]->activated);
+        self::assertSame('alice', $fired[0]->actorIdentifier);
+    }
+
+    #[Test]
+    public function dispatches_kill_switch_activated_event_with_activated_false_when_deactivating(): void
+    {
+        FeatureFlagStateModel::query()->create([
+            'key'        => 'my-flag',
+            'is_enabled' => true,
+            'killed_at'  => \Carbon\Carbon::now(),
+        ]);
+
+        /** @var list<KillSwitchActivatedEvent> $fired */
+        $fired = [];
+        Container::getInstance()->make('events')->listen(
+            KillSwitchActivatedEvent::class,
+            static function (KillSwitchActivatedEvent $event) use (&$fired): void {
+                $fired[] = $event;
+            },
+        );
+
+        new ToggleFlagKillSwitchCommandHandler()->handle(new ToggleFlagKillSwitchCommand(
+            flagKey: 'my-flag',
+            isKilled: false,
+            actorIdentifier: 'alice',
+        ));
+
+        self::assertCount(1, $fired);
+        self::assertFalse($fired[0]->activated);
     }
 }

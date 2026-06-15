@@ -221,6 +221,76 @@ return [
     |
     */
 
+    /*
+    |--------------------------------------------------------------------------
+    | Outbound Notifications
+    |--------------------------------------------------------------------------
+    |
+    | When enabled, the package dispatches a queued job after each supported
+    | lifecycle event, delivering a notification to every enabled channel.
+    |
+    |   enabled  — Master switch. When false no jobs are queued regardless of
+    |              channel or event configuration.
+    |
+    |   events   — Per-event opt-in/out. Set a key to false to suppress that
+    |              event type across all channels without disabling others.
+    |
+    |   channels
+    |     webhook  — HTTP POST with an HMAC-SHA256 signature.
+    |       url      — Endpoint that receives the POST.
+    |       secret   — Signing secret used for HMAC. Leave empty to skip signing.
+    |       timeout  — HTTP client timeout in seconds (default 5).
+    |
+    |     slack    — Slack incoming webhook (Block Kit attachment).
+    |       webhook_url — Incoming webhook URL from Slack app settings.
+    |
+    |     mail     — Email delivery via Laravel's Mail facade.
+    |       recipients  — List of email addresses that receive every notification.
+    |
+    |   queue_connection — Queue connection for DispatchNotificationsJob.
+    |                      Defaults to the application's default connection.
+    |   queue_name       — Queue name (default 'default'). Use a dedicated
+    |                      low-priority queue to isolate notification retries.
+    |
+    */
+
+    'notifications' => [
+        'enabled' => (bool) env('AB_TESTING_NOTIFICATIONS_ENABLED', false),
+
+        'events' => [
+            'experiment_started'    => (bool) env('AB_TESTING_NOTIFY_EXPERIMENT_STARTED', true),
+            'experiment_paused'     => (bool) env('AB_TESTING_NOTIFY_EXPERIMENT_PAUSED', true),
+            'experiment_resumed'    => (bool) env('AB_TESTING_NOTIFY_EXPERIMENT_RESUMED', true),
+            'experiment_stopped'    => (bool) env('AB_TESTING_NOTIFY_EXPERIMENT_STOPPED', true),
+            'feature_flag_enabled'  => (bool) env('AB_TESTING_NOTIFY_FLAG_ENABLED', false),
+            'feature_flag_disabled' => (bool) env('AB_TESTING_NOTIFY_FLAG_DISABLED', false),
+            'kill_switch_activated' => (bool) env('AB_TESTING_NOTIFY_KILL_SWITCH', true),
+            'guardrail_breached'    => (bool) env('AB_TESTING_NOTIFY_GUARDRAIL_BREACHED', true),
+        ],
+
+        'channels' => [
+            'webhook' => [
+                'enabled' => (bool) env('AB_TESTING_WEBHOOK_ENABLED', false),
+                'url'     => env('AB_TESTING_WEBHOOK_URL'),
+                'secret'  => env('AB_TESTING_WEBHOOK_SECRET', ''),
+                'timeout' => (int) env('AB_TESTING_WEBHOOK_TIMEOUT', 5),
+            ],
+
+            'slack' => [
+                'enabled'     => (bool) env('AB_TESTING_SLACK_ENABLED', false),
+                'webhook_url' => env('AB_TESTING_SLACK_WEBHOOK_URL'),
+            ],
+
+            'mail' => [
+                'enabled'    => (bool) env('AB_TESTING_MAIL_ENABLED', false),
+                'recipients' => array_filter(explode(',', env('AB_TESTING_MAIL_RECIPIENTS', ''))),
+            ],
+        ],
+
+        'queue_connection' => env('AB_TESTING_NOTIFICATION_QUEUE_CONNECTION'),
+        'queue_name'       => env('AB_TESTING_NOTIFICATION_QUEUE', 'default'),
+    ],
+
     'api' => [
         'v1' => [
             'accept_type' => env('AB_TESTING_ACCEPT_TYPE', 'application/vnd.ab-testing.v1+json'),

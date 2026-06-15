@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ABTests\Application\CommandHandlers;
 
 use ABTests\Application\Commands\StartExperimentCommand;
+use ABTests\Domain\Events\ExperimentStartedEvent;
 use ABTests\Enums\ApprovalStatus;
 use ABTests\Enums\ExperimentStatus;
 use ABTests\Exceptions\ApprovalRequired;
@@ -16,6 +17,7 @@ use ABTests\Infrastructure\Database\Models\ExperimentModel;
 use ABTests\Infrastructure\Database\Models\VariantModel;
 use ABTests\Registry\ExperimentRegistry;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -90,6 +92,13 @@ final readonly class StartExperimentCommandHandler
         ]);
 
         $this->syncVariantSnapshot($model, $command->experimentKey);
+
+        Event::dispatch(new ExperimentStartedEvent(
+            experimentKey: $command->experimentKey,
+            actorIdentifier: $command->actorIdentifier,
+            actorType: $command->actorType,
+            trafficPercentage: $trafficPercentage,
+        ));
     }
 
     /**

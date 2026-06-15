@@ -6,8 +6,10 @@ namespace ABTests\Tests\Integration\Application\CommandHandlers;
 
 use ABTests\Application\CommandHandlers\EnableFeatureFlagCommandHandler;
 use ABTests\Application\Commands\EnableFeatureFlagCommand;
+use ABTests\Domain\Events\FeatureFlagEnabledEvent;
 use ABTests\Infrastructure\Database\Models\FeatureFlagStateModel;
 use ABTests\Tests\Integration\DatabaseTestCase;
+use Illuminate\Container\Container;
 use PHPUnit\Framework\Attributes\Test;
 
 final class EnableFeatureFlagCommandHandlerTest extends DatabaseTestCase
@@ -79,5 +81,27 @@ final class EnableFeatureFlagCommandHandlerTest extends DatabaseTestCase
         self::assertFalse(
             FeatureFlagStateModel::query()->firstWhere('key', 'other-flag')->is_enabled
         );
+    }
+
+    #[Test]
+    public function dispatches_feature_flag_enabled_event(): void
+    {
+        /** @var list<FeatureFlagEnabledEvent> $fired */
+        $fired = [];
+        Container::getInstance()->make('events')->listen(
+            FeatureFlagEnabledEvent::class,
+            static function (FeatureFlagEnabledEvent $event) use (&$fired): void {
+                $fired[] = $event;
+            },
+        );
+
+        new EnableFeatureFlagCommandHandler()->handle(new EnableFeatureFlagCommand(
+            flagKey: 'new-checkout',
+            actorIdentifier: 'alice',
+        ));
+
+        self::assertCount(1, $fired);
+        self::assertSame('new-checkout', $fired[0]->flagKey);
+        self::assertSame('alice', $fired[0]->actorIdentifier);
     }
 }

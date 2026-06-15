@@ -23,7 +23,7 @@ use Psr\Log\NullLogger;
  */
 abstract class DatabaseTestCase extends TestCase
 {
-    private static ?DB $capsule = null;
+    protected static ?DB $capsule = null;
 
     public static function setUpBeforeClass(): void
     {
@@ -34,6 +34,15 @@ abstract class DatabaseTestCase extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        // Unit tests may reset the global container and facade application between
+        // test classes. Re-establish them before each integration test so that
+        // command handlers calling Event::dispatch() and code calling
+        // Container::getInstance() both see the capsule's container.
+        $container = self::$capsule->getContainer();
+        Container::setInstance($container);
+        Facade::setFacadeApplication($container);
+
         $this->createSchema();
     }
 
@@ -52,8 +61,15 @@ abstract class DatabaseTestCase extends TestCase
         $container = new TestApplication();
         Facade::setFacadeApplication($container);
 
+        // Create the dispatcher first so we can bind it directly.
+        // Note: $capsule->setEventDispatcher() binds 'events' in the capsule's
+        // internal container, but setContainer() replaces that container, which
+        // means $capsule->getEventDispatcher() subsequently returns null. Capture
+        // the dispatcher here and bind it explicitly to avoid this pitfall.
+        $dispatcher = new Dispatcher($container);
+
         $capsule = new DB();
-        $capsule->setEventDispatcher(new Dispatcher($container));
+        $capsule->setEventDispatcher($dispatcher);
         $capsule->addConnection([
             'driver'   => 'sqlite',
             'database' => ':memory:',
@@ -64,7 +80,7 @@ abstract class DatabaseTestCase extends TestCase
         $capsule->bootEloquent();
 
         $container->instance('db', $capsule->getDatabaseManager());
-        $container->instance('events', $capsule->getEventDispatcher());
+        $container->instance('events', $dispatcher);
 
         // Register a config repository so global config() calls (e.g. in
         // command handlers) resolve against the package defaults instead of
