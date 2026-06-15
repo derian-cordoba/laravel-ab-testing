@@ -32,6 +32,7 @@ final class DatabaseExperimentStateRepository implements ExperimentStateReposito
             status: ExperimentStatus::from($row->status),
             trafficPercentage: $row->traffic_percentage,
             isKilled: $row->is_killed,
+            allowedEnvironments: $row->allowed_environments,
         );
     }
 }

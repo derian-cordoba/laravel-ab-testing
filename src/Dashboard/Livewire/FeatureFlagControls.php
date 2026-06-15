@@ -7,6 +7,7 @@ namespace ABTests\Dashboard\Livewire;
 use ABTests\Application\Commands\DisableFeatureFlagCommand;
 use ABTests\Application\Commands\EnableFeatureFlagCommand;
 use ABTests\Application\Commands\SetFlagConditionsCommand;
+use ABTests\Application\Commands\SetFlagEnvironmentsCommand;
 use ABTests\Application\Commands\SetFlagRolloutPercentageCommand;
 use ABTests\Application\Commands\ToggleFlagKillSwitchCommand;
 use ABTests\Contracts\CommandBus;
@@ -40,6 +41,9 @@ final class FeatureFlagControls extends Component
 
     public string $conditionsLogic = 'all';
 
+    /** @var list<string> */
+    public array $allowedEnvironments = [];
+
     public string $newAttribute = '';
     public string $newOperator = 'equals';
     public string $newValue = '';
@@ -54,9 +58,10 @@ final class FeatureFlagControls extends Component
         $model = FeatureFlagStateModel::query()->firstWhere('key', $flagKey);
 
         if ($model !== null) {
-            $this->rolloutPercentage = $model->rollout_percentage;
-            $this->conditions        = $model->conditions ?? [];
-            $this->conditionsLogic   = ($model->conditions_logic ?? ConditionsLogic::all)->value;
+            $this->rolloutPercentage   = $model->rollout_percentage;
+            $this->conditions          = $model->conditions ?? [];
+            $this->conditionsLogic     = ($model->conditions_logic ?? ConditionsLogic::all)->value;
+            $this->allowedEnvironments = $model->allowed_environments ?? [];
         }
     }
 
@@ -72,6 +77,15 @@ final class FeatureFlagControls extends Component
     {
         $this->dispatchCommand(new DisableFeatureFlagCommand(
             flagKey: $this->flagKey,
+            actorIdentifier: $this->actorIdentifier(),
+        ));
+    }
+
+    public function setEnvironments(): void
+    {
+        $this->dispatchCommand(new SetFlagEnvironmentsCommand(
+            flagKey: $this->flagKey,
+            allowedEnvironments: $this->allowedEnvironments === [] ? null : array_values($this->allowedEnvironments),
             actorIdentifier: $this->actorIdentifier(),
         ));
     }

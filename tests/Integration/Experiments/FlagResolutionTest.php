@@ -315,6 +315,57 @@ final class FlagResolutionTest extends DatabaseTestCase
     }
 
     // ------------------------------------------------------------------
+    // Environment gating
+    // ------------------------------------------------------------------
+
+    #[Test]
+    public function resolves_flag_when_allowed_environments_is_null(): void
+    {
+        FeatureFlagStateModel::query()->create([
+            'key'                  => 'test-flag',
+            'is_enabled'           => true,
+            'rollout_percentage'   => 100,
+            'allowed_environments' => null,
+        ]);
+
+        $result = $this->resolveWithPosition(0.0);
+
+        self::assertTrue($result);
+    }
+
+    #[Test]
+    public function returns_default_when_allowed_environments_is_empty(): void
+    {
+        FeatureFlagStateModel::query()->create([
+            'key'                  => 'test-flag',
+            'is_enabled'           => true,
+            'rollout_percentage'   => 100,
+            'allowed_environments' => [],
+        ]);
+
+        $result = $this->resolveWithPosition(0.0);
+
+        self::assertFalse($result);
+    }
+
+    #[Test]
+    public function returns_default_when_app_environment_is_not_in_allowed_list(): void
+    {
+        // TestApplication::environment() returns 'testing', which is not a
+        // valid Environment enum value — the gate must return the default.
+        FeatureFlagStateModel::query()->create([
+            'key'                  => 'test-flag',
+            'is_enabled'           => true,
+            'rollout_percentage'   => 100,
+            'allowed_environments' => ['production'],
+        ]);
+
+        $result = $this->resolveWithPosition(0.0);
+
+        self::assertFalse($result);
+    }
+
+    // ------------------------------------------------------------------
     // Unregistered flag → reads default from attribute
     // ------------------------------------------------------------------
 

@@ -27,12 +27,14 @@ use ABTests\Contracts\BucketingStrategy;
 use ABTests\Contracts\CommandBus;
 use ABTests\Contracts\EventSink;
 use ABTests\Contracts\ExperimentStateRepository;
+use ABTests\Domain\Events\ExperimentEnvironmentsUpdatedEvent;
 use ABTests\Domain\Events\ExperimentPausedEvent;
 use ABTests\Domain\Events\ExperimentResumedEvent;
 use ABTests\Domain\Events\ExperimentStartedEvent;
 use ABTests\Domain\Events\ExperimentStoppedEvent;
 use ABTests\Domain\Events\FeatureFlagDisabledEvent;
 use ABTests\Domain\Events\FeatureFlagEnabledEvent;
+use ABTests\Domain\Events\FeatureFlagEnvironmentsUpdatedEvent;
 use ABTests\Domain\Events\GuardrailBreachedEvent;
 use ABTests\Domain\Events\KillSwitchActivatedEvent;
 use ABTests\Notifications\Channels\MailChannel;
@@ -53,6 +55,7 @@ use ABTests\Registry\ExperimentRegistry;
 use ABTests\Registry\FeatureFlagRegistry;
 use ABTests\Resolution\Resolver;
 use ABTests\Resolution\Steps\BucketStep;
+use ABTests\Resolution\Steps\CheckEnvironmentStep;
 use ABTests\Resolution\Steps\CheckExperimentActiveStep;
 use ABTests\Resolution\Steps\CheckLayerExclusionStep;
 use ABTests\Resolution\Steps\CheckSegmentStep;
@@ -170,6 +173,7 @@ final class ABTestingServiceProvider extends ServiceProvider
                 stateRepository: $this->app->make(ExperimentStateRepository::class),
                 steps: [
                     new CheckExperimentActiveStep(),
+                    new CheckEnvironmentStep(),
                     new CheckSegmentStep(),
                     new CheckTrafficAllocationStep(),
                     new LoadExistingAssignmentStep($assignmentRepository),
@@ -513,8 +517,10 @@ final class ABTestingServiceProvider extends ServiceProvider
             ExperimentPausedEvent::class,
             ExperimentResumedEvent::class,
             ExperimentStoppedEvent::class,
+            ExperimentEnvironmentsUpdatedEvent::class,
             FeatureFlagEnabledEvent::class,
             FeatureFlagDisabledEvent::class,
+            FeatureFlagEnvironmentsUpdatedEvent::class,
             KillSwitchActivatedEvent::class,
             GuardrailBreachedEvent::class,
         ] as $eventClass) {

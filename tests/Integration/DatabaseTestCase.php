@@ -112,6 +112,7 @@ abstract class DatabaseTestCase extends TestCase
             $table->unsignedInteger('version')->default(1);
             $table->string('layer')->nullable();
             $table->string('status')->default('draft');
+            $table->json('allowed_environments')->nullable();
             $table->unsignedInteger('traffic_percentage')->default(0);
             $table->unsignedInteger('target_sample_size')->nullable();
             $table->boolean('is_killed')->default(false);
@@ -208,6 +209,7 @@ abstract class DatabaseTestCase extends TestCase
             $table->id();
             $table->string('key')->unique();
             $table->boolean('is_enabled')->default(false);
+            $table->json('allowed_environments')->nullable();
             $table->unsignedInteger('rollout_percentage')->default(100);
             $table->json('conditions')->nullable();
             $table->string('conditions_logic')->default('all');

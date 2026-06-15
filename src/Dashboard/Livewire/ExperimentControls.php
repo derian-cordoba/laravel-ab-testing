@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ABTests\Dashboard\Livewire;
 
 use ABTests\Application\Commands\ArchiveExperimentCommand;
+use ABTests\Application\Commands\SetExperimentEnvironmentsCommand;
 use ABTests\Infrastructure\Jobs\RefreshRollupsJob;
 use ABTests\Registry\ExperimentRegistry;
 use ABTests\Application\Commands\PauseExperimentCommand;
@@ -42,6 +43,9 @@ final class ExperimentControls extends Component
     #[Validate('required|integer|min:0|max:100')]
     public int $trafficPercentage = 100;
 
+    /** @var list<string> */
+    public array $allowedEnvironments = [];
+
     public string $flashMessage = '';
     public string $flashType = 'success';
 
@@ -52,7 +56,8 @@ final class ExperimentControls extends Component
         $model = ExperimentModel::query()->firstWhere('key', $experimentKey);
 
         if ($model !== null) {
-            $this->trafficPercentage = $model->traffic_percentage;
+            $this->trafficPercentage    = $model->traffic_percentage;
+            $this->allowedEnvironments  = $model->allowed_environments ?? [];
         }
     }
 
@@ -104,6 +109,15 @@ final class ExperimentControls extends Component
         $this->dispatchCommand(new ToggleKillSwitchCommand(
             experimentKey: $this->experimentKey,
             isKilled: $isKilled,
+            actorIdentifier: $this->actorIdentifier(),
+        ));
+    }
+
+    public function setEnvironments(): void
+    {
+        $this->dispatchCommand(new SetExperimentEnvironmentsCommand(
+            experimentKey: $this->experimentKey,
+            allowedEnvironments: $this->allowedEnvironments === [] ? null : array_values($this->allowedEnvironments),
             actorIdentifier: $this->actorIdentifier(),
         ));
     }

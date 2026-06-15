@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ABTests\Attributes;
 
+use ABTests\Enums\Environment;
 use Attribute;
 use UnitEnum;
 use ABTests\Contracts\Bucketable;
@@ -31,12 +32,17 @@ final readonly class AsExperiment
      * @param string|null               $layer    Mutual-exclusion namespace; units enter
      *                                            at most one running experiment per layer.
      */
+    /**
+     * @param list<value-of<Environment>>|null $environments Restrict this experiment
+     *        to the given environments (e.g. ['production']). null means all environments.
+     */
     public function __construct(
         string|UnitEnum $key,
         public string $unit,
         public string $variants,
         public ?string $name = null,
         public ?string $layer = null,
+        public ?array $environments = null,
     ) {
         $this->key = enum_value($key);
     }

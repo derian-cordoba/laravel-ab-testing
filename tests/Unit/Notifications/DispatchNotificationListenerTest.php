@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace ABTests\Tests\Unit\Notifications;
 
 use ABTests\Application\Listeners\DispatchNotificationListener;
+use ABTests\Domain\Events\ExperimentEnvironmentsUpdatedEvent;
 use ABTests\Domain\Events\ExperimentPausedEvent;
 use ABTests\Domain\Events\ExperimentResumedEvent;
 use ABTests\Domain\Events\ExperimentStartedEvent;
 use ABTests\Domain\Events\ExperimentStoppedEvent;
 use ABTests\Domain\Events\FeatureFlagDisabledEvent;
 use ABTests\Domain\Events\FeatureFlagEnabledEvent;
+use ABTests\Domain\Events\FeatureFlagEnvironmentsUpdatedEvent;
 use ABTests\Domain\Events\GuardrailBreachedEvent;
 use ABTests\Domain\Events\KillSwitchActivatedEvent;
 use ABTests\Notifications\NotificationPayload;
@@ -206,6 +208,64 @@ final class DispatchNotificationListenerTest extends TestCase
     }
 
     #[Test]
+    public function experiment_environments_updated_event_maps_to_correct_payload(): void
+    {
+        $event = new ExperimentEnvironmentsUpdatedEvent(
+            experimentKey: 'my-exp',
+            allowedEnvironments: ['production', 'staging'],
+            actorIdentifier: 'alice',
+            actorType: 'user',
+        );
+
+        $payload = $this->toPayload($event);
+
+        self::assertNotNull($payload);
+        self::assertSame('experiment_environments_updated', $payload->event);
+        self::assertStringContainsString('my-exp', $payload->title);
+        self::assertSame('my-exp', $payload->experimentKey);
+        self::assertNull($payload->flagKey);
+        self::assertSame('alice', $payload->data['actor']);
+        self::assertSame(['production', 'staging'], $payload->data['allowed_environments']);
+    }
+
+    #[Test]
+    public function experiment_environments_updated_event_with_null_shows_all_in_payload(): void
+    {
+        $event = new ExperimentEnvironmentsUpdatedEvent(
+            experimentKey: 'my-exp',
+            allowedEnvironments: null,
+            actorIdentifier: 'alice',
+            actorType: 'user',
+        );
+
+        $payload = $this->toPayload($event);
+
+        self::assertNotNull($payload);
+        self::assertSame('all', $payload->data['allowed_environments']);
+    }
+
+    #[Test]
+    public function feature_flag_environments_updated_event_maps_to_correct_payload(): void
+    {
+        $event = new FeatureFlagEnvironmentsUpdatedEvent(
+            flagKey: 'my-flag',
+            allowedEnvironments: ['local'],
+            actorIdentifier: 'bob',
+            actorType: 'user',
+        );
+
+        $payload = $this->toPayload($event);
+
+        self::assertNotNull($payload);
+        self::assertSame('feature_flag_environments_updated', $payload->event);
+        self::assertStringContainsString('my-flag', $payload->title);
+        self::assertNull($payload->experimentKey);
+        self::assertSame('my-flag', $payload->flagKey);
+        self::assertSame('bob', $payload->data['actor']);
+        self::assertSame(['local'], $payload->data['allowed_environments']);
+    }
+
+    #[Test]
     public function guardrail_breached_event_maps_to_correct_payload(): void
     {
         $event = new GuardrailBreachedEvent(
@@ -261,14 +321,16 @@ final class DispatchNotificationListenerTest extends TestCase
             ->set("ab-testing.notifications.events.{$eventKey}", false);
 
         $event = match ($eventKey) {
-            'experiment_started'    => new ExperimentStartedEvent('e', 'a', 'user', 100),
-            'experiment_paused'     => new ExperimentPausedEvent('e', 'a', 'user'),
-            'experiment_resumed'    => new ExperimentResumedEvent('e', 'a', 'user'),
-            'experiment_stopped'    => new ExperimentStoppedEvent('e', 'a', 'user'),
-            'feature_flag_enabled'  => new FeatureFlagEnabledEvent('f', 'a', 'user'),
-            'feature_flag_disabled' => new FeatureFlagDisabledEvent('f', 'a', 'user'),
-            'kill_switch_activated' => new KillSwitchActivatedEvent('e', null, true, 'a', 'user'),
-            'guardrail_breached'    => new GuardrailBreachedEvent('e', 'm', 'v', 0.1, 0.05),
+            'experiment_started'                => new ExperimentStartedEvent('e', 'a', 'user', 100),
+            'experiment_paused'                 => new ExperimentPausedEvent('e', 'a', 'user'),
+            'experiment_resumed'                => new ExperimentResumedEvent('e', 'a', 'user'),
+            'experiment_stopped'                => new ExperimentStoppedEvent('e', 'a', 'user'),
+            'experiment_environments_updated'   => new ExperimentEnvironmentsUpdatedEvent('e', ['production'], 'a', 'user'),
+            'feature_flag_enabled'              => new FeatureFlagEnabledEvent('f', 'a', 'user'),
+            'feature_flag_disabled'             => new FeatureFlagDisabledEvent('f', 'a', 'user'),
+            'feature_flag_environments_updated' => new FeatureFlagEnvironmentsUpdatedEvent('f', ['production'], 'a', 'user'),
+            'kill_switch_activated'             => new KillSwitchActivatedEvent('e', null, true, 'a', 'user'),
+            'guardrail_breached'                => new GuardrailBreachedEvent('e', 'm', 'v', 0.1, 0.05),
         };
 
         $this->listener->handle($event);
@@ -280,14 +342,16 @@ final class DispatchNotificationListenerTest extends TestCase
     public static function disabledEventProvider(): array
     {
         return [
-            'experiment_started'    => ['experiment_started'],
-            'experiment_paused'     => ['experiment_paused'],
-            'experiment_resumed'    => ['experiment_resumed'],
-            'experiment_stopped'    => ['experiment_stopped'],
-            'feature_flag_enabled'  => ['feature_flag_enabled'],
-            'feature_flag_disabled' => ['feature_flag_disabled'],
-            'kill_switch_activated' => ['kill_switch_activated'],
-            'guardrail_breached'    => ['guardrail_breached'],
+            'experiment_started'                => ['experiment_started'],
+            'experiment_paused'                 => ['experiment_paused'],
+            'experiment_resumed'                => ['experiment_resumed'],
+            'experiment_stopped'                => ['experiment_stopped'],
+            'experiment_environments_updated'   => ['experiment_environments_updated'],
+            'feature_flag_enabled'              => ['feature_flag_enabled'],
+            'feature_flag_disabled'             => ['feature_flag_disabled'],
+            'feature_flag_environments_updated' => ['feature_flag_environments_updated'],
+            'kill_switch_activated'             => ['kill_switch_activated'],
+            'guardrail_breached'                => ['guardrail_breached'],
         ];
     }
 

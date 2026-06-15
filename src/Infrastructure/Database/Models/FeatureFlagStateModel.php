@@ -14,6 +14,7 @@ use Illuminate\Support\Carbon;
  * @property int                                                              $id
  * @property string                                                           $key
  * @property bool                                                             $is_enabled
+ * @property list<string>|null                                                $allowed_environments
  * @property int                                                              $rollout_percentage
  * @property list<array{attribute:string,operator:string,expected:mixed}>|null $conditions
  * @property ConditionsLogic                                                  $conditions_logic
@@ -27,6 +28,7 @@ final class FeatureFlagStateModel extends Model
     protected $fillable = [
         'key',
         'is_enabled',
+        'allowed_environments',
         'rollout_percentage',
         'conditions',
         'conditions_logic',
@@ -35,10 +37,11 @@ final class FeatureFlagStateModel extends Model
     ];
 
     protected $casts = [
-        'is_enabled'        => 'boolean',
-        'conditions'        => 'array',
-        'conditions_logic'  => ConditionsLogic::class,
-        'killed_at'         => 'datetime',
-        'last_evaluated_at' => 'datetime',
+        'is_enabled'           => 'boolean',
+        'allowed_environments' => 'array',
+        'conditions'           => 'array',
+        'conditions_logic'     => ConditionsLogic::class,
+        'killed_at'            => 'datetime',
+        'last_evaluated_at'    => 'datetime',
     ];
 }

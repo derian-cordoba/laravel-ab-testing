@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace ABTests\Application\Listeners;
 
+use ABTests\Domain\Events\ExperimentEnvironmentsUpdatedEvent;
 use ABTests\Domain\Events\ExperimentPausedEvent;
 use ABTests\Domain\Events\ExperimentResumedEvent;
 use ABTests\Domain\Events\ExperimentStartedEvent;
 use ABTests\Domain\Events\ExperimentStoppedEvent;
 use ABTests\Domain\Events\FeatureFlagDisabledEvent;
 use ABTests\Domain\Events\FeatureFlagEnabledEvent;
+use ABTests\Domain\Events\FeatureFlagEnvironmentsUpdatedEvent;
 use ABTests\Domain\Events\GuardrailBreachedEvent;
 use ABTests\Domain\Events\KillSwitchActivatedEvent;
 use ABTests\Notifications\Jobs\DispatchNotificationsJob;
@@ -134,6 +136,32 @@ final readonly class DispatchNotificationListener
                     'activated'  => $event->activated,
                     'actor'      => $event->actorIdentifier,
                     'actor_type' => $event->actorType,
+                ],
+                occurredAt: new DateTimeImmutable(),
+            ),
+
+            $event instanceof ExperimentEnvironmentsUpdatedEvent => new NotificationPayload(
+                event: 'experiment_environments_updated',
+                title: "Experiment environments updated: $event->experimentKey",
+                experimentKey: $event->experimentKey,
+                flagKey: null,
+                data: [
+                    'actor'                => $event->actorIdentifier,
+                    'actor_type'           => $event->actorType,
+                    'allowed_environments' => $event->allowedEnvironments ?? 'all',
+                ],
+                occurredAt: new DateTimeImmutable(),
+            ),
+
+            $event instanceof FeatureFlagEnvironmentsUpdatedEvent => new NotificationPayload(
+                event: 'feature_flag_environments_updated',
+                title: "Feature flag environments updated: $event->flagKey",
+                experimentKey: null,
+                flagKey: $event->flagKey,
+                data: [
+                    'actor'                => $event->actorIdentifier,
+                    'actor_type'           => $event->actorType,
+                    'allowed_environments' => $event->allowedEnvironments ?? 'all',
                 ],
                 occurredAt: new DateTimeImmutable(),
             ),

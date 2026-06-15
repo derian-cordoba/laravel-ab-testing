@@ -14,11 +14,15 @@ use ABTests\Enums\ExperimentStatus;
  */
 final readonly class ExperimentState
 {
+    /**
+     * @param list<string>|null $allowedEnvironments null = all environments (no restriction).
+     */
     public function __construct(
         public string $experimentKey,
         public ExperimentStatus $status,
         public int $trafficPercentage,
         public bool $isKilled = false,
+        public ?array $allowedEnvironments = null,
     ) {
         //
     }

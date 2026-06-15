@@ -23,6 +23,9 @@ final readonly class ExperimentDefinition
      * @param string          $unitType The unit's stable type key (e.g. "tenant").
      * @param list<MetricBinding> $metrics
      */
+    /**
+     * @param list<string>|null $allowedEnvironments null = all environments (no restriction).
+     */
     public function __construct(
         public string $key,
         public string $unitType,
@@ -32,6 +35,7 @@ final readonly class ExperimentDefinition
         public array $metrics,
         public ?string $name = null,
         public ?string $layer = null,
+        public ?array $allowedEnvironments = null,
     ) {
     }
 

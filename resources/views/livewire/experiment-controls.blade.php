@@ -137,6 +137,43 @@
                     </div>
                 @endif
 
+                {{-- Environment filter --}}
+                @if($status !== ExperimentStatus::archived)
+                    <div class="border-t border-gray-700/60 pt-5">
+                        <p class="mb-1 text-xs font-medium uppercase tracking-wide text-gray-500">Environments</p>
+                        <p class="mb-3 text-xs text-gray-500">
+                            Restrict this experiment to specific environments. Leave all unchecked to allow every environment.
+                        </p>
+                        <div class="flex flex-wrap gap-4 mb-4">
+                            @foreach(['local', 'staging', 'production'] as $env)
+                                <label class="flex items-center gap-2 cursor-pointer select-none">
+                                    <input
+                                        type="checkbox"
+                                        value="{{ $env }}"
+                                        wire:model="allowedEnvironments"
+                                        class="h-4 w-4 rounded border-gray-600 bg-gray-800 text-violet-500 focus:ring-violet-500 focus:ring-offset-gray-900"
+                                    >
+                                    <span class="text-sm text-gray-300 capitalize">{{ $env }}</span>
+                                </label>
+                            @endforeach
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <button wire:click="setEnvironments"
+                                    class="inline-flex items-center rounded-md bg-violet-700 px-4 py-2 text-sm font-medium text-violet-100 hover:bg-violet-600 transition-colors">
+                                Save Environments
+                            </button>
+                            @if($model->allowed_environments !== null)
+                                <p class="text-xs text-gray-500">
+                                    Active in:
+                                    <strong class="text-gray-300">{{ implode(', ', $model->allowed_environments) }}</strong>
+                                </p>
+                            @else
+                                <p class="text-xs text-gray-500">Active in <strong class="text-gray-300">all environments</strong>.</p>
+                            @endif
+                        </div>
+                    </div>
+                @endif
+
                 {{-- Traffic ramp --}}
                 @if($showTrafficRamp && $isRunning)
                     <div class="border-t border-gray-700/60 pt-5">

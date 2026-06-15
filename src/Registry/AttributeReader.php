@@ -75,6 +75,7 @@ final readonly class AttributeReader
             metrics: $metrics,
             name: $asExperiment->name,
             layer: $asExperiment->layer,
+            allowedEnvironments: $asExperiment->environments,
         );
     }
 

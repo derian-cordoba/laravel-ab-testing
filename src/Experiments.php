@@ -244,6 +244,18 @@ final class Experiments
             return $definition->defaultValue;
         }
 
+        // Environment gate: if the flag restricts to specific environments and
+        // the current environment is not in the list, return the default value.
+        $allowedEnvironments = $state->allowed_environments;
+
+        if ($allowedEnvironments !== null) {
+            $current = Environment::tryFrom((string) app()->environment());
+
+            if ($current === null || ! in_array($current->value, $allowedEnvironments, true)) {
+                return $definition->defaultValue;
+            }
+        }
+
         // Evaluate targeting conditions before computing the bucketing position,
         // since attribute checks are cheap. Logic (AND/OR) is stored per-flag.
         $logic = $state->conditions_logic ?? ConditionsLogic::all;

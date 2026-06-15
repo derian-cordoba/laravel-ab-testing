@@ -95,6 +95,39 @@ final class DatabaseExperimentStateRepositoryTest extends DatabaseTestCase
     }
 
     #[Test]
+    public function maps_allowed_environments_from_database_row(): void
+    {
+        ExperimentModel::query()->create([
+            'key'                  => 'exp',
+            'status'               => 'running',
+            'traffic_percentage'   => 100,
+            'is_killed'            => false,
+            'allowed_environments' => ['production', 'staging'],
+        ]);
+
+        $state = $this->repo->findState('exp');
+
+        self::assertNotNull($state);
+        self::assertSame(['production', 'staging'], $state->allowedEnvironments);
+    }
+
+    #[Test]
+    public function allowed_environments_is_null_when_column_is_null(): void
+    {
+        ExperimentModel::query()->create([
+            'key'                => 'exp',
+            'status'             => 'running',
+            'traffic_percentage' => 100,
+            'is_killed'          => false,
+        ]);
+
+        $state = $this->repo->findState('exp');
+
+        self::assertNotNull($state);
+        self::assertNull($state->allowedEnvironments);
+    }
+
+    #[Test]
     public function different_experiments_returned_independently(): void
     {
         ExperimentModel::query()->create([
