@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace ABTests\Tests\Unit\Notifications\Channels;
 
-use ABTests\Notifications\Channels\MailChannel;
-use ABTests\Notifications\NotificationPayload;
+use ABTests\Infrastructure\Notifications\Channels\MailChannel;
+use ABTests\Infrastructure\Notifications\NotificationPayload;
 use ABTests\Tests\Support\TestApplication;
 use DateTimeImmutable;
 use Illuminate\Config\Repository as ConfigRepository;

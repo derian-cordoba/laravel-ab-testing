@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ABTests\Tests\Unit\Resolution\Steps;
 
-use ABTests\Resolution\Steps\CheckSegmentStep;
+use ABTests\Application\Resolution\Steps\CheckSegmentStep;
 use ABTests\Tests\Fixtures\TestUnit;
 use ABTests\Tests\Support\MakesPayload;
 use ABTests\Values\Segment;

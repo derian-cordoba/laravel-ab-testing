@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace ABTests\Tests\Integration\Application\CommandHandlers;
 
-use ABTests\Application\CommandHandlers\ToggleFlagKillSwitchCommandHandler;
+use ABTests\Application\Handlers\ToggleFlagKillSwitchCommandHandler;
 use ABTests\Application\Commands\ToggleFlagKillSwitchCommand;
 use ABTests\Domain\Events\KillSwitchActivatedEvent;
 use ABTests\Infrastructure\Database\Models\FeatureFlagStateModel;
 use ABTests\Tests\Integration\DatabaseTestCase;
 use Illuminate\Container\Container;
 use PHPUnit\Framework\Attributes\Test;
+use ABTests\Infrastructure\Database\DatabaseFeatureFlagRepository;
 
 final class ToggleFlagKillSwitchCommandHandlerTest extends DatabaseTestCase
 {
@@ -23,7 +24,7 @@ final class ToggleFlagKillSwitchCommandHandlerTest extends DatabaseTestCase
             'killed_at'  => null,
         ]);
 
-        new ToggleFlagKillSwitchCommandHandler()->handle(new ToggleFlagKillSwitchCommand(
+        new ToggleFlagKillSwitchCommandHandler(new DatabaseFeatureFlagRepository())->handle(new ToggleFlagKillSwitchCommand(
             flagKey: 'my-flag',
             isKilled: true,
             actorIdentifier: 'tester',
@@ -43,7 +44,7 @@ final class ToggleFlagKillSwitchCommandHandlerTest extends DatabaseTestCase
             'killed_at'  => \Carbon\Carbon::now(),
         ]);
 
-        new ToggleFlagKillSwitchCommandHandler()->handle(new ToggleFlagKillSwitchCommand(
+        new ToggleFlagKillSwitchCommandHandler(new DatabaseFeatureFlagRepository())->handle(new ToggleFlagKillSwitchCommand(
             flagKey: 'my-flag',
             isKilled: false,
             actorIdentifier: 'tester',
@@ -57,7 +58,7 @@ final class ToggleFlagKillSwitchCommandHandlerTest extends DatabaseTestCase
     #[Test]
     public function creates_record_when_no_state_exists_and_kill_switch_is_activated(): void
     {
-        new ToggleFlagKillSwitchCommandHandler()->handle(new ToggleFlagKillSwitchCommand(
+        new ToggleFlagKillSwitchCommandHandler(new DatabaseFeatureFlagRepository())->handle(new ToggleFlagKillSwitchCommand(
             flagKey: 'brand-new-flag',
             isKilled: true,
             actorIdentifier: 'tester',
@@ -78,7 +79,7 @@ final class ToggleFlagKillSwitchCommandHandlerTest extends DatabaseTestCase
             'killed_at'  => null,
         ]);
 
-        new ToggleFlagKillSwitchCommandHandler()->handle(new ToggleFlagKillSwitchCommand(
+        new ToggleFlagKillSwitchCommandHandler(new DatabaseFeatureFlagRepository())->handle(new ToggleFlagKillSwitchCommand(
             flagKey: 'my-flag',
             isKilled: true,
             actorIdentifier: 'tester',
@@ -107,7 +108,7 @@ final class ToggleFlagKillSwitchCommandHandlerTest extends DatabaseTestCase
             },
         );
 
-        new ToggleFlagKillSwitchCommandHandler()->handle(new ToggleFlagKillSwitchCommand(
+        new ToggleFlagKillSwitchCommandHandler(new DatabaseFeatureFlagRepository())->handle(new ToggleFlagKillSwitchCommand(
             flagKey: 'my-flag',
             isKilled: true,
             actorIdentifier: 'alice',
@@ -138,7 +139,7 @@ final class ToggleFlagKillSwitchCommandHandlerTest extends DatabaseTestCase
             },
         );
 
-        new ToggleFlagKillSwitchCommandHandler()->handle(new ToggleFlagKillSwitchCommand(
+        new ToggleFlagKillSwitchCommandHandler(new DatabaseFeatureFlagRepository())->handle(new ToggleFlagKillSwitchCommand(
             flagKey: 'my-flag',
             isKilled: false,
             actorIdentifier: 'alice',

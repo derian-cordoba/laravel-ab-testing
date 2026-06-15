@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ABTests\Tests\Unit\Resolution\Steps;
 
 use ABTests\Enums\ExperimentStatus;
-use ABTests\Resolution\Steps\CheckEnvironmentStep;
+use ABTests\Application\Resolution\Steps\CheckEnvironmentStep;
 use ABTests\Tests\Support\MakesDefinition;
 use ABTests\Tests\Support\MakesPayload;
 use ABTests\Values\ExperimentState;

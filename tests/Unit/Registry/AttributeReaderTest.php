@@ -7,7 +7,7 @@ namespace ABTests\Tests\Unit\Registry;
 use ABTests\Enums\MetricRole;
 use ABTests\Enums\StatisticalEngine;
 use ABTests\Experiment;
-use ABTests\Registry\AttributeReader;
+use ABTests\Application\Registry\AttributeReader;
 use ABTests\Tests\Fixtures\BackedEnumExperiment;
 use ABTests\Tests\Fixtures\ExperimentWithMissingUnitAttribute;
 use ABTests\Tests\Fixtures\ExperimentWithPlainEnumVariants;

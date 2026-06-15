@@ -6,10 +6,10 @@ namespace ABTests\Tests\Unit\ServiceProvider;
 
 use ABTests\Experiment;
 use ABTests\FeatureFlag;
-use ABTests\Registry\AttributeReader;
-use ABTests\Registry\ClassDiscovery;
-use ABTests\Registry\ExperimentRegistry;
-use ABTests\Registry\FeatureFlagRegistry;
+use ABTests\Application\Registry\AttributeReader;
+use ABTests\Application\Registry\ClassDiscovery;
+use ABTests\Application\Registry\ExperimentRegistry;
+use ABTests\Application\Registry\FeatureFlagRegistry;
 use ABTests\Tests\Fixtures\Discovery\DiscoverableExperiment;
 use ABTests\Tests\Fixtures\Discovery\DiscoverableFeatureFlag;
 use PHPUnit\Framework\Attributes\Test;

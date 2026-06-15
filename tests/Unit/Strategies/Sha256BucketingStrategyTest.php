@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ABTests\Tests\Unit\Strategies;
 
-use ABTests\Strategies\Sha256BucketingStrategy;
+use ABTests\Infrastructure\Bucketing\Sha256BucketingStrategy;
 use ABTests\Tests\Fixtures\TestUnit;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

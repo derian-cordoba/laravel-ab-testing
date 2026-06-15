@@ -14,8 +14,8 @@ use ABTests\Domain\Events\FeatureFlagEnabledEvent;
 use ABTests\Domain\Events\FeatureFlagEnvironmentsUpdatedEvent;
 use ABTests\Domain\Events\GuardrailBreachedEvent;
 use ABTests\Domain\Events\KillSwitchActivatedEvent;
-use ABTests\Notifications\Jobs\DispatchNotificationsJob;
-use ABTests\Notifications\NotificationPayload;
+use ABTests\Infrastructure\Notifications\Jobs\DispatchNotificationsJob;
+use ABTests\Infrastructure\Notifications\NotificationPayload;
 use DateTimeImmutable;
 
 /**

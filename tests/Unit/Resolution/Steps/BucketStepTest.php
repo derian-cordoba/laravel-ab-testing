@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ABTests\Tests\Unit\Resolution\Steps;
 
-use ABTests\Resolution\Steps\BucketStep;
+use ABTests\Application\Resolution\Steps\BucketStep;
 use ABTests\Tests\Fixtures\TestVariant;
 use ABTests\Tests\Support\MakesPayload;
 use PHPUnit\Framework\Attributes\Test;

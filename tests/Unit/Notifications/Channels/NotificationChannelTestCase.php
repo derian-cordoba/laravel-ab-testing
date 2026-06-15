@@ -59,9 +59,9 @@ abstract class NotificationChannelTestCase extends TestCase
      */
     abstract protected function channelConfig(): array;
 
-    protected function makePayload(string $event = 'experiment_paused'): \ABTests\Notifications\NotificationPayload
+    protected function makePayload(string $event = 'experiment_paused'): \ABTests\Infrastructure\Notifications\NotificationPayload
     {
-        return new \ABTests\Notifications\NotificationPayload(
+        return new \ABTests\Infrastructure\Notifications\NotificationPayload(
             event: $event,
             title: 'Experiment paused: checkout-button-color',
             experimentKey: 'checkout-button-color',

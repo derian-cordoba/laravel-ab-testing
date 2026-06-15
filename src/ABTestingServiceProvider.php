@@ -7,26 +7,32 @@ namespace ABTests;
 use ABTests\Application\Listeners\AutoPauseOnGuardrailBreachListener;
 use ABTests\Application\Listeners\DispatchNotificationListener;
 use ABTests\Application\ResultsService;
-use ABTests\Blade\BladeDirectiveHelpers;
+use ABTests\Presentation\Blade\BladeDirectiveHelpers;
 use ABTests\Exceptions\ABTestingException;
 use ABTests\Exceptions\ExperimentNotFound;
 use ABTests\Exceptions\FeatureFlagNotFound;
-use ABTests\Http\Middleware\ApiExceptionHandlerMiddleware;
-use ABTests\Http\Middleware\ExposeAssignmentsMiddleware;
-use ABTests\Http\Middleware\EnforceAcceptHeaderMiddleware;
-use ABTests\Http\Middleware\RequiresApiAccess;
-use ABTests\Http\Middleware\SetApiContentTypeMiddleware;
-use ABTests\Presentation\Middleware\ResolveExperimentMiddleware;
+use ABTests\Presentation\Http\Middleware\ApiExceptionHandlerMiddleware;
+use ABTests\Presentation\Http\Middleware\ExposeAssignmentsMiddleware;
+use ABTests\Presentation\Http\Middleware\EnforceAcceptHeaderMiddleware;
+use ABTests\Presentation\Http\Middleware\RequiresApiAccess;
+use ABTests\Presentation\Http\Middleware\SetApiContentTypeMiddleware;
+use ABTests\Presentation\Http\Middleware\ResolveExperimentMiddleware;
 use ABTests\Application\SynchronousCommandBus;
-use ABTests\Console\CacheDefinitionsCommand;
-use ABTests\Console\DetectStaleFlagsCommand;
-use ABTests\Console\PowerAnalysisCommand;
-use ABTests\Console\PruneEventDataCommand;
+use ABTests\Presentation\Console\CacheDefinitionsCommand;
+use ABTests\Presentation\Console\DetectStaleFlagsCommand;
+use ABTests\Presentation\Console\PowerAnalysisCommand;
+use ABTests\Presentation\Console\PruneEventDataCommand;
 use ABTests\Contracts\AssignmentRepository;
+use ABTests\Contracts\AuditLogRepository;
 use ABTests\Contracts\BucketingStrategy;
 use ABTests\Contracts\CommandBus;
 use ABTests\Contracts\EventSink;
+use ABTests\Contracts\ExperimentRepository;
 use ABTests\Contracts\ExperimentStateRepository;
+use ABTests\Contracts\FeatureFlagRepository;
+use ABTests\Infrastructure\Database\DatabaseAuditLogRepository;
+use ABTests\Infrastructure\Database\DatabaseExperimentRepository;
+use ABTests\Infrastructure\Database\DatabaseFeatureFlagRepository;
 use ABTests\Domain\Events\ExperimentEnvironmentsUpdatedEvent;
 use ABTests\Domain\Events\ExperimentPausedEvent;
 use ABTests\Domain\Events\ExperimentResumedEvent;
@@ -37,10 +43,10 @@ use ABTests\Domain\Events\FeatureFlagEnabledEvent;
 use ABTests\Domain\Events\FeatureFlagEnvironmentsUpdatedEvent;
 use ABTests\Domain\Events\GuardrailBreachedEvent;
 use ABTests\Domain\Events\KillSwitchActivatedEvent;
-use ABTests\Notifications\Channels\MailChannel;
-use ABTests\Notifications\Channels\SlackChannel;
-use ABTests\Notifications\Channels\WebhookChannel;
-use ABTests\Notifications\NotificationDispatcher;
+use ABTests\Infrastructure\Notifications\Channels\MailChannel;
+use ABTests\Infrastructure\Notifications\Channels\SlackChannel;
+use ABTests\Infrastructure\Notifications\Channels\WebhookChannel;
+use ABTests\Infrastructure\Notifications\NotificationDispatcher;
 use ABTests\Infrastructure\AlwaysRunningExperimentStateRepository;
 use ABTests\Infrastructure\Database\DatabaseAssignmentRepository;
 use ABTests\Infrastructure\Database\DatabaseEventSink;
@@ -49,25 +55,25 @@ use ABTests\Infrastructure\InMemoryAssignmentRepository;
 use ABTests\Infrastructure\Jobs\PruneEventDataJob;
 use ABTests\Infrastructure\Jobs\RefreshRollupsJob;
 use ABTests\Infrastructure\NullEventSink;
-use ABTests\Registry\AttributeReader;
-use ABTests\Registry\ClassDiscovery;
-use ABTests\Registry\ExperimentRegistry;
-use ABTests\Registry\FeatureFlagRegistry;
-use ABTests\Resolution\Resolver;
-use ABTests\Resolution\Steps\BucketStep;
-use ABTests\Resolution\Steps\CheckEnvironmentStep;
-use ABTests\Resolution\Steps\CheckExperimentActiveStep;
-use ABTests\Resolution\Steps\CheckLayerExclusionStep;
-use ABTests\Resolution\Steps\CheckSegmentStep;
-use ABTests\Resolution\Steps\CheckTrafficAllocationStep;
-use ABTests\Resolution\Steps\LoadExistingAssignmentStep;
-use ABTests\Resolution\Steps\PersistAssignmentStep;
-use ABTests\Statistics\AnalysisService;
-use ABTests\Statistics\BayesianAnalysisEngine;
-use ABTests\Statistics\FrequentistAnalysisEngine;
-use ABTests\Statistics\SampleRatioMismatchDetector;
-use ABTests\Statistics\VerdictResolver;
-use ABTests\Strategies\Sha256BucketingStrategy;
+use ABTests\Application\Registry\AttributeReader;
+use ABTests\Application\Registry\ClassDiscovery;
+use ABTests\Application\Registry\ExperimentRegistry;
+use ABTests\Application\Registry\FeatureFlagRegistry;
+use ABTests\Application\Resolution\Resolver;
+use ABTests\Application\Resolution\Steps\BucketStep;
+use ABTests\Application\Resolution\Steps\CheckEnvironmentStep;
+use ABTests\Application\Resolution\Steps\CheckExperimentActiveStep;
+use ABTests\Application\Resolution\Steps\CheckLayerExclusionStep;
+use ABTests\Application\Resolution\Steps\CheckSegmentStep;
+use ABTests\Application\Resolution\Steps\CheckTrafficAllocationStep;
+use ABTests\Application\Resolution\Steps\LoadExistingAssignmentStep;
+use ABTests\Application\Resolution\Steps\PersistAssignmentStep;
+use ABTests\Domain\Analysis\AnalysisService;
+use ABTests\Domain\Analysis\BayesianAnalysisEngine;
+use ABTests\Domain\Analysis\FrequentistAnalysisEngine;
+use ABTests\Domain\Analysis\SampleRatioMismatchDetector;
+use ABTests\Domain\Analysis\VerdictResolver;
+use ABTests\Infrastructure\Bucketing\Sha256BucketingStrategy;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Contracts\Container\BindingResolutionException;
@@ -219,6 +225,7 @@ final class ABTestingServiceProvider extends ServiceProvider
                 eventSink: $this->app->make(EventSink::class),
                 assignmentRepository: $this->app->make(AssignmentRepository::class),
                 bucketingStrategy: $this->app->make(BucketingStrategy::class),
+                featureFlagRepository: $this->app->make(FeatureFlagRepository::class),
             ),
         );
     }
@@ -420,6 +427,9 @@ final class ABTestingServiceProvider extends ServiceProvider
         $this->app->singleton(AssignmentRepository::class, DatabaseAssignmentRepository::class);
         $this->app->singleton(ExperimentStateRepository::class, DatabaseExperimentStateRepository::class);
         $this->app->singleton(EventSink::class, DatabaseEventSink::class);
+        $this->app->singleton(ExperimentRepository::class, DatabaseExperimentRepository::class);
+        $this->app->singleton(FeatureFlagRepository::class, DatabaseFeatureFlagRepository::class);
+        $this->app->singleton(AuditLogRepository::class, DatabaseAuditLogRepository::class);
     }
 
     /**
@@ -442,35 +452,35 @@ final class ABTestingServiceProvider extends ServiceProvider
         Blade::anonymousComponentPath(__DIR__ . '/../resources/views/components', 'ab-testing');
 
         // Register the ab-testing Livewire namespace so the :: resolver can
-        // auto-discover all components in ABTests\Dashboard\Livewire, including
+        // auto-discover all components in ABTests\Presentation\Livewire, including
         // experiments-overview, experiment-detail, experiment-controls, and
         // experiment-results-table, without individual registrations.
         if (class_exists(Livewire::class)) {
-            Livewire::addNamespace('ab-testing', classNamespace: 'ABTests\\Dashboard\\Livewire');
+            Livewire::addNamespace('ab-testing', classNamespace: 'ABTests\\Presentation\\Livewire');
         }
 
         // ── Blade directives ─────────────────────────────────────────────────
         // @abVariant('experiment-key', 'variant-key') ... @endAbVariant
         Blade::directive('abVariant', static function (string $expression): string {
-            return "<?php if (\\ABTests\\Blade\\BladeDirectiveHelpers::isVariant($expression)): ?>";
+            return "<?php if (\\ABTests\\Presentation\\Blade\\BladeDirectiveHelpers::isVariant($expression)): ?>";
         });
         Blade::directive('endAbVariant', static fn (): string => '<?php endif; ?>');
 
         // @abNotVariant('experiment-key', 'variant-key') ... @endAbNotVariant
         Blade::directive('abNotVariant', static function (string $expression): string {
-            return "<?php if (\\ABTests\\Blade\\BladeDirectiveHelpers::isNotVariant($expression)): ?>";
+            return "<?php if (\\ABTests\\Presentation\\Blade\\BladeDirectiveHelpers::isNotVariant($expression)): ?>";
         });
         Blade::directive('endAbNotVariant', static fn (): string => '<?php endif; ?>');
 
         // @featureEnabled('flag-key') ... @endFeatureEnabled
         Blade::directive('featureEnabled', static function (string $expression): string {
-            return "<?php if (\\ABTests\\Blade\\BladeDirectiveHelpers::featureEnabled($expression)): ?>";
+            return "<?php if (\\ABTests\\Presentation\\Blade\\BladeDirectiveHelpers::featureEnabled($expression)): ?>";
         });
         Blade::directive('endFeatureEnabled', static fn (): string => '<?php endif; ?>');
 
         // @featureDisabled('flag-key') ... @endFeatureDisabled
         Blade::directive('featureDisabled', static function (string $expression): string {
-            return "<?php if (\\ABTests\\Blade\\BladeDirectiveHelpers::featureDisabled($expression)): ?>";
+            return "<?php if (\\ABTests\\Presentation\\Blade\\BladeDirectiveHelpers::featureDisabled($expression)): ?>";
         });
         Blade::directive('endFeatureDisabled', static fn (): string => '<?php endif; ?>');
 
@@ -478,7 +488,7 @@ final class ABTestingServiceProvider extends ServiceProvider
         // Renders a <meta name="ab-assignments" content='{"experiment-key":"variant"}'>
         // tag for the given unit so JS can bootstrap from the server assignment.
         Blade::directive('abAssignmentsJson', static function (string $expression): string {
-            return "<?php echo \\ABTests\\Blade\\BladeDirectiveHelpers::assignmentsMetaTag($expression); ?>";
+            return "<?php echo \\ABTests\\Presentation\\Blade\\BladeDirectiveHelpers::assignmentsMetaTag($expression); ?>";
         });
         // ─────────────────────────────────────────────────────────────────────
 

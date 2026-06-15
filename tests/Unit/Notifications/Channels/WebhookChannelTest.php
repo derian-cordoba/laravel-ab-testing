@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ABTests\Tests\Unit\Notifications\Channels;
 
-use ABTests\Notifications\Channels\WebhookChannel;
+use ABTests\Infrastructure\Notifications\Channels\WebhookChannel;
 use Illuminate\Support\Facades\Http;
 use PHPUnit\Framework\Attributes\Test;
 

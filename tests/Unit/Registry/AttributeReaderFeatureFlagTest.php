@@ -6,7 +6,7 @@ namespace ABTests\Tests\Unit\Registry;
 
 use ABTests\Definitions\FeatureFlagDefinition;
 use ABTests\FeatureFlag;
-use ABTests\Registry\AttributeReader;
+use ABTests\Application\Registry\AttributeReader;
 use ABTests\Tests\Fixtures\FeatureFlagWithMissingUnitAttribute;
 use ABTests\Tests\Fixtures\TestFeatureFlag;
 use ABTests\Values\Context;

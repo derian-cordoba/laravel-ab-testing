@@ -6,9 +6,9 @@ namespace ABTests\Tests\Unit\Testing;
 
 use ABTests\Enums\EventType;
 use ABTests\Experiments;
-use ABTests\Registry\AttributeReader;
-use ABTests\Registry\ExperimentRegistry;
-use ABTests\Registry\FeatureFlagRegistry;
+use ABTests\Application\Registry\AttributeReader;
+use ABTests\Application\Registry\ExperimentRegistry;
+use ABTests\Application\Registry\FeatureFlagRegistry;
 use ABTests\Testing\FakeExperiments;
 use ABTests\Tests\Fixtures\TestExperiment;
 use ABTests\Tests\Fixtures\TestMetric;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ABTests\Tests\Unit\Registry;
 
-use ABTests\Registry\ClassDiscovery;
+use ABTests\Application\Registry\ClassDiscovery;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use ABTests\Tests\Fixtures\Discovery\DiscoverableExperiment;

@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-use ABTests\Dashboard\Http\Middleware\RequiresDashboardAccess;
-use ABTests\Dashboard\Livewire\AuditLog;
-use ABTests\Dashboard\Livewire\CreateExperiment;
-use ABTests\Dashboard\Livewire\CreateFeatureFlag;
-use ABTests\Dashboard\Livewire\DashboardIndex;
-use ABTests\Dashboard\Livewire\ExperimentDetail;
-use ABTests\Dashboard\Livewire\ExperimentsOverview;
-use ABTests\Dashboard\Livewire\FeatureFlagDetail;
-use ABTests\Dashboard\Livewire\FeatureFlagsOverview;
-use ABTests\Dashboard\Livewire\LayersMap;
-use ABTests\Dashboard\Livewire\MetricsCatalog;
-use ABTests\Dashboard\Livewire\QaOverrides;
-use ABTests\Dashboard\Livewire\SegmentsOverview;
+use ABTests\Presentation\Http\Middleware\RequiresDashboardAccess;
+use ABTests\Presentation\Livewire\AuditLog;
+use ABTests\Presentation\Livewire\CreateExperiment;
+use ABTests\Presentation\Livewire\CreateFeatureFlag;
+use ABTests\Presentation\Livewire\DashboardIndex;
+use ABTests\Presentation\Livewire\ExperimentDetail;
+use ABTests\Presentation\Livewire\ExperimentsOverview;
+use ABTests\Presentation\Livewire\FeatureFlagDetail;
+use ABTests\Presentation\Livewire\FeatureFlagsOverview;
+use ABTests\Presentation\Livewire\LayersMap;
+use ABTests\Presentation\Livewire\MetricsCatalog;
+use ABTests\Presentation\Livewire\QaOverrides;
+use ABTests\Presentation\Livewire\SegmentsOverview;
 use Illuminate\Support\Facades\Route;
 
 $prefix = config('ab-testing.dashboard.path', 'ab-testing');

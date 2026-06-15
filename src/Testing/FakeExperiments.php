@@ -11,10 +11,11 @@ use ABTests\Contracts\Variant;
 use ABTests\Experiment;
 use ABTests\Experiments;
 use ABTests\Infrastructure\InMemoryAssignmentRepository;
+use ABTests\Infrastructure\NullFeatureFlagRepository;
 use ABTests\Metric;
-use ABTests\Registry\ExperimentRegistry;
-use ABTests\Registry\FeatureFlagRegistry;
-use ABTests\Strategies\Sha256BucketingStrategy;
+use ABTests\Application\Registry\ExperimentRegistry;
+use ABTests\Application\Registry\FeatureFlagRegistry;
+use ABTests\Infrastructure\Bucketing\Sha256BucketingStrategy;
 use ABTests\Values\RecordedEvent;
 use PHPUnit\Framework\Assert;
 use ReflectionClass;
@@ -72,6 +73,7 @@ final readonly class FakeExperiments
             eventSink: $this->eventSink,
             assignmentRepository: $assignmentRepository,
             bucketingStrategy: $bucketingStrategy,
+            featureFlagRepository: new NullFeatureFlagRepository(),
         ));
     }
 

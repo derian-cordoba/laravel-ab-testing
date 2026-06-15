@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ABTests\Tests\Unit\Registry;
 
 use ABTests\Exceptions\ExperimentNotFound;
-use ABTests\Registry\ExperimentRegistry;
+use ABTests\Application\Registry\ExperimentRegistry;
 use ABTests\Tests\Support\MakesDefinition;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
