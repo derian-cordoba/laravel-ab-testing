@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace ABTests\Tests\Unit\Notifications\Channels;
 
-use ABTests\Notifications\Channels\SlackChannel;
-use ABTests\Notifications\NotificationPayload;
+use ABTests\Infrastructure\Notifications\Channels\SlackChannel;
+use ABTests\Infrastructure\Notifications\NotificationPayload;
 use DateTimeImmutable;
 use Illuminate\Support\Facades\Http;
 use PHPUnit\Framework\Attributes\DataProvider;

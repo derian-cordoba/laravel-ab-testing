@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ABTests\Tests\Integration\Application\CommandHandlers;
 
-use ABTests\Application\CommandHandlers\ResumeExperimentCommandHandler;
+use ABTests\Application\Handlers\ResumeExperimentCommandHandler;
 use ABTests\Application\Commands\ResumeExperimentCommand;
 use ABTests\Domain\Events\ExperimentResumedEvent;
 use ABTests\Enums\ExperimentStatus;
@@ -14,6 +14,8 @@ use ABTests\Infrastructure\Database\Models\ExperimentModel;
 use ABTests\Tests\Integration\DatabaseTestCase;
 use Illuminate\Container\Container;
 use PHPUnit\Framework\Attributes\Test;
+use ABTests\Infrastructure\Database\DatabaseExperimentRepository;
+use ABTests\Infrastructure\Database\DatabaseAuditLogRepository;
 
 final class ResumeExperimentCommandHandlerTest extends DatabaseTestCase
 {
@@ -27,7 +29,7 @@ final class ResumeExperimentCommandHandlerTest extends DatabaseTestCase
             'is_killed'          => false,
         ]);
 
-        new ResumeExperimentCommandHandler()->handle(new ResumeExperimentCommand(
+        new ResumeExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository())->handle(new ResumeExperimentCommand(
             experimentKey: 'my-exp',
             actorIdentifier: 'tester',
         ));
@@ -42,7 +44,7 @@ final class ResumeExperimentCommandHandlerTest extends DatabaseTestCase
     {
         $this->expectException(ExperimentNotFound::class);
 
-        new ResumeExperimentCommandHandler()->handle(new ResumeExperimentCommand(
+        new ResumeExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository())->handle(new ResumeExperimentCommand(
             experimentKey: 'nonexistent',
             actorIdentifier: 'tester',
         ));
@@ -60,7 +62,7 @@ final class ResumeExperimentCommandHandlerTest extends DatabaseTestCase
 
         $this->expectException(InvalidStateTransition::class);
 
-        new ResumeExperimentCommandHandler()->handle(new ResumeExperimentCommand(
+        new ResumeExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository())->handle(new ResumeExperimentCommand(
             experimentKey: 'my-exp',
             actorIdentifier: 'tester',
         ));
@@ -85,7 +87,7 @@ final class ResumeExperimentCommandHandlerTest extends DatabaseTestCase
             },
         );
 
-        new ResumeExperimentCommandHandler()->handle(new ResumeExperimentCommand(
+        new ResumeExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository())->handle(new ResumeExperimentCommand(
             experimentKey: 'my-exp',
             actorIdentifier: 'alice',
         ));

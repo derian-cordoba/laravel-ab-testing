@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ABTests\Tests\Unit\Resolution\Steps;
 
 use ABTests\Infrastructure\InMemoryAssignmentRepository;
-use ABTests\Resolution\Steps\CheckLayerExclusionStep;
+use ABTests\Application\Resolution\Steps\CheckLayerExclusionStep;
 use ABTests\Tests\Fixtures\TestUnit;
 use ABTests\Tests\Support\MakesPayload;
 use ABTests\Values\Assignment;

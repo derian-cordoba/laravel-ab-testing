@@ -4,20 +4,21 @@ declare(strict_types=1);
 
 namespace ABTests\Tests\Integration\Application\CommandHandlers;
 
-use ABTests\Application\CommandHandlers\EnableFeatureFlagCommandHandler;
+use ABTests\Application\Handlers\EnableFeatureFlagCommandHandler;
 use ABTests\Application\Commands\EnableFeatureFlagCommand;
 use ABTests\Domain\Events\FeatureFlagEnabledEvent;
 use ABTests\Infrastructure\Database\Models\FeatureFlagStateModel;
 use ABTests\Tests\Integration\DatabaseTestCase;
 use Illuminate\Container\Container;
 use PHPUnit\Framework\Attributes\Test;
+use ABTests\Infrastructure\Database\DatabaseFeatureFlagRepository;
 
 final class EnableFeatureFlagCommandHandlerTest extends DatabaseTestCase
 {
     #[Test]
     public function creates_record_and_enables_when_no_state_exists(): void
     {
-        new EnableFeatureFlagCommandHandler()->handle(new EnableFeatureFlagCommand(
+        new EnableFeatureFlagCommandHandler(new DatabaseFeatureFlagRepository())->handle(new EnableFeatureFlagCommand(
             flagKey: 'new-checkout',
             actorIdentifier: 'tester',
         ));
@@ -36,7 +37,7 @@ final class EnableFeatureFlagCommandHandlerTest extends DatabaseTestCase
             'is_enabled' => false,
         ]);
 
-        new EnableFeatureFlagCommandHandler()->handle(new EnableFeatureFlagCommand(
+        new EnableFeatureFlagCommandHandler(new DatabaseFeatureFlagRepository())->handle(new EnableFeatureFlagCommand(
             flagKey: 'new-checkout',
             actorIdentifier: 'tester',
         ));
@@ -54,7 +55,7 @@ final class EnableFeatureFlagCommandHandlerTest extends DatabaseTestCase
             'is_enabled' => true,
         ]);
 
-        new EnableFeatureFlagCommandHandler()->handle(new EnableFeatureFlagCommand(
+        new EnableFeatureFlagCommandHandler(new DatabaseFeatureFlagRepository())->handle(new EnableFeatureFlagCommand(
             flagKey: 'new-checkout',
             actorIdentifier: 'tester',
         ));
@@ -73,7 +74,7 @@ final class EnableFeatureFlagCommandHandlerTest extends DatabaseTestCase
             'is_enabled' => false,
         ]);
 
-        new EnableFeatureFlagCommandHandler()->handle(new EnableFeatureFlagCommand(
+        new EnableFeatureFlagCommandHandler(new DatabaseFeatureFlagRepository())->handle(new EnableFeatureFlagCommand(
             flagKey: 'new-checkout',
             actorIdentifier: 'tester',
         ));
@@ -95,7 +96,7 @@ final class EnableFeatureFlagCommandHandlerTest extends DatabaseTestCase
             },
         );
 
-        new EnableFeatureFlagCommandHandler()->handle(new EnableFeatureFlagCommand(
+        new EnableFeatureFlagCommandHandler(new DatabaseFeatureFlagRepository())->handle(new EnableFeatureFlagCommand(
             flagKey: 'new-checkout',
             actorIdentifier: 'alice',
         ));

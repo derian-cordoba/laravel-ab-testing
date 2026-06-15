@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ABTests\Tests\Integration\Application\CommandHandlers;
 
-use ABTests\Application\CommandHandlers\ToggleKillSwitchCommandHandler;
+use ABTests\Application\Handlers\ToggleKillSwitchCommandHandler;
 use ABTests\Application\Commands\ToggleKillSwitchCommand;
 use ABTests\Domain\Events\KillSwitchActivatedEvent;
 use ABTests\Enums\ExperimentStatus;
@@ -13,6 +13,8 @@ use ABTests\Infrastructure\Database\Models\ExperimentModel;
 use ABTests\Tests\Integration\DatabaseTestCase;
 use Illuminate\Container\Container;
 use PHPUnit\Framework\Attributes\Test;
+use ABTests\Infrastructure\Database\DatabaseExperimentRepository;
+use ABTests\Infrastructure\Database\DatabaseAuditLogRepository;
 
 final class ToggleKillSwitchCommandHandlerTest extends DatabaseTestCase
 {
@@ -27,7 +29,7 @@ final class ToggleKillSwitchCommandHandlerTest extends DatabaseTestCase
             'killed_at'          => null,
         ]);
 
-        new ToggleKillSwitchCommandHandler()->handle(new ToggleKillSwitchCommand(
+        new ToggleKillSwitchCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository())->handle(new ToggleKillSwitchCommand(
             experimentKey: 'my-exp',
             isKilled: true,
             actorIdentifier: 'tester',
@@ -50,7 +52,7 @@ final class ToggleKillSwitchCommandHandlerTest extends DatabaseTestCase
             'killed_at'          => \Carbon\Carbon::now(),
         ]);
 
-        new ToggleKillSwitchCommandHandler()->handle(new ToggleKillSwitchCommand(
+        new ToggleKillSwitchCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository())->handle(new ToggleKillSwitchCommand(
             experimentKey: 'my-exp',
             isKilled: false,
             actorIdentifier: 'tester',
@@ -67,7 +69,7 @@ final class ToggleKillSwitchCommandHandlerTest extends DatabaseTestCase
     {
         $this->expectException(ExperimentNotFound::class);
 
-        new ToggleKillSwitchCommandHandler()->handle(new ToggleKillSwitchCommand(
+        new ToggleKillSwitchCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository())->handle(new ToggleKillSwitchCommand(
             experimentKey: 'nonexistent',
             isKilled: true,
             actorIdentifier: 'tester',
@@ -94,7 +96,7 @@ final class ToggleKillSwitchCommandHandlerTest extends DatabaseTestCase
             },
         );
 
-        new ToggleKillSwitchCommandHandler()->handle(new ToggleKillSwitchCommand(
+        new ToggleKillSwitchCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository())->handle(new ToggleKillSwitchCommand(
             experimentKey: 'my-exp',
             isKilled: true,
             actorIdentifier: 'alice',
@@ -127,7 +129,7 @@ final class ToggleKillSwitchCommandHandlerTest extends DatabaseTestCase
             },
         );
 
-        new ToggleKillSwitchCommandHandler()->handle(new ToggleKillSwitchCommand(
+        new ToggleKillSwitchCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository())->handle(new ToggleKillSwitchCommand(
             experimentKey: 'my-exp',
             isKilled: false,
             actorIdentifier: 'alice',

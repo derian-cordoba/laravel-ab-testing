@@ -4,15 +4,17 @@ declare(strict_types=1);
 
 namespace ABTests\Tests\Integration\Application\CommandHandlers;
 
-use ABTests\Application\CommandHandlers\StartExperimentCommandHandler;
+use ABTests\Application\Handlers\StartExperimentCommandHandler;
 use ABTests\Application\Commands\StartExperimentCommand;
 use ABTests\Domain\Events\ExperimentStartedEvent;
 use ABTests\Enums\ExperimentStatus;
 use ABTests\Infrastructure\Database\Models\ExperimentModel;
-use ABTests\Registry\ExperimentRegistry;
+use ABTests\Application\Registry\ExperimentRegistry;
 use ABTests\Tests\Integration\DatabaseTestCase;
 use Illuminate\Container\Container;
 use PHPUnit\Framework\Attributes\Test;
+use ABTests\Infrastructure\Database\DatabaseExperimentRepository;
+use ABTests\Infrastructure\Database\DatabaseAuditLogRepository;
 
 final class StartExperimentCommandHandlerTest extends DatabaseTestCase
 {
@@ -26,7 +28,7 @@ final class StartExperimentCommandHandlerTest extends DatabaseTestCase
             'is_killed' => false,
         ]);
 
-        new StartExperimentCommandHandler(new ExperimentRegistry())->handle(new StartExperimentCommand(
+        new StartExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository(), new ExperimentRegistry())->handle(new StartExperimentCommand(
             experimentKey: 'checkout-button-color',
             actorIdentifier: 'tester',
         ));
@@ -49,7 +51,7 @@ final class StartExperimentCommandHandlerTest extends DatabaseTestCase
             'is_killed' => false,
         ]);
 
-        new StartExperimentCommandHandler(new ExperimentRegistry())->handle(new StartExperimentCommand(
+        new StartExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository(), new ExperimentRegistry())->handle(new StartExperimentCommand(
             experimentKey: 'checkout-button-color',
             actorIdentifier: 'tester',
         ));
@@ -80,7 +82,7 @@ final class StartExperimentCommandHandlerTest extends DatabaseTestCase
             },
         );
 
-        new StartExperimentCommandHandler(new ExperimentRegistry())->handle(new StartExperimentCommand(
+        new StartExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository(), new ExperimentRegistry())->handle(new StartExperimentCommand(
             experimentKey: 'checkout-button-color',
             actorIdentifier: 'alice',
         ));

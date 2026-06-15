@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ABTests\Tests\Integration\Application\CommandHandlers;
 
-use ABTests\Application\CommandHandlers\SetExperimentEnvironmentsCommandHandler;
+use ABTests\Application\Handlers\SetExperimentEnvironmentsCommandHandler;
 use ABTests\Application\Commands\SetExperimentEnvironmentsCommand;
 use ABTests\Domain\Events\ExperimentEnvironmentsUpdatedEvent;
 use ABTests\Enums\ExperimentStatus;
@@ -13,6 +13,8 @@ use ABTests\Infrastructure\Database\Models\ExperimentModel;
 use ABTests\Tests\Integration\DatabaseTestCase;
 use Illuminate\Container\Container;
 use PHPUnit\Framework\Attributes\Test;
+use ABTests\Infrastructure\Database\DatabaseExperimentRepository;
+use ABTests\Infrastructure\Database\DatabaseAuditLogRepository;
 
 final class SetExperimentEnvironmentsCommandHandlerTest extends DatabaseTestCase
 {
@@ -26,7 +28,7 @@ final class SetExperimentEnvironmentsCommandHandlerTest extends DatabaseTestCase
             'is_killed'          => false,
         ]);
 
-        new SetExperimentEnvironmentsCommandHandler()->handle(new SetExperimentEnvironmentsCommand(
+        new SetExperimentEnvironmentsCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository())->handle(new SetExperimentEnvironmentsCommand(
             experimentKey: 'my-exp',
             allowedEnvironments: ['production', 'staging'],
             actorIdentifier: 'tester',
@@ -48,7 +50,7 @@ final class SetExperimentEnvironmentsCommandHandlerTest extends DatabaseTestCase
             'allowed_environments' => ['production'],
         ]);
 
-        new SetExperimentEnvironmentsCommandHandler()->handle(new SetExperimentEnvironmentsCommand(
+        new SetExperimentEnvironmentsCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository())->handle(new SetExperimentEnvironmentsCommand(
             experimentKey: 'my-exp',
             allowedEnvironments: null,
             actorIdentifier: 'tester',
@@ -64,7 +66,7 @@ final class SetExperimentEnvironmentsCommandHandlerTest extends DatabaseTestCase
     {
         $this->expectException(ExperimentNotFound::class);
 
-        new SetExperimentEnvironmentsCommandHandler()->handle(new SetExperimentEnvironmentsCommand(
+        new SetExperimentEnvironmentsCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository())->handle(new SetExperimentEnvironmentsCommand(
             experimentKey: 'nonexistent',
             allowedEnvironments: ['production'],
             actorIdentifier: 'tester',
@@ -81,7 +83,7 @@ final class SetExperimentEnvironmentsCommandHandlerTest extends DatabaseTestCase
             'is_killed'          => false,
         ]);
 
-        new SetExperimentEnvironmentsCommandHandler()->handle(new SetExperimentEnvironmentsCommand(
+        new SetExperimentEnvironmentsCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository())->handle(new SetExperimentEnvironmentsCommand(
             experimentKey: 'my-exp',
             allowedEnvironments: ['local'],
             actorIdentifier: 'tester',
@@ -113,7 +115,7 @@ final class SetExperimentEnvironmentsCommandHandlerTest extends DatabaseTestCase
             },
         );
 
-        new SetExperimentEnvironmentsCommandHandler()->handle(new SetExperimentEnvironmentsCommand(
+        new SetExperimentEnvironmentsCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository())->handle(new SetExperimentEnvironmentsCommand(
             experimentKey: 'my-exp',
             allowedEnvironments: ['production'],
             actorIdentifier: 'alice',
@@ -145,7 +147,7 @@ final class SetExperimentEnvironmentsCommandHandlerTest extends DatabaseTestCase
             },
         );
 
-        new SetExperimentEnvironmentsCommandHandler()->handle(new SetExperimentEnvironmentsCommand(
+        new SetExperimentEnvironmentsCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository())->handle(new SetExperimentEnvironmentsCommand(
             experimentKey: 'my-exp',
             allowedEnvironments: null,
             actorIdentifier: 'bob',

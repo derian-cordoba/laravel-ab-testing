@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-use ABTests\Http\Controllers\Api\AssignmentsController;
-use ABTests\Http\Controllers\Api\ExperimentLifecycleController;
-use ABTests\Http\Controllers\Api\ExperimentResultsController;
-use ABTests\Http\Controllers\Api\ExperimentsController;
-use ABTests\Http\Controllers\Api\FeatureFlagLifecycleController;
-use ABTests\Http\Controllers\Api\FeatureFlagsController;
-use ABTests\Http\Controllers\Api\VariantsController;
-use ABTests\Http\Middleware\ApiExceptionHandlerMiddleware;
-use ABTests\Http\Middleware\EnforceAcceptHeaderMiddleware;
-use ABTests\Http\Middleware\RequiresApiAccess;
-use ABTests\Http\Middleware\SetApiContentTypeMiddleware;
+use ABTests\Presentation\Http\Controllers\Api\AssignmentsController;
+use ABTests\Presentation\Http\Controllers\Api\ExperimentLifecycleController;
+use ABTests\Presentation\Http\Controllers\Api\ExperimentResultsController;
+use ABTests\Presentation\Http\Controllers\Api\ExperimentsController;
+use ABTests\Presentation\Http\Controllers\Api\FeatureFlagLifecycleController;
+use ABTests\Presentation\Http\Controllers\Api\FeatureFlagsController;
+use ABTests\Presentation\Http\Controllers\Api\VariantsController;
+use ABTests\Presentation\Http\Middleware\ApiExceptionHandlerMiddleware;
+use ABTests\Presentation\Http\Middleware\EnforceAcceptHeaderMiddleware;
+use ABTests\Presentation\Http\Middleware\RequiresApiAccess;
+use ABTests\Presentation\Http\Middleware\SetApiContentTypeMiddleware;
 use Illuminate\Support\Facades\Route;
 
 $prefix = config('ab-testing.api.v1.endpoints.experiments.prefix', 'api/v1/ab-testing');

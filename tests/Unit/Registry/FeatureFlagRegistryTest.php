@@ -6,7 +6,7 @@ namespace ABTests\Tests\Unit\Registry;
 
 use ABTests\Definitions\FeatureFlagDefinition;
 use ABTests\Exceptions\FeatureFlagNotFound;
-use ABTests\Registry\FeatureFlagRegistry;
+use ABTests\Application\Registry\FeatureFlagRegistry;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

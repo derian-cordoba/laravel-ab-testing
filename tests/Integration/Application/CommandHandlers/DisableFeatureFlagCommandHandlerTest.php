@@ -4,20 +4,21 @@ declare(strict_types=1);
 
 namespace ABTests\Tests\Integration\Application\CommandHandlers;
 
-use ABTests\Application\CommandHandlers\DisableFeatureFlagCommandHandler;
+use ABTests\Application\Handlers\DisableFeatureFlagCommandHandler;
 use ABTests\Application\Commands\DisableFeatureFlagCommand;
 use ABTests\Domain\Events\FeatureFlagDisabledEvent;
 use ABTests\Infrastructure\Database\Models\FeatureFlagStateModel;
 use ABTests\Tests\Integration\DatabaseTestCase;
 use Illuminate\Container\Container;
 use PHPUnit\Framework\Attributes\Test;
+use ABTests\Infrastructure\Database\DatabaseFeatureFlagRepository;
 
 final class DisableFeatureFlagCommandHandlerTest extends DatabaseTestCase
 {
     #[Test]
     public function creates_record_and_disables_when_no_state_exists(): void
     {
-        new DisableFeatureFlagCommandHandler()->handle(new DisableFeatureFlagCommand(
+        new DisableFeatureFlagCommandHandler(new DatabaseFeatureFlagRepository())->handle(new DisableFeatureFlagCommand(
             flagKey: 'my-flag',
             actorIdentifier: 'tester',
         ));
@@ -36,7 +37,7 @@ final class DisableFeatureFlagCommandHandlerTest extends DatabaseTestCase
             'is_enabled' => true,
         ]);
 
-        new DisableFeatureFlagCommandHandler()->handle(new DisableFeatureFlagCommand(
+        new DisableFeatureFlagCommandHandler(new DatabaseFeatureFlagRepository())->handle(new DisableFeatureFlagCommand(
             flagKey: 'my-flag',
             actorIdentifier: 'tester',
         ));
@@ -54,7 +55,7 @@ final class DisableFeatureFlagCommandHandlerTest extends DatabaseTestCase
             'is_enabled' => false,
         ]);
 
-        new DisableFeatureFlagCommandHandler()->handle(new DisableFeatureFlagCommand(
+        new DisableFeatureFlagCommandHandler(new DatabaseFeatureFlagRepository())->handle(new DisableFeatureFlagCommand(
             flagKey: 'my-flag',
             actorIdentifier: 'tester',
         ));
@@ -77,7 +78,7 @@ final class DisableFeatureFlagCommandHandlerTest extends DatabaseTestCase
             },
         );
 
-        new DisableFeatureFlagCommandHandler()->handle(new DisableFeatureFlagCommand(
+        new DisableFeatureFlagCommandHandler(new DatabaseFeatureFlagRepository())->handle(new DisableFeatureFlagCommand(
             flagKey: 'my-flag',
             actorIdentifier: 'alice',
         ));

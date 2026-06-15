@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ABTests\Tests\Integration\Application\CommandHandlers;
 
-use ABTests\Application\CommandHandlers\SetFlagEnvironmentsCommandHandler;
+use ABTests\Application\Handlers\SetFlagEnvironmentsCommandHandler;
 use ABTests\Application\Commands\SetFlagEnvironmentsCommand;
 use ABTests\Domain\Events\FeatureFlagEnvironmentsUpdatedEvent;
 use ABTests\Exceptions\FeatureFlagNotFound;
@@ -12,6 +12,8 @@ use ABTests\Infrastructure\Database\Models\FeatureFlagStateModel;
 use ABTests\Tests\Integration\DatabaseTestCase;
 use Illuminate\Container\Container;
 use PHPUnit\Framework\Attributes\Test;
+use ABTests\Infrastructure\Database\DatabaseFeatureFlagRepository;
+use ABTests\Infrastructure\Database\DatabaseAuditLogRepository;
 
 final class SetFlagEnvironmentsCommandHandlerTest extends DatabaseTestCase
 {
@@ -23,7 +25,7 @@ final class SetFlagEnvironmentsCommandHandlerTest extends DatabaseTestCase
             'is_enabled' => true,
         ]);
 
-        new SetFlagEnvironmentsCommandHandler()->handle(new SetFlagEnvironmentsCommand(
+        new SetFlagEnvironmentsCommandHandler(new DatabaseFeatureFlagRepository(), new DatabaseAuditLogRepository())->handle(new SetFlagEnvironmentsCommand(
             flagKey: 'my-flag',
             allowedEnvironments: ['production', 'staging'],
             actorIdentifier: 'tester',
@@ -43,7 +45,7 @@ final class SetFlagEnvironmentsCommandHandlerTest extends DatabaseTestCase
             'allowed_environments' => ['production'],
         ]);
 
-        new SetFlagEnvironmentsCommandHandler()->handle(new SetFlagEnvironmentsCommand(
+        new SetFlagEnvironmentsCommandHandler(new DatabaseFeatureFlagRepository(), new DatabaseAuditLogRepository())->handle(new SetFlagEnvironmentsCommand(
             flagKey: 'my-flag',
             allowedEnvironments: null,
             actorIdentifier: 'tester',
@@ -59,7 +61,7 @@ final class SetFlagEnvironmentsCommandHandlerTest extends DatabaseTestCase
     {
         $this->expectException(FeatureFlagNotFound::class);
 
-        new SetFlagEnvironmentsCommandHandler()->handle(new SetFlagEnvironmentsCommand(
+        new SetFlagEnvironmentsCommandHandler(new DatabaseFeatureFlagRepository(), new DatabaseAuditLogRepository())->handle(new SetFlagEnvironmentsCommand(
             flagKey: 'nonexistent',
             allowedEnvironments: ['production'],
             actorIdentifier: 'tester',
@@ -75,7 +77,7 @@ final class SetFlagEnvironmentsCommandHandlerTest extends DatabaseTestCase
             'rollout_percentage' => 60,
         ]);
 
-        new SetFlagEnvironmentsCommandHandler()->handle(new SetFlagEnvironmentsCommand(
+        new SetFlagEnvironmentsCommandHandler(new DatabaseFeatureFlagRepository(), new DatabaseAuditLogRepository())->handle(new SetFlagEnvironmentsCommand(
             flagKey: 'my-flag',
             allowedEnvironments: ['local'],
             actorIdentifier: 'tester',
@@ -104,7 +106,7 @@ final class SetFlagEnvironmentsCommandHandlerTest extends DatabaseTestCase
             },
         );
 
-        new SetFlagEnvironmentsCommandHandler()->handle(new SetFlagEnvironmentsCommand(
+        new SetFlagEnvironmentsCommandHandler(new DatabaseFeatureFlagRepository(), new DatabaseAuditLogRepository())->handle(new SetFlagEnvironmentsCommand(
             flagKey: 'my-flag',
             allowedEnvironments: ['staging'],
             actorIdentifier: 'alice',
@@ -134,7 +136,7 @@ final class SetFlagEnvironmentsCommandHandlerTest extends DatabaseTestCase
             },
         );
 
-        new SetFlagEnvironmentsCommandHandler()->handle(new SetFlagEnvironmentsCommand(
+        new SetFlagEnvironmentsCommandHandler(new DatabaseFeatureFlagRepository(), new DatabaseAuditLogRepository())->handle(new SetFlagEnvironmentsCommand(
             flagKey: 'my-flag',
             allowedEnvironments: null,
             actorIdentifier: 'bob',

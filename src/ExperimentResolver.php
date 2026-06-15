@@ -11,7 +11,7 @@ use ABTests\Contracts\EventSink;
 use ABTests\Contracts\ResolvesVariant;
 use ABTests\Contracts\Variant;
 use ABTests\Enums\EventType;
-use ABTests\Registry\ExperimentRegistry;
+use ABTests\Application\Registry\ExperimentRegistry;
 use ABTests\Values\RecordedEvent;
 use DateTimeImmutable;
 use ReflectionClass;

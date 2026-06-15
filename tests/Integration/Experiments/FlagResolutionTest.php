@@ -11,13 +11,14 @@ use ABTests\Contracts\EventSink;
 use ABTests\Contracts\ExperimentStateRepository;
 use ABTests\Experiments;
 use ABTests\Infrastructure\AlwaysRunningExperimentStateRepository;
+use ABTests\Infrastructure\Database\DatabaseFeatureFlagRepository;
 use ABTests\Infrastructure\Database\Models\FeatureFlagStateModel;
 use ABTests\Infrastructure\InMemoryAssignmentRepository;
 use ABTests\Infrastructure\NullEventSink;
-use ABTests\Registry\AttributeReader;
-use ABTests\Registry\ExperimentRegistry;
-use ABTests\Registry\FeatureFlagRegistry;
-use ABTests\Resolution\Resolver;
+use ABTests\Application\Registry\AttributeReader;
+use ABTests\Application\Registry\ExperimentRegistry;
+use ABTests\Application\Registry\FeatureFlagRegistry;
+use ABTests\Application\Resolution\Resolver;
 use ABTests\Tests\Fixtures\TestFeatureFlag;
 use ABTests\Tests\Fixtures\TestUnit;
 use ABTests\Tests\Integration\DatabaseTestCase;
@@ -383,6 +384,7 @@ final class FlagResolutionTest extends DatabaseTestCase
             eventSink: new NullEventSink(),
             assignmentRepository: new InMemoryAssignmentRepository(),
             bucketingStrategy: $this->fixedPosition(0.0),
+            featureFlagRepository: new DatabaseFeatureFlagRepository(),
         ));
 
         $result = Experiments::flag(TestFeatureFlag::class, new TestUnit('user-1'));
@@ -407,6 +409,7 @@ final class FlagResolutionTest extends DatabaseTestCase
             eventSink: new NullEventSink(),
             assignmentRepository: new InMemoryAssignmentRepository(),
             bucketingStrategy: $this->fixedPosition($position),
+            featureFlagRepository: new DatabaseFeatureFlagRepository(),
         ));
 
         return Experiments::flag(TestFeatureFlag::class, new TestUnit('user-1'));
@@ -421,6 +424,7 @@ final class FlagResolutionTest extends DatabaseTestCase
             eventSink: new NullEventSink(),
             assignmentRepository: new InMemoryAssignmentRepository(),
             bucketingStrategy: $this->fixedPosition(0.0),
+            featureFlagRepository: new DatabaseFeatureFlagRepository(),
         );
     }
 

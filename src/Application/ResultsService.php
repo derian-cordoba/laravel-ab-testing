@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace ABTests\Application;
 
-use ABTests\Application\Data\ExperimentResultsData;
-use ABTests\Application\Data\VariantResultData;
+use ABTests\Application\DTOs\ExperimentResultsData;
+use ABTests\Application\DTOs\VariantResultData;
 use ABTests\Definitions\ExperimentDefinition;
 use ABTests\Definitions\MetricBinding;
 use ABTests\Enums\MetricRole;
 use ABTests\Infrastructure\Database\Models\ExperimentModel;
 use ABTests\Infrastructure\Database\Models\GuardrailBreachModel;
 use ABTests\Infrastructure\Database\Models\RollupModel;
-use ABTests\Registry\ExperimentRegistry;
-use ABTests\Statistics\AnalysisService;
+use ABTests\Application\Registry\ExperimentRegistry;
+use ABTests\Domain\Analysis\AnalysisService;
 use ABTests\Values\Allocation;
 use ABTests\Values\AnalysisConfiguration;
 use ABTests\Values\GenericVariant;

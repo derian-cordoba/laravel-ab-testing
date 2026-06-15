@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace ABTests;
 
-use ABTests\Application\CommandHandlers\ForgetUnitCommandHandler;
-use ABTests\Application\CommandHandlers\RecordCovariateCommandHandler;
+use ABTests\Application\Handlers\ForgetUnitCommandHandler;
+use ABTests\Application\Handlers\RecordCovariateCommandHandler;
 use ABTests\Application\Commands\ForgetUnitCommand;
 use ABTests\Application\Commands\RecordCovariateCommand;
 use ABTests\Attributes\AsFeatureFlag;
@@ -18,13 +18,13 @@ use ABTests\Contracts\AssignmentRepository;
 use ABTests\Contracts\Bucketable;
 use ABTests\Contracts\BucketingStrategy;
 use ABTests\Contracts\EventSink;
+use ABTests\Contracts\FeatureFlagRepository;
 use ABTests\Contracts\ResolvesVariant;
 use ABTests\Enums\ConditionsLogic;
 use ABTests\Enums\Environment;
 use ABTests\Enums\Operator;
-use ABTests\Infrastructure\Database\Models\FeatureFlagStateModel;
-use ABTests\Registry\ExperimentRegistry;
-use ABTests\Registry\FeatureFlagRegistry;
+use ABTests\Application\Registry\ExperimentRegistry;
+use ABTests\Application\Registry\FeatureFlagRegistry;
 use ABTests\Values\Context;
 use ABTests\Values\Criterion;
 
@@ -57,6 +57,7 @@ final class Experiments
         private readonly EventSink $eventSink,
         private readonly AssignmentRepository $assignmentRepository,
         private readonly BucketingStrategy $bucketingStrategy,
+        private readonly FeatureFlagRepository $featureFlagRepository,
     ) {
         //
     }
@@ -238,7 +239,7 @@ final class Experiments
         }
 
         // Check operational state persisted in the database.
-        $state = FeatureFlagStateModel::query()->firstWhere('key', $definition->key);
+        $state = $this->featureFlagRepository->findByKey($definition->key);
 
         if ($state === null || ! $state->is_enabled || $state->killed_at !== null) {
             return $definition->defaultValue;
@@ -266,7 +267,7 @@ final class Experiments
 
         // Stamp the last evaluation time for stale-flag detection. We do this
         // before the rollout gate so any qualifying resolution counts.
-        $state->updateQuietly(['last_evaluated_at' => Carbon::now()]);
+        $this->featureFlagRepository->updateQuietly($definition->key, ['last_evaluated_at' => Carbon::now()]);
 
         // Compute a stable position and build the resolution context.
         $position = $this->bucketingStrategy->position($definition->key, $unit);

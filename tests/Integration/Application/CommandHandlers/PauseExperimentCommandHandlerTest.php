@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ABTests\Tests\Integration\Application\CommandHandlers;
 
-use ABTests\Application\CommandHandlers\PauseExperimentCommandHandler;
+use ABTests\Application\Handlers\PauseExperimentCommandHandler;
 use ABTests\Application\Commands\PauseExperimentCommand;
 use ABTests\Domain\Events\ExperimentPausedEvent;
 use ABTests\Enums\ExperimentStatus;
@@ -14,6 +14,8 @@ use ABTests\Infrastructure\Database\Models\ExperimentModel;
 use ABTests\Tests\Integration\DatabaseTestCase;
 use Illuminate\Container\Container;
 use PHPUnit\Framework\Attributes\Test;
+use ABTests\Infrastructure\Database\DatabaseExperimentRepository;
+use ABTests\Infrastructure\Database\DatabaseAuditLogRepository;
 
 final class PauseExperimentCommandHandlerTest extends DatabaseTestCase
 {
@@ -27,7 +29,7 @@ final class PauseExperimentCommandHandlerTest extends DatabaseTestCase
             'is_killed'          => false,
         ]);
 
-        new PauseExperimentCommandHandler()->handle(new PauseExperimentCommand(
+        new PauseExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository())->handle(new PauseExperimentCommand(
             experimentKey: 'my-exp',
             actorIdentifier: 'tester',
         ));
@@ -42,7 +44,7 @@ final class PauseExperimentCommandHandlerTest extends DatabaseTestCase
     {
         $this->expectException(ExperimentNotFound::class);
 
-        new PauseExperimentCommandHandler()->handle(new PauseExperimentCommand(
+        new PauseExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository())->handle(new PauseExperimentCommand(
             experimentKey: 'nonexistent',
             actorIdentifier: 'tester',
         ));
@@ -60,7 +62,7 @@ final class PauseExperimentCommandHandlerTest extends DatabaseTestCase
 
         $this->expectException(InvalidStateTransition::class);
 
-        new PauseExperimentCommandHandler()->handle(new PauseExperimentCommand(
+        new PauseExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository())->handle(new PauseExperimentCommand(
             experimentKey: 'my-exp',
             actorIdentifier: 'tester',
         ));
@@ -85,7 +87,7 @@ final class PauseExperimentCommandHandlerTest extends DatabaseTestCase
             },
         );
 
-        new PauseExperimentCommandHandler()->handle(new PauseExperimentCommand(
+        new PauseExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository())->handle(new PauseExperimentCommand(
             experimentKey: 'my-exp',
             actorIdentifier: 'alice',
         ));
