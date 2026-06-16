@@ -48,7 +48,7 @@ jobs:
           tools: composer:v2
 
       - name: Install dependencies
-        run: composer install --no-interaction --prefer-dist
+        run: composer update --no-interaction --prefer-dist --prefer-stable
 
       - name: Run tests
         run: composer test
