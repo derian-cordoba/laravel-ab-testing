@@ -28,7 +28,7 @@ final class StartExperimentCommandHandlerTest extends DatabaseTestCase
             'is_killed' => false,
         ]);
 
-        new StartExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository(), new ExperimentRegistry())->handle(new StartExperimentCommand(
+        (new StartExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository(), new ExperimentRegistry()))->handle(new StartExperimentCommand(
             experimentKey: 'checkout-button-color',
             actorIdentifier: 'tester',
         ));
@@ -51,7 +51,7 @@ final class StartExperimentCommandHandlerTest extends DatabaseTestCase
             'is_killed' => false,
         ]);
 
-        new StartExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository(), new ExperimentRegistry())->handle(new StartExperimentCommand(
+        (new StartExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository(), new ExperimentRegistry()))->handle(new StartExperimentCommand(
             experimentKey: 'checkout-button-color',
             actorIdentifier: 'tester',
         ));
@@ -82,7 +82,7 @@ final class StartExperimentCommandHandlerTest extends DatabaseTestCase
             },
         );
 
-        new StartExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository(), new ExperimentRegistry())->handle(new StartExperimentCommand(
+        (new StartExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository(), new ExperimentRegistry()))->handle(new StartExperimentCommand(
             experimentKey: 'checkout-button-color',
             actorIdentifier: 'alice',
         ));

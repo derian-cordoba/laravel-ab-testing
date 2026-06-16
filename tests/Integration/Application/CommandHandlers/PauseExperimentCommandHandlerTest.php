@@ -29,7 +29,7 @@ final class PauseExperimentCommandHandlerTest extends DatabaseTestCase
             'is_killed'          => false,
         ]);
 
-        new PauseExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository())->handle(new PauseExperimentCommand(
+        (new PauseExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository()))->handle(new PauseExperimentCommand(
             experimentKey: 'my-exp',
             actorIdentifier: 'tester',
         ));
@@ -44,7 +44,7 @@ final class PauseExperimentCommandHandlerTest extends DatabaseTestCase
     {
         $this->expectException(ExperimentNotFound::class);
 
-        new PauseExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository())->handle(new PauseExperimentCommand(
+        (new PauseExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository()))->handle(new PauseExperimentCommand(
             experimentKey: 'nonexistent',
             actorIdentifier: 'tester',
         ));
@@ -62,7 +62,7 @@ final class PauseExperimentCommandHandlerTest extends DatabaseTestCase
 
         $this->expectException(InvalidStateTransition::class);
 
-        new PauseExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository())->handle(new PauseExperimentCommand(
+        (new PauseExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository()))->handle(new PauseExperimentCommand(
             experimentKey: 'my-exp',
             actorIdentifier: 'tester',
         ));
@@ -87,7 +87,7 @@ final class PauseExperimentCommandHandlerTest extends DatabaseTestCase
             },
         );
 
-        new PauseExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository())->handle(new PauseExperimentCommand(
+        (new PauseExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository()))->handle(new PauseExperimentCommand(
             experimentKey: 'my-exp',
             actorIdentifier: 'alice',
         ));

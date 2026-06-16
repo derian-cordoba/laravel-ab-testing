@@ -16,7 +16,7 @@ final class SetFlagRolloutPercentageCommandHandlerTest extends DatabaseTestCase
     #[Test]
     public function creates_record_with_percentage_when_no_state_exists(): void
     {
-        new SetFlagRolloutPercentageCommandHandler(new DatabaseFeatureFlagRepository())->handle(new SetFlagRolloutPercentageCommand(
+        (new SetFlagRolloutPercentageCommandHandler(new DatabaseFeatureFlagRepository()))->handle(new SetFlagRolloutPercentageCommand(
             flagKey: 'my-flag',
             percentage: 40,
             actorIdentifier: 'tester',
@@ -37,7 +37,7 @@ final class SetFlagRolloutPercentageCommandHandlerTest extends DatabaseTestCase
             'rollout_percentage' => 10,
         ]);
 
-        new SetFlagRolloutPercentageCommandHandler(new DatabaseFeatureFlagRepository())->handle(new SetFlagRolloutPercentageCommand(
+        (new SetFlagRolloutPercentageCommandHandler(new DatabaseFeatureFlagRepository()))->handle(new SetFlagRolloutPercentageCommand(
             flagKey: 'my-flag',
             percentage: 75,
             actorIdentifier: 'tester',
@@ -58,7 +58,7 @@ final class SetFlagRolloutPercentageCommandHandlerTest extends DatabaseTestCase
             'rollout_percentage' => 100,
         ]);
 
-        new SetFlagRolloutPercentageCommandHandler(new DatabaseFeatureFlagRepository())->handle(new SetFlagRolloutPercentageCommand(
+        (new SetFlagRolloutPercentageCommandHandler(new DatabaseFeatureFlagRepository()))->handle(new SetFlagRolloutPercentageCommand(
             flagKey: 'my-flag',
             percentage: 50,
             actorIdentifier: 'tester',
@@ -72,7 +72,7 @@ final class SetFlagRolloutPercentageCommandHandlerTest extends DatabaseTestCase
     #[Test]
     public function accepts_zero_percent_rollout(): void
     {
-        new SetFlagRolloutPercentageCommandHandler(new DatabaseFeatureFlagRepository())->handle(new SetFlagRolloutPercentageCommand(
+        (new SetFlagRolloutPercentageCommandHandler(new DatabaseFeatureFlagRepository()))->handle(new SetFlagRolloutPercentageCommand(
             flagKey: 'my-flag',
             percentage: 0,
             actorIdentifier: 'tester',
@@ -87,7 +87,7 @@ final class SetFlagRolloutPercentageCommandHandlerTest extends DatabaseTestCase
     #[Test]
     public function accepts_full_100_percent_rollout(): void
     {
-        new SetFlagRolloutPercentageCommandHandler(new DatabaseFeatureFlagRepository())->handle(new SetFlagRolloutPercentageCommand(
+        (new SetFlagRolloutPercentageCommandHandler(new DatabaseFeatureFlagRepository()))->handle(new SetFlagRolloutPercentageCommand(
             flagKey: 'my-flag',
             percentage: 100,
             actorIdentifier: 'tester',

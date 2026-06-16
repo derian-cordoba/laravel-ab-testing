@@ -29,7 +29,7 @@ final class StopExperimentCommandHandlerTest extends DatabaseTestCase
             'is_killed'          => false,
         ]);
 
-        new StopExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository())->handle(new StopExperimentCommand(
+        (new StopExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository()))->handle(new StopExperimentCommand(
             experimentKey: 'my-exp',
             actorIdentifier: 'tester',
         ));
@@ -50,7 +50,7 @@ final class StopExperimentCommandHandlerTest extends DatabaseTestCase
             'is_killed'          => false,
         ]);
 
-        new StopExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository())->handle(new StopExperimentCommand(
+        (new StopExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository()))->handle(new StopExperimentCommand(
             experimentKey: 'my-exp',
             actorIdentifier: 'tester',
         ));
@@ -65,7 +65,7 @@ final class StopExperimentCommandHandlerTest extends DatabaseTestCase
     {
         $this->expectException(ExperimentNotFound::class);
 
-        new StopExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository())->handle(new StopExperimentCommand(
+        (new StopExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository()))->handle(new StopExperimentCommand(
             experimentKey: 'nonexistent',
             actorIdentifier: 'tester',
         ));
@@ -83,7 +83,7 @@ final class StopExperimentCommandHandlerTest extends DatabaseTestCase
 
         $this->expectException(InvalidStateTransition::class);
 
-        new StopExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository())->handle(new StopExperimentCommand(
+        (new StopExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository()))->handle(new StopExperimentCommand(
             experimentKey: 'my-exp',
             actorIdentifier: 'tester',
         ));
@@ -108,7 +108,7 @@ final class StopExperimentCommandHandlerTest extends DatabaseTestCase
             },
         );
 
-        new StopExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository())->handle(new StopExperimentCommand(
+        (new StopExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository()))->handle(new StopExperimentCommand(
             experimentKey: 'my-exp',
             actorIdentifier: 'alice',
         ));

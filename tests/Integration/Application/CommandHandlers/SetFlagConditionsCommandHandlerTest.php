@@ -22,7 +22,7 @@ final class SetFlagConditionsCommandHandlerTest extends DatabaseTestCase
             ['attribute' => 'plan', 'operator' => 'equals', 'expected' => 'pro'],
         ];
 
-        new SetFlagConditionsCommandHandler(new DatabaseFeatureFlagRepository())->handle(new SetFlagConditionsCommand(
+        (new SetFlagConditionsCommandHandler(new DatabaseFeatureFlagRepository()))->handle(new SetFlagConditionsCommand(
             flagKey: 'my-flag',
             conditions: $conditions,
             actorIdentifier: 'tester',
@@ -40,7 +40,7 @@ final class SetFlagConditionsCommandHandlerTest extends DatabaseTestCase
             ['attribute' => 'country', 'operator' => 'in', 'expected' => ['US', 'CA']],
         ];
 
-        new SetFlagConditionsCommandHandler(new DatabaseFeatureFlagRepository())->handle(new SetFlagConditionsCommand(
+        (new SetFlagConditionsCommandHandler(new DatabaseFeatureFlagRepository()))->handle(new SetFlagConditionsCommand(
             flagKey: 'new-flag',
             conditions: $conditions,
             actorIdentifier: 'tester',
@@ -61,7 +61,7 @@ final class SetFlagConditionsCommandHandlerTest extends DatabaseTestCase
             'conditions' => [['attribute' => 'plan', 'operator' => 'equals', 'expected' => 'pro']],
         ]);
 
-        new SetFlagConditionsCommandHandler(new DatabaseFeatureFlagRepository())->handle(new SetFlagConditionsCommand(
+        (new SetFlagConditionsCommandHandler(new DatabaseFeatureFlagRepository()))->handle(new SetFlagConditionsCommand(
             flagKey: 'my-flag',
             conditions: [],
             actorIdentifier: 'tester',
@@ -86,7 +86,7 @@ final class SetFlagConditionsCommandHandlerTest extends DatabaseTestCase
             ['attribute' => 'country', 'operator' => 'equals', 'expected' => 'US'],
         ];
 
-        new SetFlagConditionsCommandHandler(new DatabaseFeatureFlagRepository())->handle(new SetFlagConditionsCommand(
+        (new SetFlagConditionsCommandHandler(new DatabaseFeatureFlagRepository()))->handle(new SetFlagConditionsCommand(
             flagKey: 'my-flag',
             conditions: $newConditions,
             actorIdentifier: 'tester',
@@ -105,7 +105,7 @@ final class SetFlagConditionsCommandHandlerTest extends DatabaseTestCase
             'is_enabled' => true,
         ]);
 
-        new SetFlagConditionsCommandHandler(new DatabaseFeatureFlagRepository())->handle(new SetFlagConditionsCommand(
+        (new SetFlagConditionsCommandHandler(new DatabaseFeatureFlagRepository()))->handle(new SetFlagConditionsCommand(
             flagKey: 'my-flag',
             conditions: [['attribute' => 'plan', 'operator' => 'equals', 'expected' => 'pro']],
             actorIdentifier: 'tester',

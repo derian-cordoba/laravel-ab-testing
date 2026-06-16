@@ -25,7 +25,7 @@ final class SetFlagEnvironmentsCommandHandlerTest extends DatabaseTestCase
             'is_enabled' => true,
         ]);
 
-        new SetFlagEnvironmentsCommandHandler(new DatabaseFeatureFlagRepository(), new DatabaseAuditLogRepository())->handle(new SetFlagEnvironmentsCommand(
+        (new SetFlagEnvironmentsCommandHandler(new DatabaseFeatureFlagRepository(), new DatabaseAuditLogRepository()))->handle(new SetFlagEnvironmentsCommand(
             flagKey: 'my-flag',
             allowedEnvironments: ['production', 'staging'],
             actorIdentifier: 'tester',
@@ -45,7 +45,7 @@ final class SetFlagEnvironmentsCommandHandlerTest extends DatabaseTestCase
             'allowed_environments' => ['production'],
         ]);
 
-        new SetFlagEnvironmentsCommandHandler(new DatabaseFeatureFlagRepository(), new DatabaseAuditLogRepository())->handle(new SetFlagEnvironmentsCommand(
+        (new SetFlagEnvironmentsCommandHandler(new DatabaseFeatureFlagRepository(), new DatabaseAuditLogRepository()))->handle(new SetFlagEnvironmentsCommand(
             flagKey: 'my-flag',
             allowedEnvironments: null,
             actorIdentifier: 'tester',
@@ -61,7 +61,7 @@ final class SetFlagEnvironmentsCommandHandlerTest extends DatabaseTestCase
     {
         $this->expectException(FeatureFlagNotFound::class);
 
-        new SetFlagEnvironmentsCommandHandler(new DatabaseFeatureFlagRepository(), new DatabaseAuditLogRepository())->handle(new SetFlagEnvironmentsCommand(
+        (new SetFlagEnvironmentsCommandHandler(new DatabaseFeatureFlagRepository(), new DatabaseAuditLogRepository()))->handle(new SetFlagEnvironmentsCommand(
             flagKey: 'nonexistent',
             allowedEnvironments: ['production'],
             actorIdentifier: 'tester',
@@ -77,7 +77,7 @@ final class SetFlagEnvironmentsCommandHandlerTest extends DatabaseTestCase
             'rollout_percentage' => 60,
         ]);
 
-        new SetFlagEnvironmentsCommandHandler(new DatabaseFeatureFlagRepository(), new DatabaseAuditLogRepository())->handle(new SetFlagEnvironmentsCommand(
+        (new SetFlagEnvironmentsCommandHandler(new DatabaseFeatureFlagRepository(), new DatabaseAuditLogRepository()))->handle(new SetFlagEnvironmentsCommand(
             flagKey: 'my-flag',
             allowedEnvironments: ['local'],
             actorIdentifier: 'tester',
@@ -106,7 +106,7 @@ final class SetFlagEnvironmentsCommandHandlerTest extends DatabaseTestCase
             },
         );
 
-        new SetFlagEnvironmentsCommandHandler(new DatabaseFeatureFlagRepository(), new DatabaseAuditLogRepository())->handle(new SetFlagEnvironmentsCommand(
+        (new SetFlagEnvironmentsCommandHandler(new DatabaseFeatureFlagRepository(), new DatabaseAuditLogRepository()))->handle(new SetFlagEnvironmentsCommand(
             flagKey: 'my-flag',
             allowedEnvironments: ['staging'],
             actorIdentifier: 'alice',
@@ -136,7 +136,7 @@ final class SetFlagEnvironmentsCommandHandlerTest extends DatabaseTestCase
             },
         );
 
-        new SetFlagEnvironmentsCommandHandler(new DatabaseFeatureFlagRepository(), new DatabaseAuditLogRepository())->handle(new SetFlagEnvironmentsCommand(
+        (new SetFlagEnvironmentsCommandHandler(new DatabaseFeatureFlagRepository(), new DatabaseAuditLogRepository()))->handle(new SetFlagEnvironmentsCommand(
             flagKey: 'my-flag',
             allowedEnvironments: null,
             actorIdentifier: 'bob',

@@ -28,7 +28,7 @@ final class SetExperimentEnvironmentsCommandHandlerTest extends DatabaseTestCase
             'is_killed'          => false,
         ]);
 
-        new SetExperimentEnvironmentsCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository())->handle(new SetExperimentEnvironmentsCommand(
+        (new SetExperimentEnvironmentsCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository()))->handle(new SetExperimentEnvironmentsCommand(
             experimentKey: 'my-exp',
             allowedEnvironments: ['production', 'staging'],
             actorIdentifier: 'tester',
@@ -50,7 +50,7 @@ final class SetExperimentEnvironmentsCommandHandlerTest extends DatabaseTestCase
             'allowed_environments' => ['production'],
         ]);
 
-        new SetExperimentEnvironmentsCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository())->handle(new SetExperimentEnvironmentsCommand(
+        (new SetExperimentEnvironmentsCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository()))->handle(new SetExperimentEnvironmentsCommand(
             experimentKey: 'my-exp',
             allowedEnvironments: null,
             actorIdentifier: 'tester',
@@ -66,7 +66,7 @@ final class SetExperimentEnvironmentsCommandHandlerTest extends DatabaseTestCase
     {
         $this->expectException(ExperimentNotFound::class);
 
-        new SetExperimentEnvironmentsCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository())->handle(new SetExperimentEnvironmentsCommand(
+        (new SetExperimentEnvironmentsCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository()))->handle(new SetExperimentEnvironmentsCommand(
             experimentKey: 'nonexistent',
             allowedEnvironments: ['production'],
             actorIdentifier: 'tester',
@@ -83,7 +83,7 @@ final class SetExperimentEnvironmentsCommandHandlerTest extends DatabaseTestCase
             'is_killed'          => false,
         ]);
 
-        new SetExperimentEnvironmentsCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository())->handle(new SetExperimentEnvironmentsCommand(
+        (new SetExperimentEnvironmentsCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository()))->handle(new SetExperimentEnvironmentsCommand(
             experimentKey: 'my-exp',
             allowedEnvironments: ['local'],
             actorIdentifier: 'tester',
@@ -115,7 +115,7 @@ final class SetExperimentEnvironmentsCommandHandlerTest extends DatabaseTestCase
             },
         );
 
-        new SetExperimentEnvironmentsCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository())->handle(new SetExperimentEnvironmentsCommand(
+        (new SetExperimentEnvironmentsCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository()))->handle(new SetExperimentEnvironmentsCommand(
             experimentKey: 'my-exp',
             allowedEnvironments: ['production'],
             actorIdentifier: 'alice',
@@ -147,7 +147,7 @@ final class SetExperimentEnvironmentsCommandHandlerTest extends DatabaseTestCase
             },
         );
 
-        new SetExperimentEnvironmentsCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository())->handle(new SetExperimentEnvironmentsCommand(
+        (new SetExperimentEnvironmentsCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository()))->handle(new SetExperimentEnvironmentsCommand(
             experimentKey: 'my-exp',
             allowedEnvironments: null,
             actorIdentifier: 'bob',

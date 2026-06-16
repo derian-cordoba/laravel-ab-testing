@@ -33,7 +33,7 @@ abstract class Metric
      */
     public function valueOf(array $properties): float
     {
-        $attributes = new ReflectionClass(static::class)->getAttributes(AsMetric::class);
+        $attributes = (new ReflectionClass(static::class))->getAttributes(AsMetric::class);
 
         if ($attributes !== []) {
             /** @var AsMetric $asMetric */
