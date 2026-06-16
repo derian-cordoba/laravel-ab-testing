@@ -73,7 +73,7 @@ final readonly class ExperimentsController
 
         $model = ExperimentModel::query()->with('variants')->where('key', $request->string('key')->toString())->firstOrFail();
 
-        return new ExperimentResource($model)
+        return (new ExperimentResource($model))
             ->response()
             ->setStatusCode(201);
     }
