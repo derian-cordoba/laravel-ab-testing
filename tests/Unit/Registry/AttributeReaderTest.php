@@ -115,7 +115,7 @@ final class AttributeReaderTest extends TestCase
     public function throws_when_unit_class_is_missing_as_unit_attribute(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessageIsOrContains('missing the #[AsUnit] attribute');
+        $this->expectExceptionMessageMatches('/missing the #\[AsUnit\] attribute/');
 
         $this->reader->readExperiment(ExperimentWithMissingUnitAttribute::class);
     }
@@ -124,7 +124,7 @@ final class AttributeReaderTest extends TestCase
     public function throws_when_variants_enum_is_not_backed(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessageIsOrContains('must be a backed enum');
+        $this->expectExceptionMessageMatches('/must be a backed enum/');
 
         $this->reader->readExperiment(ExperimentWithPlainEnumVariants::class);
     }
@@ -135,7 +135,7 @@ final class AttributeReaderTest extends TestCase
         $bareExperiment = new class extends Experiment {};
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessageIsOrContains('missing the required');
+        $this->expectExceptionMessageMatches('/missing the required/');
         $this->reader->readExperiment($bareExperiment::class);
     }
 }

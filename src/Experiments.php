@@ -287,7 +287,7 @@ final class Experiments
         );
 
         try {
-            return new $flagClass()->resolve($context);
+            return (new $flagClass())->resolve($context);
         } catch (Throwable) {
             return $definition->defaultValue;
         }
