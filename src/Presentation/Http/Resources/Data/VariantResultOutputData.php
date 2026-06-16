@@ -46,8 +46,8 @@ final readonly class VariantResultOutputData implements Arrayable
             isControl: $variantResult->variant->isControl(),
             countOfUnits: $primary->countOfUnits,
             conversions: $primary->conversions,
-            conversionRate: $primary->conversionRate,
-            mean: $primary->mean,
+            conversionRate: $primary->conversionRate(),
+            mean: $primary->mean(),
             verdictRecommendation: $verdict?->verdict->value,
             verdictLabel: $verdict?->verdict->label(),
             verdictSrmDetected: $verdict?->srm->detected ?? false,
@@ -69,7 +69,7 @@ final readonly class VariantResultOutputData implements Arrayable
      */
     public static function fromCollection(array $variantResults): Collection
     {
-        return new Collection($variantResults)
+        return (new Collection($variantResults))
             ->map(static fn (VariantResultData $v): self => self::from($v));
     }
 

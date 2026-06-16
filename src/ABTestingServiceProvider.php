@@ -255,7 +255,7 @@ final class ABTestingServiceProvider extends ServiceProvider
             return;
         }
 
-        $discovered = new ClassDiscovery()->discover($paths);
+        $discovered = (new ClassDiscovery())->discover($paths);
 
         if ($discovered === []) {
             return;

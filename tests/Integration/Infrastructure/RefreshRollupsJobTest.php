@@ -54,9 +54,9 @@ final class RefreshRollupsJobTest extends DatabaseTestCase
         ]);
 
         $registry = new ExperimentRegistry();
-        $registry->register(new AttributeReader()->readExperiment(TestExperiment::class), TestExperiment::class);
+        $registry->register((new AttributeReader())->readExperiment(TestExperiment::class), TestExperiment::class);
 
-        $refreshed = new RefreshRollupsJob()->refreshExperimentByKey('test-experiment', $registry);
+        $refreshed = (new RefreshRollupsJob())->refreshExperimentByKey('test-experiment', $registry);
 
         self::assertTrue($refreshed);
 

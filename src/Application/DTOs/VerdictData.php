@@ -91,7 +91,7 @@ final readonly class VerdictData
                 'probability_to_beat_control' => $verdict?->bayesian?->probabilityToBeatControl,
                 'expected_loss'               => $verdict?->bayesian?->expectedLoss,
                 'count_of_units'              => $variantResult->primaryMetricSummary->countOfUnits,
-                'conversion_rate'             => $variantResult->primaryMetricSummary->conversionRate,
+                'conversion_rate'             => $variantResult->primaryMetricSummary->conversionRate(),
             ];
 
             // "ship" wins over "inconclusive"; "do_not_ship" overrides everything.

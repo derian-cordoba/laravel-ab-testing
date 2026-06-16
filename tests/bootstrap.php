@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Illuminate\Container\Container;
+
 require __DIR__ . '/../vendor/autoload.php';
 
 /**
@@ -13,7 +15,7 @@ require __DIR__ . '/../vendor/autoload.php';
 if (! function_exists('config')) {
     function config(string|null $key = null, mixed $default = null): mixed
     {
-        $container = \Illuminate\Container\Container::getInstance();
+        $container = Container::getInstance();
 
         if ($container === null || ! $container->bound('config')) {
             return $default;

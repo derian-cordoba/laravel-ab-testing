@@ -35,7 +35,7 @@ final class CheckEnvironmentStepTest extends TestCase
         $state   = new ExperimentState('exp', ExperimentStatus::running, 100, allowedEnvironments: null);
         $payload = $this->makePayload(state: $state);
 
-        self::assertTrue(new CheckEnvironmentStep()->handle($payload));
+        self::assertTrue((new CheckEnvironmentStep())->handle($payload));
     }
 
     // ── empty list = no environment ───────────────────────────────────────────
@@ -46,7 +46,7 @@ final class CheckEnvironmentStepTest extends TestCase
         $state   = new ExperimentState('exp', ExperimentStatus::running, 100, allowedEnvironments: []);
         $payload = $this->makePayload(state: $state);
 
-        self::assertFalse(new CheckEnvironmentStep()->handle($payload));
+        self::assertFalse((new CheckEnvironmentStep())->handle($payload));
     }
 
     // ── matching environment ──────────────────────────────────────────────────
@@ -59,7 +59,7 @@ final class CheckEnvironmentStepTest extends TestCase
         $state   = new ExperimentState('exp', ExperimentStatus::running, 100, allowedEnvironments: ['production']);
         $payload = $this->makePayload(state: $state);
 
-        self::assertTrue(new CheckEnvironmentStep()->handle($payload));
+        self::assertTrue((new CheckEnvironmentStep())->handle($payload));
     }
 
     #[Test]
@@ -70,7 +70,7 @@ final class CheckEnvironmentStepTest extends TestCase
         $state   = new ExperimentState('exp', ExperimentStatus::running, 100, allowedEnvironments: ['local', 'staging', 'production']);
         $payload = $this->makePayload(state: $state);
 
-        self::assertTrue(new CheckEnvironmentStep()->handle($payload));
+        self::assertTrue((new CheckEnvironmentStep())->handle($payload));
     }
 
     // ── non-matching environment ──────────────────────────────────────────────
@@ -83,7 +83,7 @@ final class CheckEnvironmentStepTest extends TestCase
         $state   = new ExperimentState('exp', ExperimentStatus::running, 100, allowedEnvironments: ['production', 'staging']);
         $payload = $this->makePayload(state: $state);
 
-        self::assertFalse(new CheckEnvironmentStep()->handle($payload));
+        self::assertFalse((new CheckEnvironmentStep())->handle($payload));
     }
 
     #[Test]
@@ -94,7 +94,7 @@ final class CheckEnvironmentStepTest extends TestCase
         $state   = new ExperimentState('exp', ExperimentStatus::running, 100, allowedEnvironments: ['production']);
         $payload = $this->makePayload(state: $state);
 
-        self::assertFalse(new CheckEnvironmentStep()->handle($payload));
+        self::assertFalse((new CheckEnvironmentStep())->handle($payload));
     }
 
     // ── unknown environment string ────────────────────────────────────────────
@@ -107,7 +107,7 @@ final class CheckEnvironmentStepTest extends TestCase
         $state   = new ExperimentState('exp', ExperimentStatus::running, 100, allowedEnvironments: ['production']);
         $payload = $this->makePayload(state: $state);
 
-        self::assertFalse(new CheckEnvironmentStep()->handle($payload));
+        self::assertFalse((new CheckEnvironmentStep())->handle($payload));
     }
 
     // ── helpers ───────────────────────────────────────────────────────────────

@@ -21,7 +21,7 @@ final class ClassDiscoveryTest extends TestCase
     #[Test]
     public function discovers_class_from_fixture_directory(): void
     {
-        $found = new ClassDiscovery()->discover([$this->fixtureDir]);
+        $found = (new ClassDiscovery())->discover([$this->fixtureDir]);
 
         self::assertContains(DiscoverableExperiment::class, $found);
     }
@@ -29,7 +29,7 @@ final class ClassDiscoveryTest extends TestCase
     #[Test]
     public function returns_empty_array_for_missing_directory(): void
     {
-        $found = new ClassDiscovery()->discover(['/nonexistent/path/that/does/not/exist']);
+        $found = (new ClassDiscovery())->discover(['/nonexistent/path/that/does/not/exist']);
 
         self::assertSame([], $found);
     }
@@ -43,7 +43,7 @@ final class ClassDiscoveryTest extends TestCase
         file_put_contents($tmpDir . '/readme.md', '# Not PHP');
         file_put_contents($tmpDir . '/notes.txt', 'text file');
 
-        $found = new ClassDiscovery()->discover([$tmpDir]);
+        $found = (new ClassDiscovery())->discover([$tmpDir]);
 
         self::assertSame([], $found);
 
@@ -63,7 +63,7 @@ namespace App\Experiments;
 final class MyClass {}
 ');
 
-        $found = new ClassDiscovery()->discover([$tmpDir]);
+        $found = (new ClassDiscovery())->discover([$tmpDir]);
 
         self::assertContains('App\\Experiments\\MyClass', $found);
 
@@ -100,7 +100,7 @@ enum MyEnum: string { case a = "a"; }
 class BareClass {}
 ');
 
-        $found = new ClassDiscovery()->discover([$tmpDir]);
+        $found = (new ClassDiscovery())->discover([$tmpDir]);
 
         self::assertContains('BareClass', $found);
 
@@ -119,7 +119,7 @@ class BareClass {}
         file_put_contents($tmp1 . '/ClassA.php', '<?php namespace Test; class ClassA {}');
         file_put_contents($tmp2 . '/ClassB.php', '<?php namespace Test; class ClassB {}');
 
-        $found = new ClassDiscovery()->discover([$tmp1, $tmp2]);
+        $found = (new ClassDiscovery())->discover([$tmp1, $tmp2]);
 
         self::assertContains('Test\\ClassA', $found);
         self::assertContains('Test\\ClassB', $found);

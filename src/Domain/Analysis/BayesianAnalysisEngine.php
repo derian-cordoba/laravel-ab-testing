@@ -40,20 +40,21 @@ final readonly class BayesianAnalysisEngine implements AnalysisEngine
         MetricSummary $treatment,
         AnalysisConfiguration $configuration,
     ): AnalysisResult {
-        $delta = $treatment->mean - $control->mean;
-        $alpha = $configuration->confidence->significanceThreshold;
+        $delta = $treatment->mean() - $control->mean();
+        $alpha = $configuration->confidence->significanceThreshold();
 
         $varControl = $control->countOfUnits > 0
-            ? max($control->variance, 0.0) / $control->countOfUnits
+            ? max($control->variance(), 0.0) / $control->countOfUnits
             : 0.0;
 
         $varTreatment = $treatment->countOfUnits > 0
-            ? max($treatment->variance, 0.0) / $treatment->countOfUnits
+            ? max($treatment->variance(), 0.0) / $treatment->countOfUnits
             : 0.0;
 
         $varLikelihood = $varControl + $varTreatment;
 
-        $relativeLift = $control->mean !== 0.0 ? $delta / abs($control->mean) : 0.0;
+        $controlMean  = $control->mean();
+        $relativeLift = $controlMean !== 0.0 ? $delta / abs($controlMean) : 0.0;
 
         if ($varLikelihood <= 0.0) {
             return new AnalysisResult(

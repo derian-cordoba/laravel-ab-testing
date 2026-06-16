@@ -141,7 +141,7 @@ final class ExperimentControls extends Component
     public function refreshRollup(): void
     {
         try {
-            $refreshed = new RefreshRollupsJob()->refreshExperimentByKey(
+            $refreshed = (new RefreshRollupsJob())->refreshExperimentByKey(
                 experimentKey: $this->experimentKey,
                 registry: app(ExperimentRegistry::class),
             );

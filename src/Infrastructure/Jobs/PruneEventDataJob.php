@@ -57,12 +57,12 @@ final class PruneEventDataJob implements ShouldQueue
             $totalDeleted += $deleted;
 
             if ($deleted > 0) {
-                Log::info("[ABTesting] Pruned {$deleted} event row(s) for archived experiment [{$experimentKey}].");
+                Log::info("[ABTesting] Pruned $deleted event row(s) for archived experiment [$experimentKey].");
             }
         }
 
         if ($totalDeleted > 0) {
-            Log::info("[ABTesting] PruneEventDataJob complete. Total rows pruned: {$totalDeleted}.");
+            Log::info("[ABTesting] PruneEventDataJob complete. Total rows pruned: $totalDeleted.");
         }
     }
 

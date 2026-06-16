@@ -47,8 +47,10 @@ final readonly class Resolver implements ResolvesVariant
         $bucketPosition = $this->bucketingStrategy->position($definition->key, $unit);
         $payload = new ResolutionPayload($definition, $unit, $state, $bucketPosition);
 
-        if (array_any($this->steps, static fn (ResolutionStep $step) => !$step->handle($payload))) {
-            return null;
+        foreach ($this->steps as $step) {
+            if (! $step->handle($payload)) {
+                return null;
+            }
         }
 
         return $payload->resolvedVariant;

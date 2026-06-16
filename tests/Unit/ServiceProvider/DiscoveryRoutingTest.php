@@ -34,7 +34,7 @@ final class DiscoveryRoutingTest extends TestCase
     #[Test]
     public function discovered_experiment_is_routed_to_experiment_registry(): void
     {
-        $discovered = new ClassDiscovery()->discover([$this->fixtureDir]);
+        $discovered = (new ClassDiscovery())->discover([$this->fixtureDir]);
 
         $experimentRegistry = new ExperimentRegistry();
         $flagRegistry       = new FeatureFlagRegistry();
@@ -51,7 +51,7 @@ final class DiscoveryRoutingTest extends TestCase
     #[Test]
     public function discovered_feature_flag_is_routed_to_flag_registry(): void
     {
-        $discovered = new ClassDiscovery()->discover([$this->fixtureDir]);
+        $discovered = (new ClassDiscovery())->discover([$this->fixtureDir]);
 
         $experimentRegistry = new ExperimentRegistry();
         $flagRegistry       = new FeatureFlagRegistry();
@@ -72,7 +72,7 @@ final class DiscoveryRoutingTest extends TestCase
         // Write a plain class that is not an Experiment or FeatureFlag subclass.
         file_put_contents($tmpDir . '/PlainClass.php', '<?php namespace Tmp; class PlainClass {}');
 
-        $discovered = new ClassDiscovery()->discover([$tmpDir]);
+        $discovered = (new ClassDiscovery())->discover([$tmpDir]);
 
         $experimentRegistry = new ExperimentRegistry();
         $flagRegistry       = new FeatureFlagRegistry();
@@ -108,7 +108,7 @@ final class AnotherBroken extends Experiment {}
 ');
 
         // Should not throw — failures are swallowed.
-        $discovered = new ClassDiscovery()->discover([$tmpDir]);
+        $discovered = (new ClassDiscovery())->discover([$tmpDir]);
         $experimentRegistry = new ExperimentRegistry();
         $flagRegistry       = new FeatureFlagRegistry();
 
@@ -124,7 +124,7 @@ final class AnotherBroken extends Experiment {}
     #[Test]
     public function empty_paths_list_produces_no_registrations(): void
     {
-        $discovered = new ClassDiscovery()->discover([]);
+        $discovered = (new ClassDiscovery())->discover([]);
 
         $experimentRegistry = new ExperimentRegistry();
         $flagRegistry       = new FeatureFlagRegistry();

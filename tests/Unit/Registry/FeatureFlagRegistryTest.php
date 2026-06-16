@@ -15,7 +15,7 @@ final class FeatureFlagRegistryTest extends TestCase
     #[Test]
     public function is_empty_initially(): void
     {
-        self::assertTrue(new FeatureFlagRegistry()->isEmpty());
+        self::assertTrue((new FeatureFlagRegistry())->isEmpty());
     }
 
     #[Test]

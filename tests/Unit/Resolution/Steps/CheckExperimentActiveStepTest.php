@@ -23,7 +23,7 @@ final class CheckExperimentActiveStepTest extends TestCase
         $state = ExperimentState::alwaysRunning('exp');
         $payload = $this->makePayload(state: $state);
 
-        self::assertTrue(new CheckExperimentActiveStep()->handle($payload));
+        self::assertTrue((new CheckExperimentActiveStep())->handle($payload));
     }
 
     #[Test]
@@ -32,7 +32,7 @@ final class CheckExperimentActiveStepTest extends TestCase
         $state = new ExperimentState('exp', ExperimentStatus::running, 100, isKilled: true);
         $payload = $this->makePayload(state: $state);
 
-        self::assertFalse(new CheckExperimentActiveStep()->handle($payload));
+        self::assertFalse((new CheckExperimentActiveStep())->handle($payload));
     }
 
     #[Test]
@@ -41,7 +41,7 @@ final class CheckExperimentActiveStepTest extends TestCase
         $state = new ExperimentState('exp', ExperimentStatus::paused, 100);
         $payload = $this->makePayload(state: $state);
 
-        self::assertFalse(new CheckExperimentActiveStep()->handle($payload));
+        self::assertFalse((new CheckExperimentActiveStep())->handle($payload));
     }
 
     #[Test]
@@ -50,6 +50,6 @@ final class CheckExperimentActiveStepTest extends TestCase
         $state = new ExperimentState('exp', ExperimentStatus::completed, 100);
         $payload = $this->makePayload(state: $state);
 
-        self::assertFalse(new CheckExperimentActiveStep()->handle($payload));
+        self::assertFalse((new CheckExperimentActiveStep())->handle($payload));
     }
 }

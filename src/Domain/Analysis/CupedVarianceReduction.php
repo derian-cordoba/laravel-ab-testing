@@ -90,19 +90,19 @@ final readonly class CupedVarianceReduction
 
                 // Adjusted mean: Ȳ_adj = Ȳ - θ × (X̄_variant - X̄_global)
                 // This accounts for any covariate imbalance between arms.
-                $adjustedMean = $summary->mean - $theta * ($covMean - $globalCovMean);
+                $adjustedMean = $summary->mean() - $theta * ($covMean - $globalCovMean);
 
                 // Adjusted variance: Var(Y_adj) = Var(Y) + θ² × Var(X) - 2θ × Cov(Y, X)
                 // We approximate Cov(Y, X) ≈ θ × Var(X) (from the θ definition).
                 $covVariance = $covStats['variance'];
                 $adjustedVariance = max(
                     0.0,
-                    $summary->variance + $theta * $theta * $covVariance - 2.0 * $theta * $theta * $covVariance,
+                    $summary->variance() + $theta * $theta * $covVariance - 2.0 * $theta * $theta * $covVariance,
                 );
 
                 // Rewrite the sufficient statistics to reflect the adjusted variance.
                 // sumOfSquaredValues is reverse-engineered from adjustedVariance so the
-                // property hook on MetricSummary returns the right figure.
+                // mean() / variance() methods on MetricSummary return the right figures.
                 $n = (float) $summary->countOfUnits;
                 $adjustedSumOfValues = $adjustedMean * $n;
                 $adjustedSumOfSquaredValues = ($adjustedVariance + $adjustedMean * $adjustedMean) * $n;

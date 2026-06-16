@@ -22,7 +22,7 @@ final class CheckSegmentStepTest extends TestCase
         $unit = new TestUnit(attributes: ['plan' => 'pro']);
         $payload = $this->makePayload(definition: $definition, unit: $unit);
 
-        self::assertTrue(new CheckSegmentStep()->handle($payload));
+        self::assertTrue((new CheckSegmentStep())->handle($payload));
     }
 
     #[Test]
@@ -32,7 +32,7 @@ final class CheckSegmentStepTest extends TestCase
         $unit = new TestUnit(attributes: ['plan' => 'free']);
         $payload = $this->makePayload(definition: $definition, unit: $unit);
 
-        self::assertFalse(new CheckSegmentStep()->handle($payload));
+        self::assertFalse((new CheckSegmentStep())->handle($payload));
     }
 
     #[Test]
@@ -41,6 +41,6 @@ final class CheckSegmentStepTest extends TestCase
         $definition = $this->makeDefinition(audience: Segment::any());
         $payload = $this->makePayload(definition: $definition);
 
-        self::assertTrue(new CheckSegmentStep()->handle($payload));
+        self::assertTrue((new CheckSegmentStep())->handle($payload));
     }
 }

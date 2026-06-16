@@ -8,7 +8,7 @@ use InvalidArgumentException;
 
 /**
  * A statistical confidence level (e.g. 0.95) and its derived significance
- * threshold. The threshold is a virtual property computed on read.
+ * threshold.
  */
 final class Confidence
 {
@@ -22,7 +22,8 @@ final class Confidence
     }
 
     /** The significance threshold (alpha), e.g. 0.05 for a 0.95 level. */
-    public float $significanceThreshold {
-        get => 1.0 - $this->level;
+    public function significanceThreshold(): float
+    {
+        return 1.0 - $this->level;
     }
 }

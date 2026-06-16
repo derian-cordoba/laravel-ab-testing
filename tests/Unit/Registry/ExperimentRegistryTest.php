@@ -17,7 +17,7 @@ final class ExperimentRegistryTest extends TestCase
     #[Test]
     public function is_empty_initially(): void
     {
-        self::assertTrue(new ExperimentRegistry()->isEmpty());
+        self::assertTrue((new ExperimentRegistry())->isEmpty());
     }
 
     #[Test]

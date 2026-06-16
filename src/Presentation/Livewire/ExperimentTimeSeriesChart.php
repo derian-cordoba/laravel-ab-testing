@@ -71,7 +71,7 @@ final class ExperimentTimeSeriesChart extends Component
      */
     private function buildSeries(): array
     {
-        $rows = DB::table(new EventModel()->getTable())
+        $rows = DB::table((new EventModel())->getTable())
             ->selectRaw("DATE(occurred_at) as day, variant_key, type, COUNT(DISTINCT unit_key) as unit_count")
             ->where('experiment_key', $this->experimentKey)
             ->whereIn('type', ['exposure', 'conversion'])

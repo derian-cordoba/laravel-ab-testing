@@ -21,7 +21,7 @@ final class CheckTrafficAllocationStepTest extends TestCase
         $state = new ExperimentState('exp', ExperimentStatus::running, 50);
         $payload = $this->makePayload(state: $state, bucketPosition: 0.3);
 
-        self::assertTrue(new CheckTrafficAllocationStep()->handle($payload));
+        self::assertTrue((new CheckTrafficAllocationStep())->handle($payload));
     }
 
     #[Test]
@@ -30,7 +30,7 @@ final class CheckTrafficAllocationStepTest extends TestCase
         $state = new ExperimentState('exp', ExperimentStatus::running, 50);
         $payload = $this->makePayload(state: $state, bucketPosition: 0.7);
 
-        self::assertFalse(new CheckTrafficAllocationStep()->handle($payload));
+        self::assertFalse((new CheckTrafficAllocationStep())->handle($payload));
     }
 
     #[Test]
@@ -39,7 +39,7 @@ final class CheckTrafficAllocationStepTest extends TestCase
         $state = new ExperimentState('exp', ExperimentStatus::running, 50);
         $payload = $this->makePayload(state: $state, bucketPosition: 0.5);
 
-        self::assertFalse(new CheckTrafficAllocationStep()->handle($payload));
+        self::assertFalse((new CheckTrafficAllocationStep())->handle($payload));
     }
 
     #[Test]
@@ -48,6 +48,6 @@ final class CheckTrafficAllocationStepTest extends TestCase
         $state = ExperimentState::alwaysRunning('exp');
         $payload = $this->makePayload(state: $state, bucketPosition: 0.9999);
 
-        self::assertTrue(new CheckTrafficAllocationStep()->handle($payload));
+        self::assertTrue((new CheckTrafficAllocationStep())->handle($payload));
     }
 }

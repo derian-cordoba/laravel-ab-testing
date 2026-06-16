@@ -17,7 +17,7 @@ final class ConfidenceTest extends TestCase
     {
         $confidence = new Confidence(0.95);
 
-        self::assertEqualsWithDelta(0.05, $confidence->significanceThreshold, 1e-10);
+        self::assertEqualsWithDelta(0.05, $confidence->significanceThreshold(), 1e-10);
     }
 
     #[Test]

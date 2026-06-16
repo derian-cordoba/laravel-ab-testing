@@ -33,6 +33,7 @@ final readonly class AnalysisService
         private SampleRatioMismatchDetector $srmDetector,
         private VerdictResolver $verdictResolver,
     ) {
+        //
     }
 
     /**

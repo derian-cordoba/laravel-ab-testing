@@ -37,15 +37,15 @@ final readonly class FrequentistAnalysisEngine implements AnalysisEngine
         MetricSummary $treatment,
         AnalysisConfiguration $configuration,
     ): AnalysisResult {
-        $delta = $treatment->mean - $control->mean;
-        $alpha = $configuration->confidence->significanceThreshold;
+        $delta = $treatment->mean() - $control->mean();
+        $alpha = $configuration->confidence->significanceThreshold();
 
         // For ratio metrics (MetricType::Ratio), use the delta-method variance so
         // the ratio-of-means is compared with the correct sampling variance rather
         // than the naive mean-of-ratios approximation. For all other metric types,
         // fall back to the standard sample variance.
-        $controlVariance   = $control->isRatioMetric ? $control->deltaMethodVariance   : $control->variance;
-        $treatmentVariance = $treatment->isRatioMetric ? $treatment->deltaMethodVariance : $treatment->variance;
+        $controlVariance   = $control->isRatioMetric() ? $control->deltaMethodVariance()   : $control->variance();
+        $treatmentVariance = $treatment->isRatioMetric() ? $treatment->deltaMethodVariance() : $treatment->variance();
 
         // Variance of (μ_T - μ_C); guard against zero-count arms.
         $varControl = $control->countOfUnits > 0
@@ -59,7 +59,8 @@ final readonly class FrequentistAnalysisEngine implements AnalysisEngine
         $varDelta = $varControl + $varTreatment;
         $se = sqrt($varDelta);
 
-        $relativeLift = $control->mean !== 0.0 ? $delta / abs($control->mean) : 0.0;
+        $controlMean  = $control->mean();
+        $relativeLift = $controlMean !== 0.0 ? $delta / abs($controlMean) : 0.0;
 
         if ($se <= 0.0) {
             // No variance — cannot determine significance.

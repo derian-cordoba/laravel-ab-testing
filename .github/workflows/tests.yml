@@ -21,9 +21,6 @@ on:
 
   workflow_dispatch:
     inputs:
-      php-version:
-        description: PHP version to use
-        default: '8.4'
       runs-on:
         description: Runner environment
         default: 'ubuntu-latest'
@@ -32,6 +29,13 @@ jobs:
   tests:
     runs-on: ${{ inputs.runs-on || vars.RUNS_ON || 'ubuntu-latest' }}
 
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: ['8.3', '8.4', '8.5']
+
+    name: PHP ${{ matrix.php-version }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -39,7 +43,7 @@ jobs:
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ inputs.php-version || vars.PHP_VERSION || '8.4' }}
+          php-version: ${{ matrix.php-version }}
           coverage: none
           tools: composer:v2
 

@@ -5,7 +5,7 @@ parameters:
         - src
         - examples
 
-    phpVersion: 80400
+    phpVersion: 80300
 
     bootstrapFiles:
         - phpstan/stubs.php

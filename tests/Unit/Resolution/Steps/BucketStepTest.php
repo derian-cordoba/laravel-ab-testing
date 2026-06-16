@@ -19,7 +19,7 @@ final class BucketStepTest extends TestCase
     {
         $payload = $this->makePayload(bucketPosition: 0.1);
 
-        new BucketStep()->handle($payload);
+        (new BucketStep())->handle($payload);
 
         self::assertSame(TestVariant::control, $payload->resolvedVariant);
     }
@@ -29,7 +29,7 @@ final class BucketStepTest extends TestCase
     {
         $payload = $this->makePayload(bucketPosition: 0.75);
 
-        new BucketStep()->handle($payload);
+        (new BucketStep())->handle($payload);
 
         self::assertSame(TestVariant::treatment, $payload->resolvedVariant);
     }
@@ -41,7 +41,7 @@ final class BucketStepTest extends TestCase
         $payload->hasExistingAssignment = true;
         $payload->resolvedVariant = TestVariant::treatment; // pre-set by rehydration
 
-        new BucketStep()->handle($payload);
+        (new BucketStep())->handle($payload);
 
         // Existing assignment preserved — treatment is not overwritten to control
         self::assertSame(TestVariant::treatment, $payload->resolvedVariant);
@@ -51,6 +51,6 @@ final class BucketStepTest extends TestCase
     public function always_returns_true(): void
     {
         $payload = $this->makePayload();
-        self::assertTrue(new BucketStep()->handle($payload));
+        self::assertTrue((new BucketStep())->handle($payload));
     }
 }

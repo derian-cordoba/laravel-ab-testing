@@ -31,7 +31,7 @@ final class MetricSummaryTest extends TestCase
     {
         $summary = $this->make(count: 4, sum: 20.0, sumSquared: 120.0, conversions: 2);
 
-        self::assertEqualsWithDelta(5.0, $summary->mean, 1e-10);
+        self::assertEqualsWithDelta(5.0, $summary->mean(), 1e-10);
     }
 
     #[Test]
@@ -39,7 +39,7 @@ final class MetricSummaryTest extends TestCase
     {
         $summary = $this->make(count: 0, sum: 0.0, sumSquared: 0.0, conversions: 0);
 
-        self::assertSame(0.0, $summary->mean);
+        self::assertSame(0.0, $summary->mean());
     }
 
     #[Test]
@@ -48,7 +48,7 @@ final class MetricSummaryTest extends TestCase
         // Values: [3, 5, 7, 5] → mean=5, E[X²]=108/4=27, var=27-25=2
         $summary = $this->make(count: 4, sum: 20.0, sumSquared: 108.0, conversions: 0);
 
-        self::assertEqualsWithDelta(2.0, $summary->variance, 1e-10);
+        self::assertEqualsWithDelta(2.0, $summary->variance(), 1e-10);
     }
 
     #[Test]
@@ -56,7 +56,7 @@ final class MetricSummaryTest extends TestCase
     {
         $summary = $this->make(count: 1, sum: 5.0, sumSquared: 25.0, conversions: 1);
 
-        self::assertSame(0.0, $summary->variance);
+        self::assertSame(0.0, $summary->variance());
     }
 
     #[Test]
@@ -64,7 +64,7 @@ final class MetricSummaryTest extends TestCase
     {
         $summary = $this->make(count: 100, sum: 0.0, sumSquared: 0.0, conversions: 35);
 
-        self::assertEqualsWithDelta(0.35, $summary->conversionRate, 1e-10);
+        self::assertEqualsWithDelta(0.35, $summary->conversionRate(), 1e-10);
     }
 
     #[Test]
@@ -72,6 +72,6 @@ final class MetricSummaryTest extends TestCase
     {
         $summary = $this->make(count: 0, sum: 0.0, sumSquared: 0.0, conversions: 0);
 
-        self::assertSame(0.0, $summary->conversionRate);
+        self::assertSame(0.0, $summary->conversionRate());
     }
 }

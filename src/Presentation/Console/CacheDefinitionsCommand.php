@@ -58,7 +58,7 @@ final class CacheDefinitionsCommand extends Command
         $discovered = [];
 
         if (($config['discovery']['enabled'] ?? false) && $paths !== []) {
-            $discovered = new ClassDiscovery()->discover($paths);
+            $discovered = (new ClassDiscovery())->discover($paths);
         }
 
         $allClasses = array_values(array_unique(array_merge($explicitExperiments, $explicitFlags, $discovered)));
