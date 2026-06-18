@@ -1,0 +1,24 @@
+{
+    "preset": "laravel",
+    "rules": {
+        "declare_strict_types": true,
+        "new_with_parentheses": true,
+        "ordered_imports": {
+            "sort_algorithm": "alpha"
+        },
+        "single_quote": true,
+        "trailing_comma_in_multiline": {
+            "elements": [
+                "arguments",
+                "arrays",
+                "match",
+                "parameters"
+            ]
+        }
+    },
+    "exclude": [
+        "vendor",
+        "build",
+        "coverage"
+    ]
+}

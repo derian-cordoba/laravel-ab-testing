@@ -38,16 +38,26 @@
     },
     "scripts": {
         "test": "phpunit",
-        "analyse": "phpstan analyse --memory-limit=512M"
+        "analyse": "phpstan analyse --memory-limit=512M",
+        "lint": "pint --test",
+        "format": "pint",
+        "lint:dirty": "pint --test --dirty",
+        "format:dirty": "pint --dirty",
+        "check": [
+            "@lint",
+            "@analyse",
+            "@test"
+        ]
     },
     "require-dev": {
         "illuminate/config": "^12.0 || ^13.0",
         "illuminate/database": "^12.0 || ^13.0",
         "larastan/larastan": "^3.10",
+        "laravel/framework": "^12.0 || ^13.0",
+        "laravel/pint": "^1.0",
+        "mockery/mockery": "^1.6",
         "phpstan/phpstan": "^2.2",
         "phpunit/phpunit": "^12.0 || ^13.0",
-        "vlucas/phpdotenv": "^5.6",
-        "laravel/framework": "^12.0 || ^13.0",
-        "mockery/mockery": "^1.6"
+        "vlucas/phpdotenv": "^5.6"
     }
 }
