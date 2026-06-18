@@ -16,20 +16,20 @@ final class CriterionTest extends TestCase
     public static function matchProvider(): array
     {
         return [
-            'equals — match'              => [Operator::equals,      'pro',          'pro',            true],
-            'equals — no match'           => [Operator::equals,      'pro',          'free',           false],
-            'notEquals — match'           => [Operator::notEquals,   'pro',          'free',           true],
-            'notEquals — no match'        => [Operator::notEquals,   'pro',          'pro',            false],
-            'in — match'                  => [Operator::in,          ['US', 'CA'],   'US',             true],
-            'in — no match'               => [Operator::in,          ['US', 'CA'],   'GB',             false],
-            'notIn — match'               => [Operator::notIn,       ['US', 'CA'],   'GB',             true],
-            'notIn — no match'            => [Operator::notIn,       ['US', 'CA'],   'US',             false],
-            'greaterThan — match'         => [Operator::greaterThan, 10,             15,               true],
-            'greaterThan — no match'      => [Operator::greaterThan, 10,             5,                false],
-            'greaterThan — null actual'   => [Operator::greaterThan, 10,             null,             false],
-            'lessThan — match'            => [Operator::lessThan,    10,             5,                true],
-            'lessThan — no match'         => [Operator::lessThan,    10,             15,               false],
-            'lessThan — null actual'      => [Operator::lessThan,    10,             null,             false],
+            'equals — match' => [Operator::equals,      'pro',          'pro',            true],
+            'equals — no match' => [Operator::equals,      'pro',          'free',           false],
+            'notEquals — match' => [Operator::notEquals,   'pro',          'free',           true],
+            'notEquals — no match' => [Operator::notEquals,   'pro',          'pro',            false],
+            'in — match' => [Operator::in,          ['US', 'CA'],   'US',             true],
+            'in — no match' => [Operator::in,          ['US', 'CA'],   'GB',             false],
+            'notIn — match' => [Operator::notIn,       ['US', 'CA'],   'GB',             true],
+            'notIn — no match' => [Operator::notIn,       ['US', 'CA'],   'US',             false],
+            'greaterThan — match' => [Operator::greaterThan, 10,             15,               true],
+            'greaterThan — no match' => [Operator::greaterThan, 10,             5,                false],
+            'greaterThan — null actual' => [Operator::greaterThan, 10,             null,             false],
+            'lessThan — match' => [Operator::lessThan,    10,             5,                true],
+            'lessThan — no match' => [Operator::lessThan,    10,             15,               false],
+            'lessThan — null actual' => [Operator::lessThan,    10,             null,             false],
         ];
     }
 

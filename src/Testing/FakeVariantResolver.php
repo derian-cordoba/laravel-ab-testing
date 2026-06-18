@@ -7,6 +7,7 @@ namespace ABTests\Testing;
 use ABTests\Contracts\AssignmentRepository;
 use ABTests\Contracts\Bucketable;
 use ABTests\Contracts\ResolvesVariant;
+use ABTests\Contracts\Variant;
 use ABTests\Definitions\ExperimentDefinition;
 use ABTests\Enums\EvaluationReason;
 use ABTests\Values\Assignment;
@@ -27,7 +28,7 @@ use DateTimeImmutable;
  */
 final class FakeVariantResolver implements ResolvesVariant
 {
-    /** @var array<string, \ABTests\Contracts\Variant> experiment_key → forced Variant */
+    /** @var array<string, Variant> experiment_key → forced Variant */
     private array $forcedVariants = [];
 
     public function __construct(
@@ -36,7 +37,7 @@ final class FakeVariantResolver implements ResolvesVariant
         //
     }
 
-    public function force(string $experimentKey, \ABTests\Contracts\Variant $variant): void
+    public function force(string $experimentKey, Variant $variant): void
     {
         $this->forcedVariants[$experimentKey] = $variant;
     }
@@ -71,11 +72,11 @@ final class FakeVariantResolver implements ResolvesVariant
             // Store the assignment so track() calls can look it up.
             $this->assignmentRepository->storeAssignment(new Assignment(
                 experimentKey: $definition->key,
-                unitType:      $definition->unitType,
-                unitKey:       $unit->bucketingKey(),
-                variantKey:    $variant->key(),
-                layer:         $definition->layer,
-                assignedAt:    new DateTimeImmutable(),
+                unitType: $definition->unitType,
+                unitKey: $unit->bucketingKey(),
+                variantKey: $variant->key(),
+                layer: $definition->layer,
+                assignedAt: new DateTimeImmutable(),
             ));
         }
 

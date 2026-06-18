@@ -39,10 +39,10 @@ final class ExperimentResultsControllerTest extends FeatureTestCase
     public function results_returns_json_api_error_when_no_rollup_data(): void
     {
         ExperimentModel::query()->create([
-            'key'                => 'checkout-button-color',
-            'status'             => ExperimentStatus::running->value,
+            'key' => 'checkout-button-color',
+            'status' => ExperimentStatus::running->value,
             'traffic_percentage' => 100,
-            'is_killed'          => false,
+            'is_killed' => false,
         ]);
 
         $response = $this->getJson(route('ab-testing.api.v1.experiments.results', ['key' => 'checkout-button-color']));
@@ -135,10 +135,10 @@ final class ExperimentResultsControllerTest extends FeatureTestCase
     public function verdict_returns_inconclusive_when_no_rollup_data(): void
     {
         ExperimentModel::query()->create([
-            'key'                => 'checkout-button-color',
-            'status'             => ExperimentStatus::running->value,
+            'key' => 'checkout-button-color',
+            'status' => ExperimentStatus::running->value,
             'traffic_percentage' => 100,
-            'is_killed'          => false,
+            'is_killed' => false,
         ]);
 
         $response = $this->getJson(route('ab-testing.api.v1.experiments.verdict', ['key' => 'checkout-button-color']));
@@ -188,10 +188,10 @@ final class ExperimentResultsControllerTest extends FeatureTestCase
     {
         // Plant a large ratio mismatch (1000 vs 100) to guarantee SRM detection.
         $model = ExperimentModel::query()->create([
-            'key'                => 'srm-experiment',
-            'status'             => ExperimentStatus::completed->value,
+            'key' => 'srm-experiment',
+            'status' => ExperimentStatus::completed->value,
             'traffic_percentage' => 100,
-            'is_killed'          => false,
+            'is_killed' => false,
         ]);
 
         VariantModel::query()->create(['experiment_id' => $model->id, 'key' => 'control',   'weight' => 50, 'is_control' => true]);
@@ -199,22 +199,22 @@ final class ExperimentResultsControllerTest extends FeatureTestCase
 
         // Severely imbalanced rollups trigger SRM.
         RollupModel::query()->create([
-            'experiment_key'        => 'srm-experiment',
-            'variant_key'           => 'control',
-            'metric_key'            => 'checkout-conversion',
-            'count_of_units'        => 1000,
-            'conversions'           => 100,
-            'sum_of_values'         => 100.0,
+            'experiment_key' => 'srm-experiment',
+            'variant_key' => 'control',
+            'metric_key' => 'checkout-conversion',
+            'count_of_units' => 1000,
+            'conversions' => 100,
+            'sum_of_values' => 100.0,
             'sum_of_squared_values' => 100.0,
         ]);
 
         RollupModel::query()->create([
-            'experiment_key'        => 'srm-experiment',
-            'variant_key'           => 'treatment',
-            'metric_key'            => 'checkout-conversion',
-            'count_of_units'        => 100,   // 10x fewer — severe mismatch
-            'conversions'           => 50,
-            'sum_of_values'         => 50.0,
+            'experiment_key' => 'srm-experiment',
+            'variant_key' => 'treatment',
+            'metric_key' => 'checkout-conversion',
+            'count_of_units' => 100,   // 10x fewer — severe mismatch
+            'conversions' => 50,
+            'sum_of_values' => 50.0,
             'sum_of_squared_values' => 50.0,
         ]);
 
@@ -257,10 +257,10 @@ final class ExperimentResultsControllerTest extends FeatureTestCase
     ): ExperimentModel {
         /** @var ExperimentModel $model */
         $model = ExperimentModel::query()->create([
-            'key'                => $key,
-            'status'             => $status,
+            'key' => $key,
+            'status' => $status,
             'traffic_percentage' => 100,
-            'is_killed'          => false,
+            'is_killed' => false,
         ]);
 
         VariantModel::query()->create(['experiment_id' => $model->id, 'key' => 'control', 'weight' => 50, 'is_control' => true]);
@@ -268,22 +268,22 @@ final class ExperimentResultsControllerTest extends FeatureTestCase
 
         // Balanced, realistic rollup data (500 units per arm, ~10% conversion).
         RollupModel::query()->create([
-            'experiment_key'        => $key,
-            'variant_key'           => 'control',
-            'metric_key'            => 'checkout-conversion',
-            'count_of_units'        => 500,
-            'conversions'           => 50,
-            'sum_of_values'         => 50.0,
+            'experiment_key' => $key,
+            'variant_key' => 'control',
+            'metric_key' => 'checkout-conversion',
+            'count_of_units' => 500,
+            'conversions' => 50,
+            'sum_of_values' => 50.0,
             'sum_of_squared_values' => 50.0,
         ]);
 
         RollupModel::query()->create([
-            'experiment_key'        => $key,
-            'variant_key'           => 'green',
-            'metric_key'            => 'checkout-conversion',
-            'count_of_units'        => 500,
-            'conversions'           => 60,
-            'sum_of_values'         => 60.0,
+            'experiment_key' => $key,
+            'variant_key' => 'green',
+            'metric_key' => 'checkout-conversion',
+            'count_of_units' => 500,
+            'conversions' => 60,
+            'sum_of_values' => 60.0,
             'sum_of_squared_values' => 60.0,
         ]);
 

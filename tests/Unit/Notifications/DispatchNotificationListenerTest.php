@@ -34,6 +34,7 @@ use ReflectionClass;
 final class DispatchNotificationListenerTest extends TestCase
 {
     private DispatchNotificationListener $listener;
+
     private ReflectionClass $reflection;
 
     protected function setUp(): void
@@ -48,13 +49,13 @@ final class DispatchNotificationListenerTest extends TestCase
             'ab-testing' => [
                 'notifications' => [
                     'enabled' => true,
-                    'events'  => [],
+                    'events' => [],
                 ],
             ],
         ]));
         $app->instance('log', new NullLogger());
 
-        $this->listener   = new DispatchNotificationListener();
+        $this->listener = new DispatchNotificationListener();
         $this->reflection = new ReflectionClass($this->listener);
     }
 
@@ -321,16 +322,16 @@ final class DispatchNotificationListenerTest extends TestCase
             ->set("ab-testing.notifications.events.{$eventKey}", false);
 
         $event = match ($eventKey) {
-            'experiment_started'                => new ExperimentStartedEvent('e', 'a', 'user', 100),
-            'experiment_paused'                 => new ExperimentPausedEvent('e', 'a', 'user'),
-            'experiment_resumed'                => new ExperimentResumedEvent('e', 'a', 'user'),
-            'experiment_stopped'                => new ExperimentStoppedEvent('e', 'a', 'user'),
-            'experiment_environments_updated'   => new ExperimentEnvironmentsUpdatedEvent('e', ['production'], 'a', 'user'),
-            'feature_flag_enabled'              => new FeatureFlagEnabledEvent('f', 'a', 'user'),
-            'feature_flag_disabled'             => new FeatureFlagDisabledEvent('f', 'a', 'user'),
+            'experiment_started' => new ExperimentStartedEvent('e', 'a', 'user', 100),
+            'experiment_paused' => new ExperimentPausedEvent('e', 'a', 'user'),
+            'experiment_resumed' => new ExperimentResumedEvent('e', 'a', 'user'),
+            'experiment_stopped' => new ExperimentStoppedEvent('e', 'a', 'user'),
+            'experiment_environments_updated' => new ExperimentEnvironmentsUpdatedEvent('e', ['production'], 'a', 'user'),
+            'feature_flag_enabled' => new FeatureFlagEnabledEvent('f', 'a', 'user'),
+            'feature_flag_disabled' => new FeatureFlagDisabledEvent('f', 'a', 'user'),
             'feature_flag_environments_updated' => new FeatureFlagEnvironmentsUpdatedEvent('f', ['production'], 'a', 'user'),
-            'kill_switch_activated'             => new KillSwitchActivatedEvent('e', null, true, 'a', 'user'),
-            'guardrail_breached'                => new GuardrailBreachedEvent('e', 'm', 'v', 0.1, 0.05),
+            'kill_switch_activated' => new KillSwitchActivatedEvent('e', null, true, 'a', 'user'),
+            'guardrail_breached' => new GuardrailBreachedEvent('e', 'm', 'v', 0.1, 0.05),
         };
 
         $this->listener->handle($event);
@@ -342,16 +343,16 @@ final class DispatchNotificationListenerTest extends TestCase
     public static function disabledEventProvider(): array
     {
         return [
-            'experiment_started'                => ['experiment_started'],
-            'experiment_paused'                 => ['experiment_paused'],
-            'experiment_resumed'                => ['experiment_resumed'],
-            'experiment_stopped'                => ['experiment_stopped'],
-            'experiment_environments_updated'   => ['experiment_environments_updated'],
-            'feature_flag_enabled'              => ['feature_flag_enabled'],
-            'feature_flag_disabled'             => ['feature_flag_disabled'],
+            'experiment_started' => ['experiment_started'],
+            'experiment_paused' => ['experiment_paused'],
+            'experiment_resumed' => ['experiment_resumed'],
+            'experiment_stopped' => ['experiment_stopped'],
+            'experiment_environments_updated' => ['experiment_environments_updated'],
+            'feature_flag_enabled' => ['feature_flag_enabled'],
+            'feature_flag_disabled' => ['feature_flag_disabled'],
             'feature_flag_environments_updated' => ['feature_flag_environments_updated'],
-            'kill_switch_activated'             => ['kill_switch_activated'],
-            'guardrail_breached'                => ['guardrail_breached'],
+            'kill_switch_activated' => ['kill_switch_activated'],
+            'guardrail_breached' => ['guardrail_breached'],
         ];
     }
 

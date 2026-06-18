@@ -47,7 +47,7 @@ final class LayersMap extends Component
 
             if (! isset($layers[$layerKey])) {
                 $layers[$layerKey] = [
-                    'name'        => $exp->layer ?? null,
+                    'name' => $exp->layer ?? null,
                     'experiments' => [],
                     'runningCount' => 0,
                     'assignments' => $exp->layer ? (int) ($layerAssignmentCounts->get($exp->layer) ?? 0) : 0,
@@ -57,13 +57,13 @@ final class LayersMap extends Component
             $isRunning = $exp->status === 'running';
 
             $layers[$layerKey]['experiments'][] = [
-                'key'               => $exp->key,
-                'label'             => $exp->name ?? $exp->key,
-                'status'            => $exp->status,
+                'key' => $exp->key,
+                'label' => $exp->name ?? $exp->key,
+                'status' => $exp->status,
                 'traffic_percentage' => $exp->traffic_percentage,
-                'started_at'        => $exp->started_at,
-                'assignments'       => (int) ($assignmentCounts->get($exp->key) ?? 0),
-                'isRunning'         => $isRunning,
+                'started_at' => $exp->started_at,
+                'assignments' => (int) ($assignmentCounts->get($exp->key) ?? 0),
+                'isRunning' => $isRunning,
             ];
 
             if ($isRunning) {

@@ -6,7 +6,7 @@ return [
     'default' => 'array',
     'stores' => [
         'array' => [
-            'driver'    => 'array',
+            'driver' => 'array',
             'serialize' => false,
         ],
     ],

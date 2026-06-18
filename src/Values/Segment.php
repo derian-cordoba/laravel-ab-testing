@@ -15,7 +15,7 @@ use ABTests\Enums\Operator;
 final readonly class Segment
 {
     /**
-     * @param list<Criterion> $criteria
+     * @param  list<Criterion>  $criteria
      */
     private function __construct(public array $criteria)
     {

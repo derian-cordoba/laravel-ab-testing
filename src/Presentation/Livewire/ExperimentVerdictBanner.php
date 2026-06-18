@@ -35,16 +35,16 @@ final class ExperimentVerdictBanner extends Component
     {
         $results = app(ResultsService::class)->forExperiment($this->experimentKey);
 
-        $overallVerdict  = null;
-        $srmDetected     = false;
-        $hasData         = false;
-        $totalUnits      = 0;
-        $treatmentCount  = 0;
+        $overallVerdict = null;
+        $srmDetected = false;
+        $hasData = false;
+        $totalUnits = 0;
+        $treatmentCount = 0;
 
         if ($results !== null && $results->hasResults()) {
-            $hasData        = true;
-            $totalUnits     = $results->totalAssignedUnits();
-            $srmDetected    = $results->sampleRatioMismatch->detected;
+            $hasData = true;
+            $totalUnits = $results->totalAssignedUnits();
+            $srmDetected = $results->sampleRatioMismatch->detected;
 
             // Derive overall verdict: doNotShip > ship > inconclusive.
             foreach ($results->variantResults as $variantResult) {

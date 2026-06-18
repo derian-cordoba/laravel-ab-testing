@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Schema;
  * (updated_through_at) tracks the last event timestamp processed so the job
  * can run incrementally.
  */
-return new class extends Migration
+return new class() extends Migration
 {
     public function up(): void
     {

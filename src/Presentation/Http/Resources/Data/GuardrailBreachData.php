@@ -53,9 +53,9 @@ final readonly class GuardrailBreachData implements Arrayable
     public function toArray(): array
     {
         return [
-            'metric_key'  => $this->metricKey,
-            'observed'    => $this->observed,
-            'threshold'   => $this->threshold,
+            'metric_key' => $this->metricKey,
+            'observed' => $this->observed,
+            'threshold' => $this->threshold,
             'occurred_at' => $this->occurredAt,
         ];
     }

@@ -20,8 +20,8 @@ final class FeatureFlagLifecycleControllerTest extends FeatureTestCase
     {
         /** @var FeatureFlagStateModel $model */
         $model = FeatureFlagStateModel::query()->create([
-            'key'                => $key,
-            'is_enabled'         => $isEnabled,
+            'key' => $key,
+            'is_enabled' => $isEnabled,
             'rollout_percentage' => $rolloutPercentage,
         ]);
 
@@ -44,7 +44,7 @@ final class FeatureFlagLifecycleControllerTest extends FeatureTestCase
         $response->assertJsonPath('data.attributes.is_enabled', true);
 
         $this->assertDatabaseHas('ab_testing_feature_flag_states', [
-            'key'        => 'dark-mode',
+            'key' => 'dark-mode',
             'is_enabled' => true,
         ]);
     }
@@ -83,7 +83,7 @@ final class FeatureFlagLifecycleControllerTest extends FeatureTestCase
         $response->assertJsonPath('data.attributes.is_enabled', false);
 
         $this->assertDatabaseHas('ab_testing_feature_flag_states', [
-            'key'        => 'dark-mode',
+            'key' => 'dark-mode',
             'is_enabled' => false,
         ]);
     }
@@ -124,7 +124,7 @@ final class FeatureFlagLifecycleControllerTest extends FeatureTestCase
         $response->assertJsonPath('data.attributes.rollout_percentage', 25);
 
         $this->assertDatabaseHas('ab_testing_feature_flag_states', [
-            'key'                => 'dark-mode',
+            'key' => 'dark-mode',
             'rollout_percentage' => 25,
         ]);
     }
@@ -294,7 +294,7 @@ final class FeatureFlagLifecycleControllerTest extends FeatureTestCase
         $this->createFlag('dark-mode');
 
         $response = $this->postJson(route('ab-testing.api.v1.feature-flags.conditions', ['key' => 'dark-mode']), [
-            'conditions'       => [
+            'conditions' => [
                 ['attribute' => 'plan', 'operator' => 'equals', 'expected' => 'pro'],
                 ['attribute' => 'country', 'operator' => 'equals', 'expected' => 'US'],
             ],
@@ -337,7 +337,7 @@ final class FeatureFlagLifecycleControllerTest extends FeatureTestCase
         $this->createFlag('dark-mode');
 
         $response = $this->postJson(route('ab-testing.api.v1.feature-flags.conditions', ['key' => 'dark-mode']), [
-            'conditions'       => [
+            'conditions' => [
                 ['attribute' => 'plan', 'operator' => 'equals', 'expected' => 'pro'],
             ],
             'conditions_logic' => 'invalid',

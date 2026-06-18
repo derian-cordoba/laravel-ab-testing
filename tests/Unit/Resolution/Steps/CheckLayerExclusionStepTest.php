@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace ABTests\Tests\Unit\Resolution\Steps;
 
-use ABTests\Infrastructure\InMemoryAssignmentRepository;
 use ABTests\Application\Resolution\Steps\CheckLayerExclusionStep;
+use ABTests\Infrastructure\InMemoryAssignmentRepository;
 use ABTests\Tests\Fixtures\TestUnit;
 use ABTests\Tests\Support\MakesPayload;
 use ABTests\Values\Assignment;
@@ -18,6 +18,7 @@ final class CheckLayerExclusionStepTest extends TestCase
     use MakesPayload;
 
     private InMemoryAssignmentRepository $repo;
+
     private CheckLayerExclusionStep $step;
 
     protected function setUp(): void

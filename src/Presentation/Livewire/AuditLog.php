@@ -38,7 +38,7 @@ final class AuditLog extends Component
         $query = AuditLogModel::query()->orderByDesc('occurred_at');
 
         if ($this->experimentFilter !== '') {
-            $query->where('experiment_key', 'like', '%' . $this->experimentFilter . '%');
+            $query->where('experiment_key', 'like', '%'.$this->experimentFilter.'%');
         }
 
         if ($this->actionFilter !== '') {
@@ -46,10 +46,10 @@ final class AuditLog extends Component
         }
 
         if ($this->actorFilter !== '') {
-            $query->where('actor_identifier', 'like', '%' . $this->actorFilter . '%');
+            $query->where('actor_identifier', 'like', '%'.$this->actorFilter.'%');
         }
 
-        $total   = $query->count();
+        $total = $query->count();
         $entries = $query->limit($this->perPage)->get();
         $hasMore = $total > $this->perPage;
 

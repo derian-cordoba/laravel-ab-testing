@@ -32,10 +32,10 @@ final class ConfidenceTest extends TestCase
     public static function invalidLevelProvider(): array
     {
         return [
-            'zero'        => [0.0],
-            'negative'    => [-0.1],
-            'one'         => [1.0],
-            'above one'   => [1.5],
+            'zero' => [0.0],
+            'negative' => [-0.1],
+            'one' => [1.0],
+            'above one' => [1.5],
         ];
     }
 
@@ -50,7 +50,7 @@ final class ConfidenceTest extends TestCase
     #[Test]
     public function accepts_boundary_adjacent_values(): void
     {
-        $low  = new Confidence(0.001);
+        $low = new Confidence(0.001);
         $high = new Confidence(0.999);
 
         self::assertSame(0.001, $low->level);

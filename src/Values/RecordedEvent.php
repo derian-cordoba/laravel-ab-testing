@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace ABTests\Values;
 
-use DateTimeImmutable;
 use ABTests\Enums\EventType;
+use DateTimeImmutable;
 
 /**
  * An immutable row destined for the append-only event store. The idempotency
@@ -15,7 +15,7 @@ use ABTests\Enums\EventType;
 final readonly class RecordedEvent
 {
     /**
-     * @param array<string, mixed> $properties
+     * @param  array<string, mixed>  $properties
      */
     public function __construct(
         public string $experimentKey,

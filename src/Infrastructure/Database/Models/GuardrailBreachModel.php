@@ -8,14 +8,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * @property int         $id
- * @property string      $experiment_key
- * @property string      $metric_key
- * @property string      $variant_key
- * @property float       $observed_value
- * @property float       $threshold_value
- * @property Carbon      $breached_at
- * @property bool        $is_acknowledged
+ * @property int $id
+ * @property string $experiment_key
+ * @property string $metric_key
+ * @property string $variant_key
+ * @property float $observed_value
+ * @property float $threshold_value
+ * @property Carbon $breached_at
+ * @property bool $is_acknowledged
  * @property Carbon|null $acknowledged_at
  */
 final class GuardrailBreachModel extends Model

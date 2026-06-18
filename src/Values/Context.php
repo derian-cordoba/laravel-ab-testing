@@ -15,14 +15,13 @@ use ABTests\Enums\Environment;
 final readonly class Context
 {
     /**
-     * @param float $position Bucket position in [0, 1) for the current definition.
+     * @param  float  $position  Bucket position in [0, 1) for the current definition.
      */
     public function __construct(
         public Bucketable $unit,
         public Environment $environment,
         public float $position,
-    ) {
-    }
+    ) {}
 
     public function attribute(string $key, mixed $default = null): mixed
     {

@@ -18,7 +18,7 @@ use SplFileInfo;
 final readonly class ClassDiscovery
 {
     /**
-     * @param list<string> $directories Absolute paths to scan recursively.
+     * @param  list<string>  $directories  Absolute paths to scan recursively.
      * @return list<string> Fully-qualified class names found.
      */
     public function discover(array $directories): array
@@ -31,7 +31,7 @@ final readonly class ClassDiscovery
             }
 
             $iterator = new RecursiveIteratorIterator(
-                new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS)
+                new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS),
             );
 
             foreach ($iterator as $file) {
@@ -92,6 +92,7 @@ final readonly class ClassDiscovery
                 }
 
                 $namespace = implode('', $parts);
+
                 continue;
             }
 

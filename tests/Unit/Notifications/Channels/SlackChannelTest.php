@@ -7,6 +7,7 @@ namespace ABTests\Tests\Unit\Notifications\Channels;
 use ABTests\Infrastructure\Notifications\Channels\SlackChannel;
 use ABTests\Infrastructure\Notifications\NotificationPayload;
 use DateTimeImmutable;
+use Illuminate\Container\Container;
 use Illuminate\Support\Facades\Http;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
@@ -18,7 +19,7 @@ final class SlackChannelTest extends NotificationChannelTestCase
         return [
             'slack' => [
                 'webhook_url' => 'https://hooks.slack.com/services/test',
-                'enabled'     => true,
+                'enabled' => true,
             ],
         ];
     }
@@ -31,7 +32,7 @@ final class SlackChannelTest extends NotificationChannelTestCase
         (new SlackChannel())->send($this->makePayload());
 
         Http::assertSent(
-            fn($request) => $request->url() === 'https://hooks.slack.com/services/test',
+            fn ($request) => $request->url() === 'https://hooks.slack.com/services/test',
         );
     }
 
@@ -42,7 +43,7 @@ final class SlackChannelTest extends NotificationChannelTestCase
 
         (new SlackChannel())->send($this->makePayload());
 
-        Http::assertSent(fn($request) => isset($request->data()['attachments']));
+        Http::assertSent(fn ($request) => isset($request->data()['attachments']));
     }
 
     #[Test]
@@ -75,7 +76,7 @@ final class SlackChannelTest extends NotificationChannelTestCase
         (new SlackChannel())->send($payload);
 
         Http::assertSent(
-            fn($request) => $request->data()['attachments'][0]['color'] === $expectedColor,
+            fn ($request) => $request->data()['attachments'][0]['color'] === $expectedColor,
         );
     }
 
@@ -83,14 +84,14 @@ final class SlackChannelTest extends NotificationChannelTestCase
     public static function colorProvider(): array
     {
         return [
-            'guardrail_breached'    => ['guardrail_breached',    '#e53e3e'],
+            'guardrail_breached' => ['guardrail_breached',    '#e53e3e'],
             'kill_switch_activated' => ['kill_switch_activated', '#e53e3e'],
-            'experiment_paused'     => ['experiment_paused',     '#d69e2e'],
-            'experiment_stopped'    => ['experiment_stopped',    '#d69e2e'],
+            'experiment_paused' => ['experiment_paused',     '#d69e2e'],
+            'experiment_stopped' => ['experiment_stopped',    '#d69e2e'],
             'feature_flag_disabled' => ['feature_flag_disabled', '#d69e2e'],
-            'experiment_started'    => ['experiment_started',    '#38a169'],
-            'experiment_resumed'    => ['experiment_resumed',    '#38a169'],
-            'feature_flag_enabled'  => ['feature_flag_enabled',  '#38a169'],
+            'experiment_started' => ['experiment_started',    '#38a169'],
+            'experiment_resumed' => ['experiment_resumed',    '#38a169'],
+            'feature_flag_enabled' => ['feature_flag_enabled',  '#38a169'],
         ];
     }
 
@@ -152,7 +153,7 @@ final class SlackChannelTest extends NotificationChannelTestCase
     {
         Http::fake(['*' => Http::response('ok', 200)]);
 
-        \Illuminate\Container\Container::getInstance()
+        Container::getInstance()
             ->make('config')
             ->set('ab-testing.notifications.channels.slack.webhook_url', '');
 

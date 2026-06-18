@@ -19,11 +19,11 @@ final class SetFlagConditionsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'conditions'                    => ['required', 'array'],
-            'conditions.*.attribute'        => ['required', 'string'],
-            'conditions.*.operator'         => ['required', 'string'],
-            'conditions.*.expected'         => ['required'],
-            'conditions_logic'              => ['nullable', 'string', 'in:all,any'],
+            'conditions' => ['required', 'array'],
+            'conditions.*.attribute' => ['required', 'string'],
+            'conditions.*.operator' => ['required', 'string'],
+            'conditions.*.expected' => ['required'],
+            'conditions_logic' => ['nullable', 'string', 'in:all,any'],
         ];
     }
 }

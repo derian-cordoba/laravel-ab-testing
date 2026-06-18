@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace ABTests\Presentation\Livewire;
 
+use ABTests\Application\Registry\ExperimentRegistry;
 use ABTests\Definitions\ExperimentDefinition;
 use ABTests\Infrastructure\Database\Models\AssignmentModel;
 use ABTests\Infrastructure\Database\Models\ExperimentModel;
-use ABTests\Application\Registry\ExperimentRegistry;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -30,7 +30,8 @@ final class ExperimentsOverview extends Component
 
     /** Re-render so card headers reflect the updated state after any action. */
     #[On('experiment-updated')]
-    public function onExperimentUpdated(): void {
+    public function onExperimentUpdated(): void
+    {
         //
     }
 
@@ -39,10 +40,10 @@ final class ExperimentsOverview extends Component
         $query = ExperimentModel::query()->orderByDesc('created_at');
 
         if ($this->search !== '') {
-            $term = '%' . $this->search . '%';
+            $term = '%'.$this->search.'%';
             $query->where(static fn ($q) => $q
                 ->where('key', 'like', $term)
-                ->orWhere('name', 'like', $term)
+                ->orWhere('name', 'like', $term),
             );
         }
 
@@ -64,9 +65,9 @@ final class ExperimentsOverview extends Component
             }
 
             return [
-                'model'       => $model,
-                'definition'  => $definition,
-                'variants'    => self::normalizeVariants($model, $definition),
+                'model' => $model,
+                'definition' => $definition,
+                'variants' => self::normalizeVariants($model, $definition),
                 'displayName' => $definition?->name ?? $model->name ?? $model->key,
             ];
         }, $experiments);
@@ -94,10 +95,10 @@ final class ExperimentsOverview extends Component
 
         if ($dbVariants->isNotEmpty()) {
             return $dbVariants->map(static fn ($v): array => [
-                'key'        => $v->key,
-                'weight'     => $v->weight,
+                'key' => $v->key,
+                'weight' => $v->weight,
                 'is_control' => $v->is_control,
-                'source'     => 'database',
+                'source' => 'database',
             ])->all();
         }
 
@@ -106,10 +107,10 @@ final class ExperimentsOverview extends Component
             usort($sorted, static fn ($a, $b): int => $b->isControl() <=> $a->isControl() ?: strcmp($a->key(), $b->key()));
 
             return array_map(static fn ($v): array => [
-                'key'        => $v->key(),
-                'weight'     => $v->weight(),
+                'key' => $v->key(),
+                'weight' => $v->weight(),
                 'is_control' => $v->isControl(),
-                'source'     => 'definition',
+                'source' => 'definition',
             ], $sorted);
         }
 

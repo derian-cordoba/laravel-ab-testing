@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Schema;
  * names, weights, and the control arm even when the code definition is not
  * available (runtime-defined experiments, or after a class is deleted).
  */
-return new class extends Migration
+return new class() extends Migration
 {
     public function up(): void
     {

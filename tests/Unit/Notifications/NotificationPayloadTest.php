@@ -75,9 +75,9 @@ final class NotificationPayloadTest extends TestCase
     public function data_is_preserved_exactly(): void
     {
         $data = [
-            'metric_key'      => 'error-rate',
-            'variant_key'     => 'treatment',
-            'observed_value'  => 0.023,
+            'metric_key' => 'error-rate',
+            'variant_key' => 'treatment',
+            'observed_value' => 0.023,
             'threshold_value' => 0.005,
         ];
 

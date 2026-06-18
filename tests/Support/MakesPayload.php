@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace ABTests\Tests\Support;
 
-use ABTests\Definitions\ExperimentDefinition;
 use ABTests\Application\Resolution\ResolutionPayload;
+use ABTests\Definitions\ExperimentDefinition;
 use ABTests\Tests\Fixtures\TestUnit;
 use ABTests\Values\ExperimentState;
 

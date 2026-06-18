@@ -14,7 +14,7 @@ final class DashboardSidebar extends Component
 {
     public function render(): View
     {
-        $runningCount      = ExperimentModel::query()->where('status', 'running')->count();
+        $runningCount = ExperimentModel::query()->where('status', 'running')->count();
         $activeBreachCount = GuardrailBreachModel::query()->where('is_acknowledged', false)->count();
         $enabledFlagsCount = FeatureFlagStateModel::query()->where('is_enabled', true)->whereNull('killed_at')->count();
 

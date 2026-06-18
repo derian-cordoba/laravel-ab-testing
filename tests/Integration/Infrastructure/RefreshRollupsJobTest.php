@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace ABTests\Tests\Integration\Infrastructure;
 
+use ABTests\Application\Registry\AttributeReader;
+use ABTests\Application\Registry\ExperimentRegistry;
 use ABTests\Infrastructure\Database\Models\ExperimentModel;
 use ABTests\Infrastructure\Database\Models\RollupModel;
 use ABTests\Infrastructure\Jobs\RefreshRollupsJob;
-use ABTests\Application\Registry\AttributeReader;
-use ABTests\Application\Registry\ExperimentRegistry;
 use ABTests\Tests\Fixtures\TestExperiment;
 use ABTests\Tests\Integration\DatabaseTestCase;
 use Illuminate\Database\Capsule\Manager as DB;

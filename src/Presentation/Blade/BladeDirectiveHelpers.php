@@ -31,7 +31,7 @@ final class BladeDirectiveHelpers
     public static function isVariant(string $experimentKey, string $variantKey): bool
     {
         try {
-            $unit    = self::currentUnit();
+            $unit = self::currentUnit();
             $variant = Experiments::for($unit)->variantForKey($experimentKey);
 
             return $variant?->key() === $variantKey;
@@ -72,7 +72,7 @@ final class BladeDirectiveHelpers
             }
 
             // Deterministic rollout check using the same position logic as Context.
-            $unit     = self::currentUnit();
+            $unit = self::currentUnit();
             $position = self::position($flagKey, $unit);
 
             return $position < ($state->rollout_percentage / 100);
@@ -136,8 +136,8 @@ final class BladeDirectiveHelpers
      */
     private static function position(string $flagKey, Bucketable $unit): float
     {
-        $hash = hash('sha256', $flagKey . ':' . $unit->bucketingKey());
-        $int  = hexdec(substr($hash, 0, 8));
+        $hash = hash('sha256', $flagKey.':'.$unit->bucketingKey());
+        $int = hexdec(substr($hash, 0, 8));
 
         return $int / 0xFFFFFFFF;
     }

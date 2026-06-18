@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace ABTests\Tests\Unit\Registry;
 
-use ABTests\Definitions\FeatureFlagDefinition;
-use ABTests\FeatureFlag;
 use ABTests\Application\Registry\AttributeReader;
+use ABTests\FeatureFlag;
 use ABTests\Tests\Fixtures\FeatureFlagWithMissingUnitAttribute;
 use ABTests\Tests\Fixtures\TestFeatureFlag;
 use ABTests\Values\Context;
@@ -58,7 +57,8 @@ final class AttributeReaderFeatureFlagTest extends TestCase
     #[Test]
     public function throws_when_as_feature_flag_attribute_is_missing(): void
     {
-        $bare = new class extends FeatureFlag {
+        $bare = new class() extends FeatureFlag
+        {
             public function resolve(Context $context): mixed
             {
                 return false;

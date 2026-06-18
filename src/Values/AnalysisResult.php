@@ -13,7 +13,7 @@ use ABTests\Enums\StatisticalEngine;
 final readonly class AnalysisResult
 {
     /**
-     * @param array{0: float, 1: float} $interval Lower and upper bound.
+     * @param  array{0: float, 1: float}  $interval  Lower and upper bound.
      */
     public function __construct(
         public StatisticalEngine $engine,

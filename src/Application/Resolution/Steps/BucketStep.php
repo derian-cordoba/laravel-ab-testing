@@ -24,7 +24,7 @@ final readonly class BucketStep implements ResolutionStep
         }
 
         $payload->resolvedVariant = $payload->definition->allocation->variantAt(
-            $payload->bucketPosition
+            $payload->bucketPosition,
         );
 
         $payload->stopReason = EvaluationReason::newAssignment;

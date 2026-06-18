@@ -14,6 +14,6 @@ use ABTests\Experiment;
     variants: TestVariant::class,
 )]
 #[PrimaryMetric(TestMetric::class)]
-final class ExperimentWithMissingUnitAttribute extends Experiment
-{
+final class ExperimentWithMissingUnitAttribute extends Experiment {
+    //
 }

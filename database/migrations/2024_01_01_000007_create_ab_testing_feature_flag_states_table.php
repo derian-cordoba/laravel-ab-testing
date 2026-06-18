@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Schema;
  * Operational state for feature flags. Schema-only in v1 — the dashboard UI
  * surface for flags is planned for v2.
  */
-return new class extends Migration
+return new class() extends Migration
 {
     public function up(): void
     {

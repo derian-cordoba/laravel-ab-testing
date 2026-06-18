@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace ABTests\Attributes;
 
-use Attribute;
 use ABTests\Metric;
+use Attribute;
 
 /**
  * A metric that must not regress. If a treatment arm degrades it beyond the
@@ -16,8 +16,8 @@ use ABTests\Metric;
 final readonly class Guardrail
 {
     /**
-     * @param class-string<Metric> $metric
-     * @param float                $maximumRegression Worst tolerated relative drop, e.g. 0.005 for 0.5%.
+     * @param  class-string<Metric>  $metric
+     * @param  float  $maximumRegression  Worst tolerated relative drop, e.g. 0.005 for 0.5%.
      */
     public function __construct(
         public string $metric,

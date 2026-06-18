@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace ABTests\Application\Resolution\Steps;
 
-use ABTests\Enums\Environment;
-use ABTests\Enums\EvaluationReason;
 use ABTests\Application\Resolution\Contracts\ResolutionStep;
 use ABTests\Application\Resolution\ResolutionPayload;
+use ABTests\Enums\Environment;
+use ABTests\Enums\EvaluationReason;
 
 /**
  * Gate 2b — environment filter. When an experiment's operational state carries a

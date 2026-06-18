@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace ABTests\Presentation\Livewire;
 
+use ABTests\Application\Registry\ExperimentRegistry;
 use ABTests\Attributes\AsMetric;
 use ABTests\Definitions\MetricBinding;
-use ABTests\Enums\MetricRole;
 use ABTests\Infrastructure\Database\Models\ExperimentModel;
-use ABTests\Application\Registry\ExperimentRegistry;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -27,13 +26,13 @@ final class MetricsCatalog extends Component
 
     public function render(): View
     {
-        $registry   = app(ExperimentRegistry::class);
+        $registry = app(ExperimentRegistry::class);
         $definitions = $registry->all();
 
         // Collect all distinct metric keys with their details.
         // $metrics[key] = [ key, type, event, aggregate, window, roles[] ]
         $metrics = [];
-        $usages  = [];  // key => [ [experimentKey, experimentName, role] ]
+        $usages = [];  // key => [ [experimentKey, experimentName, role] ]
 
         // Load all experiment DB models for display names.
         $dbExperiments = ExperimentModel::query()
@@ -51,9 +50,9 @@ final class MetricsCatalog extends Component
                 $metricKey = $binding->metric;
 
                 $usages[$metricKey][] = [
-                    'experimentKey'  => $experimentKey,
+                    'experimentKey' => $experimentKey,
                     'experimentName' => $displayName,
-                    'role'           => $binding->role,
+                    'role' => $binding->role,
                     'maximumRegression' => $binding->maximumRegression,
                 ];
 
@@ -96,12 +95,12 @@ final class MetricsCatalog extends Component
     private function resolveMetricInfo(string $metricKeyOrClass, MetricBinding $binding): array
     {
         $info = [
-            'key'       => $metricKeyOrClass,
-            'type'      => null,
-            'event'     => null,
+            'key' => $metricKeyOrClass,
+            'type' => null,
+            'event' => null,
             'aggregate' => null,
-            'window'    => null,
-            'class'     => null,
+            'window' => null,
+            'class' => null,
         ];
 
         // If the metric string is a class name, read the #[AsMetric] attribute.
@@ -113,12 +112,12 @@ final class MetricsCatalog extends Component
                 if ($attrs !== []) {
                     /** @var AsMetric $asMetric */
                     $asMetric = $attrs[0]->newInstance();
-                    $info['key']       = $asMetric->key;
-                    $info['type']      = $asMetric->type->value;
-                    $info['event']     = $asMetric->event;
+                    $info['key'] = $asMetric->key;
+                    $info['type'] = $asMetric->type->value;
+                    $info['event'] = $asMetric->event;
                     $info['aggregate'] = $asMetric->aggregate->value;
-                    $info['window']    = $asMetric->attributionWindow;
-                    $info['class']     = $metricKeyOrClass;
+                    $info['window'] = $asMetric->attributionWindow;
+                    $info['class'] = $metricKeyOrClass;
                 }
             } catch (Throwable) {
                 // Best-effort; leave nulls.

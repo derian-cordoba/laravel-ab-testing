@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Schema;
  * targeting conditions can be combined with AND ("all") or OR ("any") logic.
  * Defaults to "all" (AND) to preserve the behavior of existing rows.
  */
-return new class extends Migration
+return new class() extends Migration
 {
     public function up(): void
     {

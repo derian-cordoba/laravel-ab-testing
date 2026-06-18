@@ -19,8 +19,7 @@ final readonly class ForgetUnitCommandHandler
 {
     public function __construct(
         private AuditLogRepository $auditLogRepository,
-    ) {
-    }
+    ) {}
 
     public function handle(ForgetUnitCommand $command): array
     {
@@ -41,16 +40,16 @@ final readonly class ForgetUnitCommandHandler
             actorType: $command->actorType,
             before: [
                 'unit_type' => $command->unitType,
-                'unit_key'  => $command->unitKey,
+                'unit_key' => $command->unitKey,
             ],
             after: [
-                'deleted_events'      => $deletedEvents,
+                'deleted_events' => $deletedEvents,
                 'deleted_assignments' => $deletedAssignments,
             ],
         );
 
         return [
-            'deleted_events'      => $deletedEvents,
+            'deleted_events' => $deletedEvents,
             'deleted_assignments' => $deletedAssignments,
         ];
     }

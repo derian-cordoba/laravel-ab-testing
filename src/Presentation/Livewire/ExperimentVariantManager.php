@@ -7,12 +7,12 @@ namespace ABTests\Presentation\Livewire;
 use ABTests\Application\Commands\AddVariantCommand;
 use ABTests\Application\Commands\RemoveVariantCommand;
 use ABTests\Application\Commands\UpdateVariantCommand;
+use ABTests\Application\Registry\ExperimentRegistry;
 use ABTests\Contracts\CommandBus;
 use ABTests\Enums\ExperimentStatus;
 use ABTests\Exceptions\InvalidVariantOperation;
 use ABTests\Infrastructure\Database\Models\ExperimentModel;
 use ABTests\Infrastructure\Database\Models\VariantModel;
-use ABTests\Application\Registry\ExperimentRegistry;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\On;
@@ -32,18 +32,25 @@ final class ExperimentVariantManager extends Component
 
     // ── Inline edit state ────────────────────────────────────────────────────
     public ?int $editingId = null;
+
     public string $editKey = '';
+
     public int $editWeight = 50;
+
     public bool $editIsControl = false;
 
     // ── Add-form state ───────────────────────────────────────────────────────
     public bool $showAddForm = false;
+
     public string $newKey = '';
+
     public int $newWeight = 0;
+
     public bool $newIsControl = false;
 
     // ── Feedback ─────────────────────────────────────────────────────────────
     public string $flashMessage = '';
+
     public string $flashType = 'success';
 
     public function mount(string $experimentKey): void
@@ -70,10 +77,10 @@ final class ExperimentVariantManager extends Component
             return;
         }
 
-        $this->showAddForm  = false;
-        $this->editingId    = $id;
-        $this->editKey      = $variant->key;
-        $this->editWeight   = $variant->weight;
+        $this->showAddForm = false;
+        $this->editingId = $id;
+        $this->editKey = $variant->key;
+        $this->editWeight = $variant->weight;
         $this->editIsControl = $variant->is_control;
         $this->flashMessage = '';
     }
@@ -93,31 +100,31 @@ final class ExperimentVariantManager extends Component
 
         if ($this->editKey === '') {
             $this->flashMessage = 'Variant key cannot be empty.';
-            $this->flashType    = 'error';
+            $this->flashType = 'error';
 
             return;
         }
 
         try {
             app(CommandBus::class)->dispatch(new UpdateVariantCommand(
-                experimentKey:   $this->experimentKey,
-                variantId:       $this->editingId,
-                variantKey:      $this->editKey,
-                weight:          $this->editWeight,
-                isControl:       $this->editIsControl,
+                experimentKey: $this->experimentKey,
+                variantId: $this->editingId,
+                variantKey: $this->editKey,
+                weight: $this->editWeight,
+                isControl: $this->editIsControl,
                 actorIdentifier: $this->actorIdentifier(),
             ));
 
             $this->flashMessage = 'Variant updated.';
-            $this->flashType    = 'success';
+            $this->flashType = 'success';
             $this->resetEditState();
             $this->dispatch('experiment-updated');
         } catch (InvalidVariantOperation $e) {
             $this->flashMessage = $e->getMessage();
-            $this->flashType    = 'error';
+            $this->flashType = 'error';
         } catch (Throwable $e) {
-            $this->flashMessage = 'Unexpected error: ' . $e->getMessage();
-            $this->flashType    = 'error';
+            $this->flashMessage = 'Unexpected error: '.$e->getMessage();
+            $this->flashType = 'error';
         }
     }
 
@@ -126,16 +133,16 @@ final class ExperimentVariantManager extends Component
     public function startAdd(): void
     {
         $this->resetEditState();
-        $this->showAddForm  = true;
-        $this->newKey       = '';
-        $this->newWeight    = 0;
+        $this->showAddForm = true;
+        $this->newKey = '';
+        $this->newWeight = 0;
         $this->newIsControl = false;
         $this->flashMessage = '';
     }
 
     public function cancelAdd(): void
     {
-        $this->showAddForm  = false;
+        $this->showAddForm = false;
         $this->flashMessage = '';
     }
 
@@ -145,30 +152,30 @@ final class ExperimentVariantManager extends Component
 
         if ($this->newKey === '') {
             $this->flashMessage = 'Variant key cannot be empty.';
-            $this->flashType    = 'error';
+            $this->flashType = 'error';
 
             return;
         }
 
         try {
             app(CommandBus::class)->dispatch(new AddVariantCommand(
-                experimentKey:   $this->experimentKey,
-                variantKey:      $this->newKey,
-                weight:          $this->newWeight,
-                isControl:       $this->newIsControl,
+                experimentKey: $this->experimentKey,
+                variantKey: $this->newKey,
+                weight: $this->newWeight,
+                isControl: $this->newIsControl,
                 actorIdentifier: $this->actorIdentifier(),
             ));
 
             $this->flashMessage = 'Variant added.';
-            $this->flashType    = 'success';
-            $this->showAddForm  = false;
+            $this->flashType = 'success';
+            $this->showAddForm = false;
             $this->dispatch('experiment-updated');
         } catch (InvalidVariantOperation $e) {
             $this->flashMessage = $e->getMessage();
-            $this->flashType    = 'error';
+            $this->flashType = 'error';
         } catch (Throwable $e) {
-            $this->flashMessage = 'Unexpected error: ' . $e->getMessage();
-            $this->flashType    = 'error';
+            $this->flashMessage = 'Unexpected error: '.$e->getMessage();
+            $this->flashType = 'error';
         }
     }
 
@@ -178,21 +185,21 @@ final class ExperimentVariantManager extends Component
     {
         try {
             app(CommandBus::class)->dispatch(new RemoveVariantCommand(
-                experimentKey:   $this->experimentKey,
-                variantId:       $id,
+                experimentKey: $this->experimentKey,
+                variantId: $id,
                 actorIdentifier: $this->actorIdentifier(),
             ));
 
             $this->flashMessage = 'Variant removed.';
-            $this->flashType    = 'success';
+            $this->flashType = 'success';
             $this->resetEditState();
             $this->dispatch('experiment-updated');
         } catch (InvalidVariantOperation $e) {
             $this->flashMessage = $e->getMessage();
-            $this->flashType    = 'error';
+            $this->flashType = 'error';
         } catch (Throwable $e) {
-            $this->flashMessage = 'Unexpected error: ' . $e->getMessage();
-            $this->flashType    = 'error';
+            $this->flashMessage = 'Unexpected error: '.$e->getMessage();
+            $this->flashType = 'error';
         }
     }
 
@@ -200,10 +207,10 @@ final class ExperimentVariantManager extends Component
 
     public function render(): View
     {
-        $model      = ExperimentModel::query()->firstWhere('key', $this->experimentKey);
-        $variants   = collect();
+        $model = ExperimentModel::query()->firstWhere('key', $this->experimentKey);
+        $variants = collect();
         $totalWeight = 0;
-        $isEditable  = false;
+        $isEditable = false;
         $hasCodeDefinition = false;
         $status = null;
 
@@ -213,7 +220,7 @@ final class ExperimentVariantManager extends Component
             $definition = null;
 
             try {
-                $definition        = app(ExperimentRegistry::class)->findByKey($this->experimentKey);
+                $definition = app(ExperimentRegistry::class)->findByKey($this->experimentKey);
                 $hasCodeDefinition = true;
             } catch (Throwable) {
                 $hasCodeDefinition = false;
@@ -228,16 +235,16 @@ final class ExperimentVariantManager extends Component
                 usort($codeVariants, static fn ($a, $b): int => $b->isControl() <=> $a->isControl() ?: strcmp($a->key(), $b->key()));
 
                 $variants = collect($codeVariants)->map(static fn ($v): object => (object) [
-                    'id'         => null,
-                    'key'        => $v->key(),
-                    'weight'     => $v->weight(),
+                    'id' => null,
+                    'key' => $v->key(),
+                    'weight' => $v->weight(),
                     'is_control' => $v->isControl(),
                 ]);
             }
 
-            $totalWeight     = (int) $variants->sum('weight');
+            $totalWeight = (int) $variants->sum('weight');
             $isLockedStatus = in_array($status, [ExperimentStatus::completed, ExperimentStatus::archived], true);
-            $isEditable     = ! $isLockedStatus && ! $hasCodeDefinition;
+            $isEditable = ! $isLockedStatus && ! $hasCodeDefinition;
         }
 
         return view('ab-testing::livewire.experiment-variant-manager', compact(
@@ -249,7 +256,7 @@ final class ExperimentVariantManager extends Component
             'status',
         ) + [
             'flashMessage' => $this->flashMessage,
-            'flashType'    => $this->flashType,
+            'flashType' => $this->flashType,
         ]);
     }
 
@@ -258,7 +265,7 @@ final class ExperimentVariantManager extends Component
     private function resetEditState(): void
     {
         $this->editingId = null;
-        $this->editKey   = '';
+        $this->editKey = '';
         $this->editWeight = 50;
         $this->editIsControl = false;
     }

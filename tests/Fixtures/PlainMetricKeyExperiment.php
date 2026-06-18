@@ -16,6 +16,4 @@ use ABTests\Experiment;
 )]
 #[PrimaryMetric('signup-completed')]
 #[Guardrail('payment-failure-rate', maximumRegression: 0.02)]
-final class PlainMetricKeyExperiment extends Experiment
-{
-}
+final class PlainMetricKeyExperiment extends Experiment {}

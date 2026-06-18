@@ -33,23 +33,23 @@ final class MailChannelTest extends TestCase
                 'notifications' => [
                     'channels' => [
                         'mail' => [
-                            'enabled'    => true,
+                            'enabled' => true,
                             'recipients' => ['dev@example.com'],
                         ],
                     ],
                 ],
             ],
-            'app'  => ['name' => 'TestApp'],
+            'app' => ['name' => 'TestApp'],
             'mail' => [
-                'default'  => 'array',
-                'mailers'  => ['array' => ['transport' => 'array']],
-                'from'     => ['address' => 'no-reply@example.com', 'name' => 'TestApp'],
+                'default' => 'array',
+                'mailers' => ['array' => ['transport' => 'array']],
+                'from' => ['address' => 'no-reply@example.com', 'name' => 'TestApp'],
             ],
         ]));
 
         $app->instance('log', new NullLogger());
         $app->instance(HttpFactory::class, new HttpFactory());
-        $app->singleton('mail.manager', fn($a) => new MailManager($a));
+        $app->singleton('mail.manager', fn ($a) => new MailManager($a));
     }
 
     protected function tearDown(): void
@@ -88,9 +88,9 @@ final class MailChannelTest extends TestCase
     {
         $payload = $this->makePayload('experiment_paused');
 
-        $channel    = new MailChannel();
+        $channel = new MailChannel();
         $reflection = new \ReflectionClass($channel);
-        $method     = $reflection->getMethod('buildHtml');
+        $method = $reflection->getMethod('buildHtml');
 
         $html = $method->invoke($channel, $payload);
 
@@ -100,10 +100,10 @@ final class MailChannelTest extends TestCase
     #[Test]
     public function html_output_contains_experiment_key(): void
     {
-        $payload    = $this->makePayload();
-        $channel    = new MailChannel();
+        $payload = $this->makePayload();
+        $channel = new MailChannel();
         $reflection = new \ReflectionClass($channel);
-        $method     = $reflection->getMethod('buildHtml');
+        $method = $reflection->getMethod('buildHtml');
 
         $html = $method->invoke($channel, $payload);
 
@@ -114,10 +114,10 @@ final class MailChannelTest extends TestCase
     #[Test]
     public function html_output_contains_actor_from_data(): void
     {
-        $payload    = $this->makePayload();
-        $channel    = new MailChannel();
+        $payload = $this->makePayload();
+        $channel = new MailChannel();
         $reflection = new \ReflectionClass($channel);
-        $method     = $reflection->getMethod('buildHtml');
+        $method = $reflection->getMethod('buildHtml');
 
         $html = $method->invoke($channel, $payload);
 
@@ -127,10 +127,10 @@ final class MailChannelTest extends TestCase
     #[Test]
     public function html_output_contains_occurred_at(): void
     {
-        $payload    = $this->makePayload();
-        $channel    = new MailChannel();
+        $payload = $this->makePayload();
+        $channel = new MailChannel();
         $reflection = new \ReflectionClass($channel);
-        $method     = $reflection->getMethod('buildHtml');
+        $method = $reflection->getMethod('buildHtml');
 
         $html = $method->invoke($channel, $payload);
 
@@ -141,10 +141,10 @@ final class MailChannelTest extends TestCase
     #[Test]
     public function html_output_is_valid_html_document(): void
     {
-        $payload    = $this->makePayload();
-        $channel    = new MailChannel();
+        $payload = $this->makePayload();
+        $channel = new MailChannel();
         $reflection = new \ReflectionClass($channel);
-        $method     = $reflection->getMethod('buildHtml');
+        $method = $reflection->getMethod('buildHtml');
 
         $html = $method->invoke($channel, $payload);
 

@@ -13,8 +13,7 @@ final readonly class DisableFeatureFlagCommandHandler
 {
     public function __construct(
         private FeatureFlagRepository $featureFlagRepository,
-    ) {
-    }
+    ) {}
 
     public function handle(DisableFeatureFlagCommand $command): void
     {

@@ -17,7 +17,7 @@ interface EventSink
     public function record(RecordedEvent $event): void;
 
     /**
-     * @param iterable<RecordedEvent> $events
+     * @param  iterable<RecordedEvent>  $events
      */
     public function recordBatch(iterable $events): void;
 }

@@ -14,19 +14,19 @@ use Illuminate\Support\Carbon;
  * mutable operational state of an experiment (status, traffic, kill switch).
  * Structural definition (variants, allocation) lives in code, not here.
  *
- * @property string                       $key
- * @property string|null                  $name
- * @property int                          $version
- * @property string|null                  $layer
- * @property string                       $status
- * @property list<string>|null            $allowed_environments
- * @property int                          $traffic_percentage
- * @property bool                         $is_killed
- * @property Carbon|null                  $killed_at
- * @property Carbon|null                  $started_at
- * @property Carbon|null                  $stopped_at
- * @property Carbon|null                  $created_at
- * @property Carbon|null                  $updated_at
+ * @property string $key
+ * @property string|null $name
+ * @property int $version
+ * @property string|null $layer
+ * @property string $status
+ * @property list<string>|null $allowed_environments
+ * @property int $traffic_percentage
+ * @property bool $is_killed
+ * @property Carbon|null $killed_at
+ * @property Carbon|null $started_at
+ * @property Carbon|null $stopped_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  * @property Collection<int,VariantModel> $variants
  */
 final class ExperimentModel extends Model
@@ -50,10 +50,10 @@ final class ExperimentModel extends Model
 
     protected $casts = [
         'allowed_environments' => 'array',
-        'is_killed'            => 'boolean',
-        'killed_at'            => 'datetime',
-        'started_at'           => 'datetime',
-        'stopped_at'           => 'datetime',
+        'is_killed' => 'boolean',
+        'killed_at' => 'datetime',
+        'started_at' => 'datetime',
+        'stopped_at' => 'datetime',
     ];
 
     /** @return HasMany<VariantModel, $this> */

@@ -35,19 +35,19 @@ final class ExperimentsControllerTest extends FeatureTestCase
     public function index_returns_paginated_list_of_experiments(): void
     {
         ExperimentModel::query()->create([
-            'key'                => 'checkout-button-color',
-            'name'               => 'Checkout Button Color',
-            'status'             => ExperimentStatus::draft->value,
+            'key' => 'checkout-button-color',
+            'name' => 'Checkout Button Color',
+            'status' => ExperimentStatus::draft->value,
             'traffic_percentage' => 0,
-            'is_killed'          => false,
+            'is_killed' => false,
         ]);
 
         ExperimentModel::query()->create([
-            'key'                => 'pricing-layout',
-            'name'               => 'Pricing Layout',
-            'status'             => ExperimentStatus::running->value,
+            'key' => 'pricing-layout',
+            'name' => 'Pricing Layout',
+            'status' => ExperimentStatus::running->value,
             'traffic_percentage' => 50,
-            'is_killed'          => false,
+            'is_killed' => false,
         ]);
 
         $response = $this->getJson(route('ab-testing.api.v1.experiments.index'));
@@ -83,11 +83,11 @@ final class ExperimentsControllerTest extends FeatureTestCase
     public function show_returns_experiment_with_variants(): void
     {
         $model = ExperimentModel::query()->create([
-            'key'                => 'checkout-button-color',
-            'name'               => 'Checkout Button Color',
-            'status'             => ExperimentStatus::draft->value,
+            'key' => 'checkout-button-color',
+            'name' => 'Checkout Button Color',
+            'status' => ExperimentStatus::draft->value,
             'traffic_percentage' => 0,
-            'is_killed'          => false,
+            'is_killed' => false,
         ]);
 
         VariantModel::query()->create(['experiment_id' => $model->id, 'key' => 'control', 'weight' => 50, 'is_control' => true]);
@@ -118,9 +118,9 @@ final class ExperimentsControllerTest extends FeatureTestCase
     public function store_creates_experiment_in_draft_status(): void
     {
         $response = $this->postJson(route('ab-testing.api.v1.experiments.store'), [
-            'key'                => 'checkout-button-color',
-            'name'               => 'Checkout Button Color',
-            'layer'              => 'checkout',
+            'key' => 'checkout-button-color',
+            'name' => 'Checkout Button Color',
+            'layer' => 'checkout',
             'traffic_percentage' => 0,
         ]);
 
@@ -131,7 +131,7 @@ final class ExperimentsControllerTest extends FeatureTestCase
         $response->assertJsonPath('data.attributes.layer', 'checkout');
 
         $this->assertDatabaseHas('ab_testing_experiments', [
-            'key'    => 'checkout-button-color',
+            'key' => 'checkout-button-color',
             'status' => 'draft',
         ]);
     }
@@ -169,14 +169,14 @@ final class ExperimentsControllerTest extends FeatureTestCase
     public function update_changes_editable_metadata(): void
     {
         ExperimentModel::query()->create([
-            'key'    => 'checkout-button-color',
+            'key' => 'checkout-button-color',
             'status' => ExperimentStatus::draft->value,
             'is_killed' => false,
             'traffic_percentage' => 0,
         ]);
 
         $response = $this->putJson(route('ab-testing.api.v1.experiments.update', ['key' => 'checkout-button-color']), [
-            'name'               => 'New Name',
+            'name' => 'New Name',
             'target_sample_size' => 5000,
         ]);
 
@@ -184,8 +184,8 @@ final class ExperimentsControllerTest extends FeatureTestCase
         $response->assertJsonPath('data.attributes.name', 'New Name');
 
         $this->assertDatabaseHas('ab_testing_experiments', [
-            'key'                => 'checkout-button-color',
-            'name'               => 'New Name',
+            'key' => 'checkout-button-color',
+            'name' => 'New Name',
             'target_sample_size' => 5000,
         ]);
     }
@@ -208,9 +208,9 @@ final class ExperimentsControllerTest extends FeatureTestCase
     public function destroy_archives_a_completed_experiment(): void
     {
         ExperimentModel::query()->create([
-            'key'                => 'checkout-button-color',
-            'status'             => ExperimentStatus::completed->value,
-            'is_killed'          => false,
+            'key' => 'checkout-button-color',
+            'status' => ExperimentStatus::completed->value,
+            'is_killed' => false,
             'traffic_percentage' => 100,
         ]);
 
@@ -219,7 +219,7 @@ final class ExperimentsControllerTest extends FeatureTestCase
         $response->assertStatus(204);
 
         $this->assertDatabaseHas('ab_testing_experiments', [
-            'key'    => 'checkout-button-color',
+            'key' => 'checkout-button-color',
             'status' => ExperimentStatus::archived->value,
         ]);
     }

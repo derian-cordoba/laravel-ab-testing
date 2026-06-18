@@ -25,10 +25,10 @@ final class VariantsControllerTest extends FeatureTestCase
 
         /** @var ExperimentModel $experiment */
         $experiment = ExperimentModel::query()->create([
-            'key'                => 'checkout-button-color',
-            'status'             => ExperimentStatus::draft->value,
+            'key' => 'checkout-button-color',
+            'status' => ExperimentStatus::draft->value,
             'traffic_percentage' => 0,
-            'is_killed'          => false,
+            'is_killed' => false,
         ]);
 
         $this->experiment = $experiment;
@@ -42,8 +42,8 @@ final class VariantsControllerTest extends FeatureTestCase
     public function store_adds_a_control_variant(): void
     {
         $response = $this->postJson(route('ab-testing.api.v1.experiments.variants.store', ['key' => 'checkout-button-color']), [
-            'key'        => 'control',
-            'weight'     => 50,
+            'key' => 'control',
+            'weight' => 50,
             'is_control' => true,
         ]);
 
@@ -61,13 +61,13 @@ final class VariantsControllerTest extends FeatureTestCase
     {
         VariantModel::query()->create([
             'experiment_id' => $this->experiment->id,
-            'key'           => 'control',
-            'weight'        => 50,
-            'is_control'    => true,
+            'key' => 'control',
+            'weight' => 50,
+            'is_control' => true,
         ]);
 
         $response = $this->postJson(route('ab-testing.api.v1.experiments.variants.store', ['key' => 'checkout-button-color']), [
-            'key'    => 'green',
+            'key' => 'green',
             'weight' => 50,
         ]);
 
@@ -81,7 +81,7 @@ final class VariantsControllerTest extends FeatureTestCase
     public function store_returns_404_for_unknown_experiment(): void
     {
         $response = $this->postJson(route('ab-testing.api.v1.experiments.variants.store', ['key' => 'nonexistent']), [
-            'key'    => 'control',
+            'key' => 'control',
             'weight' => 100,
         ]);
 
@@ -116,7 +116,7 @@ final class VariantsControllerTest extends FeatureTestCase
     public function store_returns_422_when_weight_exceeds_100(): void
     {
         $response = $this->postJson(route('ab-testing.api.v1.experiments.variants.store', ['key' => 'checkout-button-color']), [
-            'key'    => 'control',
+            'key' => 'control',
             'weight' => 150,
         ]);
 
@@ -132,16 +132,16 @@ final class VariantsControllerTest extends FeatureTestCase
     {
         $variant = VariantModel::query()->create([
             'experiment_id' => $this->experiment->id,
-            'key'           => 'control',
-            'weight'        => 50,
-            'is_control'    => true,
+            'key' => 'control',
+            'weight' => 50,
+            'is_control' => true,
         ]);
 
         VariantModel::query()->create([
             'experiment_id' => $this->experiment->id,
-            'key'           => 'green',
-            'weight'        => 50,
-            'is_control'    => false,
+            'key' => 'green',
+            'weight' => 50,
+            'is_control' => false,
         ]);
 
         $response = $this->putJson(
@@ -152,7 +152,7 @@ final class VariantsControllerTest extends FeatureTestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseHas('ab_testing_variants', [
-            'id'     => $variant->id,
+            'id' => $variant->id,
             'weight' => 60,
         ]);
     }
@@ -169,9 +169,9 @@ final class VariantsControllerTest extends FeatureTestCase
 
         $otherVariant = VariantModel::query()->create([
             'experiment_id' => $otherExperiment->id,
-            'key'           => 'control',
-            'weight'        => 100,
-            'is_control'    => true,
+            'key' => 'control',
+            'weight' => 100,
+            'is_control' => true,
         ]);
 
         // Try to update the other experiment's variant via checkout-button-color path.
@@ -192,16 +192,16 @@ final class VariantsControllerTest extends FeatureTestCase
     {
         VariantModel::query()->create([
             'experiment_id' => $this->experiment->id,
-            'key'           => 'control',
-            'weight'        => 50,
-            'is_control'    => true,
+            'key' => 'control',
+            'weight' => 50,
+            'is_control' => true,
         ]);
 
         $treatment = VariantModel::query()->create([
             'experiment_id' => $this->experiment->id,
-            'key'           => 'green',
-            'weight'        => 50,
-            'is_control'    => false,
+            'key' => 'green',
+            'weight' => 50,
+            'is_control' => false,
         ]);
 
         $response = $this->deleteJson(

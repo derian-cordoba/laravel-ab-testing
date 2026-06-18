@@ -13,8 +13,8 @@ enum Verdict: string
     public function label(): string
     {
         return match ($this) {
-            self::ship        => 'Ship',
-            self::doNotShip   => 'Do not ship',
+            self::ship => 'Ship',
+            self::doNotShip => 'Do not ship',
             self::inconclusive => 'Inconclusive',
         };
     }
@@ -22,8 +22,8 @@ enum Verdict: string
     public function badgeClass(): string
     {
         return match ($this) {
-            self::ship         => 'bg-green-900/60 text-green-300',
-            self::doNotShip    => 'bg-red-900/60 text-red-300',
+            self::ship => 'bg-green-900/60 text-green-300',
+            self::doNotShip => 'bg-red-900/60 text-red-300',
             self::inconclusive => 'bg-yellow-900/60 text-yellow-300',
         };
     }

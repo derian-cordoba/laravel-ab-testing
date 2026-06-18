@@ -13,12 +13,12 @@ use Illuminate\Support\Carbon;
  * the repository uses INSERT IGNORE / ON CONFLICT DO NOTHING so the first
  * write always wins without raising a uniqueness exception.
  *
- * @property string      $experiment_key
- * @property string      $unit_type
- * @property string      $unit_key
- * @property string      $variant_key
+ * @property string $experiment_key
+ * @property string $unit_type
+ * @property string $unit_key
+ * @property string $variant_key
  * @property string|null $layer
- * @property Carbon      $assigned_at
+ * @property Carbon $assigned_at
  */
 final class AssignmentModel extends Model
 {

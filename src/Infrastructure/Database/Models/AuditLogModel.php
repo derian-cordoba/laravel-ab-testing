@@ -8,14 +8,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * @property int         $id
+ * @property int $id
  * @property string|null $actor_identifier
  * @property string|null $actor_type
- * @property string      $action
+ * @property string $action
  * @property string|null $experiment_key
- * @property array|null  $before_state
- * @property array|null  $after_state
- * @property Carbon      $occurred_at
+ * @property array|null $before_state
+ * @property array|null $after_state
+ * @property Carbon $occurred_at
  */
 final class AuditLogModel extends Model
 {

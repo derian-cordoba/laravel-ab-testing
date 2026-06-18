@@ -20,7 +20,7 @@ final class ConfigStructureTest extends TestCase
     protected function setUp(): void
     {
         /** @var array<string, mixed> $config */
-        $config = require __DIR__ . '/../../../config/ab-testing.php';
+        $config = require __DIR__.'/../../../config/ab-testing.php';
 
         $this->config = $config;
     }

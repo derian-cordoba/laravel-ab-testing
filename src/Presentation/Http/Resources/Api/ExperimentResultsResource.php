@@ -40,16 +40,16 @@ final class ExperimentResultsResource extends JsonApiResource
         $data = $this->resource;
 
         return [
-            'status'      => $data->model->status,
+            'status' => $data->model->status,
             'computed_at' => $data->computedAt->format('c'),
             'total_units' => $data->totalAssignedUnits(),
-            'srm'         => [
-                'detected'   => $data->sampleRatioMismatch->detected,
+            'srm' => [
+                'detected' => $data->sampleRatioMismatch->detected,
                 'chi_square' => $data->sampleRatioMismatch->chiSquare,
-                'p_value'    => $data->sampleRatioMismatch->pValue,
+                'p_value' => $data->sampleRatioMismatch->pValue,
             ],
             'active_guardrail_breaches' => GuardrailBreachData::fromCollection($data->activeGuardrailBreaches)->toArray(),
-            'variants'                  => VariantResultOutputData::fromCollection($data->variantResults)->toArray(),
+            'variants' => VariantResultOutputData::fromCollection($data->variantResults)->toArray(),
         ];
     }
 }

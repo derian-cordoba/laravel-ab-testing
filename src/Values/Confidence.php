@@ -16,7 +16,7 @@ final class Confidence
     {
         if ($level <= 0.0 || $level >= 1.0) {
             throw new InvalidArgumentException(
-                'Confidence level must be between 0 and 1 exclusive.'
+                'Confidence level must be between 0 and 1 exclusive.',
             );
         }
     }

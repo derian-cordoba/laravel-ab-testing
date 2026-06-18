@@ -15,6 +15,7 @@ use Illuminate\Http\Resources\JsonApi\JsonApiResource;
  * type → assignments
  *
  * @mixin AssignmentsData
+ *
  * @property-read AssignmentsData $resource
  */
 final class AssignmentsResource extends JsonApiResource

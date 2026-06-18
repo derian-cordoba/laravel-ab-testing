@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace ABTests\Attributes;
 
-use Attribute;
 use ABTests\Metric;
+use Attribute;
 
 /**
  * A supporting metric, observed but not decision-driving. Repeatable.
@@ -14,7 +14,7 @@ use ABTests\Metric;
 final readonly class SecondaryMetric
 {
     /**
-     * @param class-string<Metric> $metric
+     * @param  class-string<Metric>  $metric
      */
     public function __construct(public string $metric)
     {

@@ -28,24 +28,24 @@ use Closure;
 final readonly class EvaluationResult
 {
     /**
-     * @param Variant|null  $variant          The resolved variant, or null when the unit is not assigned.
-     * @param EvaluationReason $reason        Why the pipeline produced this result.
-     * @param bool          $eligible         Whether the unit passed all targeting and traffic gates.
-     * @param bool          $assigned         Whether the unit has (or received) a variant assignment.
-     * @param bool          $exposed          Whether an exposure event has been recorded for this result.
-     * @param int           $bucket           The unit's bucket position scaled to [0, 9999].
-     * @param string|null   $matchedCriterion The audience criterion that determined targeting (if available).
-     * @param Closure|null $exposeCallback   Internal: injected by ExperimentResolver to record the exposure event.
+     * @param  Variant|null  $variant  The resolved variant, or null when the unit is not assigned.
+     * @param  EvaluationReason  $reason  Why the pipeline produced this result.
+     * @param  bool  $eligible  Whether the unit passed all targeting and traffic gates.
+     * @param  bool  $assigned  Whether the unit has (or received) a variant assignment.
+     * @param  bool  $exposed  Whether an exposure event has been recorded for this result.
+     * @param  int  $bucket  The unit's bucket position scaled to [0, 9999].
+     * @param  string|null  $matchedCriterion  The audience criterion that determined targeting (if available).
+     * @param  Closure|null  $exposeCallback  Internal: injected by ExperimentResolver to record the exposure event.
      */
     public function __construct(
-        public ?Variant         $variant,
+        public ?Variant $variant,
         public EvaluationReason $reason,
-        public bool             $eligible,
-        public bool             $assigned,
-        public bool             $exposed,
-        public int              $bucket,
-        public ?string          $matchedCriterion,
-        private ?Closure        $exposeCallback = null,
+        public bool $eligible,
+        public bool $assigned,
+        public bool $exposed,
+        public int $bucket,
+        public ?string $matchedCriterion,
+        private ?Closure $exposeCallback = null,
     ) {
         //
     }

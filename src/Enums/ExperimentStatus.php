@@ -46,36 +46,36 @@ enum ExperimentStatus: string
     public function label(): string
     {
         return match ($this) {
-            self::draft     => 'Draft',
+            self::draft => 'Draft',
             self::scheduled => 'Scheduled',
-            self::running   => 'Running',
-            self::paused    => 'Paused',
+            self::running => 'Running',
+            self::paused => 'Paused',
             self::completed => 'Completed',
-            self::archived  => 'Archived',
+            self::archived => 'Archived',
         };
     }
 
     public function badgeClass(): string
     {
         return match ($this) {
-            self::draft     => 'bg-gray-700 text-gray-300',
+            self::draft => 'bg-gray-700 text-gray-300',
             self::scheduled => 'bg-blue-900/60 text-blue-300',
-            self::running   => 'bg-green-900/60 text-green-300',
-            self::paused    => 'bg-yellow-900/60 text-yellow-300',
+            self::running => 'bg-green-900/60 text-green-300',
+            self::paused => 'bg-yellow-900/60 text-yellow-300',
             self::completed => 'bg-violet-900/60 text-violet-300',
-            self::archived  => 'bg-gray-800 text-gray-500',
+            self::archived => 'bg-gray-800 text-gray-500',
         };
     }
 
     public function dotClass(): string
     {
         return match ($this) {
-            self::draft     => 'bg-gray-500',
+            self::draft => 'bg-gray-500',
             self::scheduled => 'bg-blue-400',
-            self::running   => 'bg-green-400',
-            self::paused    => 'bg-yellow-400',
+            self::running => 'bg-green-400',
+            self::paused => 'bg-yellow-400',
             self::completed => 'bg-violet-400',
-            self::archived  => 'bg-gray-600',
+            self::archived => 'bg-gray-600',
         };
     }
 }

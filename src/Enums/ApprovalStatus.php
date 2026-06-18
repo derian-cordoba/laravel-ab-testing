@@ -16,7 +16,7 @@ enum ApprovalStatus: string
     public function label(): string
     {
         return match ($this) {
-            self::pending  => 'Pending Review',
+            self::pending => 'Pending Review',
             self::approved => 'Approved',
             self::rejected => 'Rejected',
         };
@@ -25,7 +25,7 @@ enum ApprovalStatus: string
     public function badgeClass(): string
     {
         return match ($this) {
-            self::pending  => 'bg-yellow-100 text-yellow-800',
+            self::pending => 'bg-yellow-100 text-yellow-800',
             self::approved => 'bg-green-100 text-green-800',
             self::rejected => 'bg-red-100 text-red-800',
         };

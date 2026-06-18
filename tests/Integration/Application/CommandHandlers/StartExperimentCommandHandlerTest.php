@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace ABTests\Tests\Integration\Application\CommandHandlers;
 
-use ABTests\Application\Handlers\StartExperimentCommandHandler;
 use ABTests\Application\Commands\StartExperimentCommand;
+use ABTests\Application\Handlers\StartExperimentCommandHandler;
+use ABTests\Application\Registry\ExperimentRegistry;
 use ABTests\Domain\Events\ExperimentStartedEvent;
 use ABTests\Enums\ExperimentStatus;
+use ABTests\Infrastructure\Database\DatabaseAuditLogRepository;
+use ABTests\Infrastructure\Database\DatabaseExperimentRepository;
 use ABTests\Infrastructure\Database\Models\ExperimentModel;
-use ABTests\Application\Registry\ExperimentRegistry;
 use ABTests\Tests\Integration\DatabaseTestCase;
 use Illuminate\Container\Container;
 use PHPUnit\Framework\Attributes\Test;
-use ABTests\Infrastructure\Database\DatabaseExperimentRepository;
-use ABTests\Infrastructure\Database\DatabaseAuditLogRepository;
 
 final class StartExperimentCommandHandlerTest extends DatabaseTestCase
 {
@@ -67,10 +67,10 @@ final class StartExperimentCommandHandlerTest extends DatabaseTestCase
     public function dispatches_experiment_started_event(): void
     {
         ExperimentModel::query()->create([
-            'key'                => 'checkout-button-color',
-            'status'             => ExperimentStatus::draft->value,
+            'key' => 'checkout-button-color',
+            'status' => ExperimentStatus::draft->value,
             'traffic_percentage' => 0,
-            'is_killed'          => false,
+            'is_killed' => false,
         ]);
 
         /** @var list<ExperimentStartedEvent> $fired */

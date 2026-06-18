@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace ABTests\Tests\Unit\ServiceProvider;
 
-use ABTests\Experiment;
-use ABTests\FeatureFlag;
 use ABTests\Application\Registry\AttributeReader;
 use ABTests\Application\Registry\ClassDiscovery;
 use ABTests\Application\Registry\ExperimentRegistry;
 use ABTests\Application\Registry\FeatureFlagRegistry;
+use ABTests\Experiment;
+use ABTests\FeatureFlag;
 use ABTests\Tests\Fixtures\Discovery\DiscoverableExperiment;
 use ABTests\Tests\Fixtures\Discovery\DiscoverableFeatureFlag;
 use PHPUnit\Framework\Attributes\Test;
@@ -28,7 +28,7 @@ final class DiscoveryRoutingTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->fixtureDir = dirname(__DIR__, 2) . '/Fixtures/Discovery';
+        $this->fixtureDir = dirname(__DIR__, 2).'/Fixtures/Discovery';
     }
 
     #[Test]
@@ -37,7 +37,7 @@ final class DiscoveryRoutingTest extends TestCase
         $discovered = (new ClassDiscovery())->discover([$this->fixtureDir]);
 
         $experimentRegistry = new ExperimentRegistry();
-        $flagRegistry       = new FeatureFlagRegistry();
+        $flagRegistry = new FeatureFlagRegistry();
 
         $this->routeDiscovered($discovered, $experimentRegistry, $flagRegistry);
 
@@ -54,7 +54,7 @@ final class DiscoveryRoutingTest extends TestCase
         $discovered = (new ClassDiscovery())->discover([$this->fixtureDir]);
 
         $experimentRegistry = new ExperimentRegistry();
-        $flagRegistry       = new FeatureFlagRegistry();
+        $flagRegistry = new FeatureFlagRegistry();
 
         $this->routeDiscovered($discovered, $experimentRegistry, $flagRegistry);
 
@@ -66,23 +66,23 @@ final class DiscoveryRoutingTest extends TestCase
     #[Test]
     public function only_experiment_subclasses_are_routed_to_experiment_registry(): void
     {
-        $tmpDir = sys_get_temp_dir() . '/ab-routing-' . uniqid('', true);
+        $tmpDir = sys_get_temp_dir().'/ab-routing-'.uniqid('', true);
         mkdir($tmpDir);
 
         // Write a plain class that is not an Experiment or FeatureFlag subclass.
-        file_put_contents($tmpDir . '/PlainClass.php', '<?php namespace Tmp; class PlainClass {}');
+        file_put_contents($tmpDir.'/PlainClass.php', '<?php namespace Tmp; class PlainClass {}');
 
         $discovered = (new ClassDiscovery())->discover([$tmpDir]);
 
         $experimentRegistry = new ExperimentRegistry();
-        $flagRegistry       = new FeatureFlagRegistry();
+        $flagRegistry = new FeatureFlagRegistry();
 
         $this->routeDiscovered($discovered, $experimentRegistry, $flagRegistry);
 
         self::assertTrue($experimentRegistry->isEmpty());
         self::assertTrue($flagRegistry->isEmpty());
 
-        unlink($tmpDir . '/PlainClass.php');
+        unlink($tmpDir.'/PlainClass.php');
         rmdir($tmpDir);
     }
 
@@ -91,17 +91,17 @@ final class DiscoveryRoutingTest extends TestCase
     {
         // DiscoverableExperiment lacks #[AsExperiment] so readExperiment() throws,
         // but routing must continue to the next class without aborting.
-        $tmpDir = sys_get_temp_dir() . '/ab-routing-' . uniqid('', true);
+        $tmpDir = sys_get_temp_dir().'/ab-routing-'.uniqid('', true);
         mkdir($tmpDir);
 
         // Write a class that is an Experiment subclass but has no #[AsExperiment].
-        file_put_contents($tmpDir . '/BrokenExperiment.php', '<?php
+        file_put_contents($tmpDir.'/BrokenExperiment.php', '<?php
 namespace Tmp;
 use ABTests\Experiment;
 final class BrokenExperiment extends Experiment {}
 ');
         // Write a second class that is also just a plain Experiment (also broken).
-        file_put_contents($tmpDir . '/AnotherBroken.php', '<?php
+        file_put_contents($tmpDir.'/AnotherBroken.php', '<?php
 namespace Tmp;
 use ABTests\Experiment;
 final class AnotherBroken extends Experiment {}
@@ -110,14 +110,14 @@ final class AnotherBroken extends Experiment {}
         // Should not throw — failures are swallowed.
         $discovered = (new ClassDiscovery())->discover([$tmpDir]);
         $experimentRegistry = new ExperimentRegistry();
-        $flagRegistry       = new FeatureFlagRegistry();
+        $flagRegistry = new FeatureFlagRegistry();
 
         $this->routeDiscovered($discovered, $experimentRegistry, $flagRegistry);
 
         self::assertTrue($experimentRegistry->isEmpty());
 
-        unlink($tmpDir . '/BrokenExperiment.php');
-        unlink($tmpDir . '/AnotherBroken.php');
+        unlink($tmpDir.'/BrokenExperiment.php');
+        unlink($tmpDir.'/AnotherBroken.php');
         rmdir($tmpDir);
     }
 
@@ -127,7 +127,7 @@ final class AnotherBroken extends Experiment {}
         $discovered = (new ClassDiscovery())->discover([]);
 
         $experimentRegistry = new ExperimentRegistry();
-        $flagRegistry       = new FeatureFlagRegistry();
+        $flagRegistry = new FeatureFlagRegistry();
 
         $this->routeDiscovered($discovered, $experimentRegistry, $flagRegistry);
 
@@ -140,7 +140,7 @@ final class AnotherBroken extends Experiment {}
     // ------------------------------------------------------------------
 
     /**
-     * @param list<string> $discovered
+     * @param  list<string>  $discovered
      */
     private function routeDiscovered(
         array $discovered,

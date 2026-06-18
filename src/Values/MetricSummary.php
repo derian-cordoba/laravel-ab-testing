@@ -94,7 +94,7 @@ final class MetricSummary
             return 0.0;
         }
 
-        $n   = (float) $this->countOfUnits;
+        $n = (float) $this->countOfUnits;
         $muN = $this->sumOfValues / $n;
         $muD = $this->sumOfDenominators / $n;
 
@@ -102,9 +102,9 @@ final class MetricSummary
             return 0.0;
         }
 
-        $muY   = $muN / $muD;
-        $varN  = ($this->sumOfSquaredValues / $n) - ($muN * $muN);
-        $varD  = ($this->sumOfSquaredDenominators / $n) - ($muD * $muD);
+        $muY = $muN / $muD;
+        $varN = ($this->sumOfSquaredValues / $n) - ($muN * $muN);
+        $varD = ($this->sumOfSquaredDenominators / $n) - ($muD * $muD);
         $covND = ($this->sumOfNumeratorDenominator / $n) - ($muN * $muD);
 
         $variance = (1.0 / ($muD * $muD)) * (

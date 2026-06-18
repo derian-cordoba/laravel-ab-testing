@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ABTests;
 
+use ABTests\Application\Registry\ExperimentRegistry;
 use ABTests\Attributes\AsMetric;
 use ABTests\Contracts\AssignmentRepository;
 use ABTests\Contracts\Bucketable;
@@ -13,10 +14,9 @@ use ABTests\Contracts\ExperimentStateRepository;
 use ABTests\Contracts\ResolvesVariant;
 use ABTests\Contracts\Variant;
 use ABTests\Definitions\ExperimentDefinition;
-use ABTests\Enums\EvaluationReason;
 use ABTests\Enums\Environment;
+use ABTests\Enums\EvaluationReason;
 use ABTests\Enums\EventType;
-use ABTests\Application\Registry\ExperimentRegistry;
 use ABTests\Values\Assignment;
 use ABTests\Values\EvaluationResult;
 use ABTests\Values\RecordedEvent;
@@ -63,12 +63,12 @@ final readonly class ExperimentResolver
      * unit at the call site. Use resolve() when you need to decouple resolution
      * from exposure recording.
      *
-     * @param class-string<Experiment> $experimentClass
+     * @param  class-string<Experiment>  $experimentClass
      */
     public function expose(string $experimentClass): ?Variant
     {
         $definition = $this->registry->findByClass($experimentClass);
-        $result     = $this->resolver->resolve($definition, $this->unit);
+        $result = $this->resolver->resolve($definition, $this->unit);
 
         if ($result->variant !== null) {
             $this->recordExposureEvent($definition, $result->variant);
@@ -85,12 +85,12 @@ final readonly class ExperimentResolver
      * Use this when the variant may be resolved before the unit actually sees
      * the experiment (e.g. middleware, DTOs, server-side rendering).
      *
-     * @param class-string<Experiment> $experimentClass
+     * @param  class-string<Experiment>  $experimentClass
      */
     public function resolve(string $experimentClass): EvaluationResult
     {
         $definition = $this->registry->findByClass($experimentClass);
-        $result     = $this->resolver->resolve($definition, $this->unit);
+        $result = $this->resolver->resolve($definition, $this->unit);
 
         if ($result->variant === null) {
             return $result;
@@ -109,7 +109,7 @@ final readonly class ExperimentResolver
      * assignment exists, or reason === noAssignment otherwise. The result's
      * expose() method will record an exposure if a variant is present.
      *
-     * @param class-string<Experiment> $experimentClass
+     * @param  class-string<Experiment>  $experimentClass
      */
     public function peek(string $experimentClass): EvaluationResult
     {
@@ -160,12 +160,12 @@ final readonly class ExperimentResolver
      * This never writes to the database. Use this for feature-gating decisions
      * that should not influence experimental analysis.
      *
-     * @param class-string<Experiment> $experimentClass
+     * @param  class-string<Experiment>  $experimentClass
      */
     public function isEligible(string $experimentClass): bool
     {
         $definition = $this->registry->findByClass($experimentClass);
-        $state      = $this->stateRepository->findState($definition->key);
+        $state = $this->stateRepository->findState($definition->key);
 
         if ($state === null || ! $state->isActive()) {
             return false;
@@ -203,7 +203,7 @@ final readonly class ExperimentResolver
      *
      * Does not run the resolution pipeline and does not create assignments.
      *
-     * @param class-string<Experiment> $experimentClass
+     * @param  class-string<Experiment>  $experimentClass
      */
     public function assignment(string $experimentClass): ?Assignment
     {
@@ -227,7 +227,7 @@ final readonly class ExperimentResolver
      * Equivalent to expose(). Prefer expose() in new code to make the intent
      * explicit.
      *
-     * @param class-string<Experiment> $experimentClass
+     * @param  class-string<Experiment>  $experimentClass
      */
     public function variant(string $experimentClass): ?Variant
     {
@@ -243,7 +243,7 @@ final readonly class ExperimentResolver
     public function variantForKey(string $experimentKey): ?Variant
     {
         $definition = $this->registry->findByKey($experimentKey);
-        $result     = $this->resolver->resolve($definition, $this->unit);
+        $result = $this->resolver->resolve($definition, $this->unit);
 
         if ($result->variant !== null) {
             $this->recordExposureEvent($definition, $result->variant);
@@ -265,7 +265,7 @@ final readonly class ExperimentResolver
      * (runtime-defined). The metric key is resolved from the #[AsMetric]
      * attribute when a class is passed.
      *
-     * @param class-string<Metric>|string $metricClassOrKey
+     * @param  class-string<Metric>|string  $metricClassOrKey
      */
     public function track(string $metricClassOrKey, ?float $value = null): void
     {
@@ -330,7 +330,7 @@ final readonly class ExperimentResolver
         }
 
         $reflector = new ReflectionClass($metricClassOrKey);
-        $attrs     = $reflector->getAttributes(AsMetric::class);
+        $attrs = $reflector->getAttributes(AsMetric::class);
 
         if ($attrs === []) {
             return $metricClassOrKey;
@@ -350,6 +350,6 @@ final readonly class ExperimentResolver
      */
     private function metricIdempotencyKey(string $experimentKey, string $metricKey): string
     {
-        return "metric:$experimentKey:$metricKey:{$this->unit->bucketingKey()}:" . hrtime(true);
+        return "metric:$experimentKey:$metricKey:{$this->unit->bucketingKey()}:".hrtime(true);
     }
 }

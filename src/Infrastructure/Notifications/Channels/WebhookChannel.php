@@ -29,22 +29,23 @@ final readonly class WebhookChannel
 
         if (empty($config['url'])) {
             Log::warning('[ABTesting] WebhookChannel: no URL configured; skipping.');
+
             return;
         }
 
-        $body      = json_encode($payload->toArray(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        $body = json_encode($payload->toArray(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         $timestamp = (string) time();
-        $secret    = (string) ($config['secret'] ?? '');
-        $signature = 'sha256=' . hash_hmac('sha256', $body, $secret);
-        $timeout   = (int) ($config['timeout'] ?? 5);
+        $secret = (string) ($config['secret'] ?? '');
+        $signature = 'sha256='.hash_hmac('sha256', $body, $secret);
+        $timeout = (int) ($config['timeout'] ?? 5);
 
         try {
             $response = Http::timeout($timeout)
                 ->withHeaders([
-                    'Content-Type'         => 'application/json',
-                    'X-ABTesting-Event'    => $payload->event,
-                    'X-ABTesting-Timestamp'=> $timestamp,
-                    'X-ABTesting-Signature'=> $signature,
+                    'Content-Type' => 'application/json',
+                    'X-ABTesting-Event' => $payload->event,
+                    'X-ABTesting-Timestamp' => $timestamp,
+                    'X-ABTesting-Signature' => $signature,
                 ])
                 ->post($config['url'], $payload->toArray());
 

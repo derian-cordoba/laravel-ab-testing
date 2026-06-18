@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace ABTests\Definitions;
 
-use LogicException;
 use ABTests\Enums\MetricRole;
 use ABTests\Values\Allocation;
 use ABTests\Values\AnalysisConfiguration;
 use ABTests\Values\Segment;
+use LogicException;
 
 /**
  * The normalized, framework-agnostic representation of an experiment. This is
@@ -20,11 +20,11 @@ use ABTests\Values\Segment;
 final readonly class ExperimentDefinition
 {
     /**
-     * @param string          $unitType The unit's stable type key (e.g. "tenant").
-     * @param list<MetricBinding> $metrics
+     * @param  string  $unitType  The unit's stable type key (e.g. "tenant").
+     * @param  list<MetricBinding>  $metrics
      */
     /**
-     * @param list<string>|null $allowedEnvironments null = all environments (no restriction).
+     * @param  list<string>|null  $allowedEnvironments  null = all environments (no restriction).
      */
     public function __construct(
         public string $key,
@@ -36,8 +36,7 @@ final readonly class ExperimentDefinition
         public ?string $name = null,
         public ?string $layer = null,
         public ?array $allowedEnvironments = null,
-    ) {
-    }
+    ) {}
 
     public function primaryMetric(): MetricBinding
     {

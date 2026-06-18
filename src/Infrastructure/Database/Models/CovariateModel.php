@@ -10,12 +10,12 @@ use Illuminate\Support\Carbon;
 /**
  * Pre-experiment covariate observation for CUPED variance reduction.
  *
- * @property int    $id
+ * @property int $id
  * @property string $experiment_key
  * @property string $metric_key
  * @property string $unit_type
  * @property string $unit_key
- * @property float  $value
+ * @property float $value
  * @property Carbon $recorded_at
  */
 final class CovariateModel extends Model
@@ -34,7 +34,7 @@ final class CovariateModel extends Model
     ];
 
     protected $casts = [
-        'value'       => 'float',
+        'value' => 'float',
         'recorded_at' => 'datetime',
     ];
 }

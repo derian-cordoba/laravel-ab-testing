@@ -17,8 +17,7 @@ final readonly class PauseExperimentCommandHandler
     public function __construct(
         private ExperimentRepository $experimentRepository,
         private AuditLogRepository $auditLogRepository,
-    ) {
-    }
+    ) {}
 
     public function handle(PauseExperimentCommand $command): void
     {

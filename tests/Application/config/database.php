@@ -6,9 +6,9 @@ return [
     'default' => 'sqlite',
     'connections' => [
         'sqlite' => [
-            'driver'   => 'sqlite',
+            'driver' => 'sqlite',
             'database' => ':memory:',
-            'prefix'   => '',
+            'prefix' => '',
         ],
     ],
     'migrations' => [

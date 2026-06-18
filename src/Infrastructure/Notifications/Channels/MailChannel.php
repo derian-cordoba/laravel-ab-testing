@@ -30,20 +30,21 @@ final readonly class MailChannel
 
         if ($recipients === []) {
             Log::warning('[ABTesting] MailChannel: no recipients configured; skipping.');
+
             return;
         }
 
-        $subject = '[A/B Testing] ' . $payload->title;
-        $html    = $this->buildHtml($payload);
+        $subject = '[A/B Testing] '.$payload->title;
+        $html = $this->buildHtml($payload);
 
-        $mailable = new class ($subject, $recipients, $html) extends Mailable {
+        $mailable = new class($subject, $recipients, $html) extends Mailable
+        {
             /** @param list<string> $recipients */
             public function __construct(
                 private string $mailSubject,
                 private array $recipients,
                 private string $mailBody,
-            ) {
-            }
+            ) {}
 
             public function envelope(): Envelope
             {
@@ -86,15 +87,15 @@ final readonly class MailChannel
                 continue;
             }
 
-            $label        = ucwords(str_replace('_', ' ', $key));
+            $label = ucwords(str_replace('_', ' ', $key));
             $displayValue = is_bool($value) ? ($value ? 'Yes' : 'No') : (string) $value;
-            $rows        .= $this->row(e($label), e($displayValue));
+            $rows .= $this->row(e($label), e($displayValue));
         }
 
         $rows .= $this->row('Occurred At', e($payload->occurredAt->format(DateTimeInterface::ATOM)));
 
         $appName = e(config('app.name', 'Laravel'));
-        $title   = e($payload->title);
+        $title = e($payload->title);
 
         return <<<HTML
         <!DOCTYPE html>

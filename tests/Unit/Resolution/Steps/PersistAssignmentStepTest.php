@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace ABTests\Tests\Unit\Resolution\Steps;
 
-use ABTests\Infrastructure\InMemoryAssignmentRepository;
 use ABTests\Application\Resolution\Steps\PersistAssignmentStep;
+use ABTests\Infrastructure\InMemoryAssignmentRepository;
 use ABTests\Tests\Fixtures\TestUnit;
 use ABTests\Tests\Fixtures\TestVariant;
 use ABTests\Tests\Support\MakesPayload;
@@ -17,6 +17,7 @@ final class PersistAssignmentStepTest extends TestCase
     use MakesPayload;
 
     private InMemoryAssignmentRepository $repo;
+
     private PersistAssignmentStep $step;
 
     protected function setUp(): void

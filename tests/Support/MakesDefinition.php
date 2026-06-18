@@ -22,7 +22,7 @@ trait MakesDefinition
     /**
      * Build a minimal two-variant definition with sensible defaults.
      *
-     * @param array<MetricBinding> $metrics
+     * @param  array<MetricBinding>  $metrics
      */
     protected function makeDefinition(
         string $key = 'test-experiment',
@@ -45,7 +45,7 @@ trait MakesDefinition
     /**
      * Build a definition with generic (non-enum) variants.
      *
-     * @param array<array{key: string, weight: int, control: bool}> $variantSpecs
+     * @param  array<array{key: string, weight: int, control: bool}>  $variantSpecs
      */
     protected function makeGenericDefinition(
         string $key = 'generic-experiment',

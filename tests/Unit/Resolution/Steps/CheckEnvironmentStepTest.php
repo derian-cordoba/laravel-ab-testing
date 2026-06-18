@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace ABTests\Tests\Unit\Resolution\Steps;
 
-use ABTests\Enums\ExperimentStatus;
 use ABTests\Application\Resolution\Steps\CheckEnvironmentStep;
+use ABTests\Enums\ExperimentStatus;
 use ABTests\Tests\Support\MakesDefinition;
 use ABTests\Tests\Support\MakesPayload;
 use ABTests\Values\ExperimentState;
@@ -32,7 +32,7 @@ final class CheckEnvironmentStepTest extends TestCase
     public function returns_true_when_allowed_environments_is_null(): void
     {
         // No app() call is made when the list is null — always pass.
-        $state   = new ExperimentState('exp', ExperimentStatus::running, 100, allowedEnvironments: null);
+        $state = new ExperimentState('exp', ExperimentStatus::running, 100, allowedEnvironments: null);
         $payload = $this->makePayload(state: $state);
 
         self::assertTrue((new CheckEnvironmentStep())->handle($payload));
@@ -43,7 +43,7 @@ final class CheckEnvironmentStepTest extends TestCase
     #[Test]
     public function returns_false_when_allowed_environments_is_empty(): void
     {
-        $state   = new ExperimentState('exp', ExperimentStatus::running, 100, allowedEnvironments: []);
+        $state = new ExperimentState('exp', ExperimentStatus::running, 100, allowedEnvironments: []);
         $payload = $this->makePayload(state: $state);
 
         self::assertFalse((new CheckEnvironmentStep())->handle($payload));
@@ -56,7 +56,7 @@ final class CheckEnvironmentStepTest extends TestCase
     {
         $this->bindEnvironment('production');
 
-        $state   = new ExperimentState('exp', ExperimentStatus::running, 100, allowedEnvironments: ['production']);
+        $state = new ExperimentState('exp', ExperimentStatus::running, 100, allowedEnvironments: ['production']);
         $payload = $this->makePayload(state: $state);
 
         self::assertTrue((new CheckEnvironmentStep())->handle($payload));
@@ -67,7 +67,7 @@ final class CheckEnvironmentStepTest extends TestCase
     {
         $this->bindEnvironment('staging');
 
-        $state   = new ExperimentState('exp', ExperimentStatus::running, 100, allowedEnvironments: ['local', 'staging', 'production']);
+        $state = new ExperimentState('exp', ExperimentStatus::running, 100, allowedEnvironments: ['local', 'staging', 'production']);
         $payload = $this->makePayload(state: $state);
 
         self::assertTrue((new CheckEnvironmentStep())->handle($payload));
@@ -80,7 +80,7 @@ final class CheckEnvironmentStepTest extends TestCase
     {
         $this->bindEnvironment('local');
 
-        $state   = new ExperimentState('exp', ExperimentStatus::running, 100, allowedEnvironments: ['production', 'staging']);
+        $state = new ExperimentState('exp', ExperimentStatus::running, 100, allowedEnvironments: ['production', 'staging']);
         $payload = $this->makePayload(state: $state);
 
         self::assertFalse((new CheckEnvironmentStep())->handle($payload));
@@ -91,7 +91,7 @@ final class CheckEnvironmentStepTest extends TestCase
     {
         $this->bindEnvironment('local');
 
-        $state   = new ExperimentState('exp', ExperimentStatus::running, 100, allowedEnvironments: ['production']);
+        $state = new ExperimentState('exp', ExperimentStatus::running, 100, allowedEnvironments: ['production']);
         $payload = $this->makePayload(state: $state);
 
         self::assertFalse((new CheckEnvironmentStep())->handle($payload));
@@ -104,7 +104,7 @@ final class CheckEnvironmentStepTest extends TestCase
     {
         $this->bindEnvironment('some-custom-env');
 
-        $state   = new ExperimentState('exp', ExperimentStatus::running, 100, allowedEnvironments: ['production']);
+        $state = new ExperimentState('exp', ExperimentStatus::running, 100, allowedEnvironments: ['production']);
         $payload = $this->makePayload(state: $state);
 
         self::assertFalse((new CheckEnvironmentStep())->handle($payload));
@@ -118,7 +118,8 @@ final class CheckEnvironmentStepTest extends TestCase
      */
     private function bindEnvironment(string $env): void
     {
-        $container = new class ($env) extends Container {
+        $container = new class($env) extends Container
+        {
             public function __construct(private readonly string $env)
             {
                 //

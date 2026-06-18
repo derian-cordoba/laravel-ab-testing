@@ -9,8 +9,8 @@ final class ApprovalRequired extends \DomainException implements ABTestingExcept
     public function __construct(string $experimentKey)
     {
         parent::__construct(
-            "Experiment [$experimentKey] requires an approved review before it can be started. " .
-            'Submit an approval request from the dashboard and have an admin approve it first.'
+            "Experiment [$experimentKey] requires an approved review before it can be started. ".
+            'Submit an approval request from the dashboard and have an admin approve it first.',
         );
     }
 }

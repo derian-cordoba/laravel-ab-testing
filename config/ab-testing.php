@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
 
     /*
@@ -128,7 +130,7 @@ return [
     */
 
     'feature_flags' => [
-        'register'            => [],
+        'register' => [],
         'stale_threshold_days' => (int) env('AB_TESTING_STALE_FLAG_DAYS', 90),
     ],
 
@@ -258,43 +260,43 @@ return [
         'enabled' => (bool) env('AB_TESTING_NOTIFICATIONS_ENABLED', false),
 
         'events' => [
-            'experiment_started'    => (bool) env('AB_TESTING_NOTIFY_EXPERIMENT_STARTED', true),
-            'experiment_paused'     => (bool) env('AB_TESTING_NOTIFY_EXPERIMENT_PAUSED', true),
-            'experiment_resumed'    => (bool) env('AB_TESTING_NOTIFY_EXPERIMENT_RESUMED', true),
-            'experiment_stopped'    => (bool) env('AB_TESTING_NOTIFY_EXPERIMENT_STOPPED', true),
-            'feature_flag_enabled'  => (bool) env('AB_TESTING_NOTIFY_FLAG_ENABLED', false),
+            'experiment_started' => (bool) env('AB_TESTING_NOTIFY_EXPERIMENT_STARTED', true),
+            'experiment_paused' => (bool) env('AB_TESTING_NOTIFY_EXPERIMENT_PAUSED', true),
+            'experiment_resumed' => (bool) env('AB_TESTING_NOTIFY_EXPERIMENT_RESUMED', true),
+            'experiment_stopped' => (bool) env('AB_TESTING_NOTIFY_EXPERIMENT_STOPPED', true),
+            'feature_flag_enabled' => (bool) env('AB_TESTING_NOTIFY_FLAG_ENABLED', false),
             'feature_flag_disabled' => (bool) env('AB_TESTING_NOTIFY_FLAG_DISABLED', false),
             'kill_switch_activated' => (bool) env('AB_TESTING_NOTIFY_KILL_SWITCH', true),
-            'guardrail_breached'    => (bool) env('AB_TESTING_NOTIFY_GUARDRAIL_BREACHED', true),
+            'guardrail_breached' => (bool) env('AB_TESTING_NOTIFY_GUARDRAIL_BREACHED', true),
         ],
 
         'channels' => [
             'webhook' => [
                 'enabled' => (bool) env('AB_TESTING_WEBHOOK_ENABLED', false),
-                'url'     => env('AB_TESTING_WEBHOOK_URL'),
-                'secret'  => env('AB_TESTING_WEBHOOK_SECRET', ''),
+                'url' => env('AB_TESTING_WEBHOOK_URL'),
+                'secret' => env('AB_TESTING_WEBHOOK_SECRET', ''),
                 'timeout' => (int) env('AB_TESTING_WEBHOOK_TIMEOUT', 5),
             ],
 
             'slack' => [
-                'enabled'     => (bool) env('AB_TESTING_SLACK_ENABLED', false),
+                'enabled' => (bool) env('AB_TESTING_SLACK_ENABLED', false),
                 'webhook_url' => env('AB_TESTING_SLACK_WEBHOOK_URL'),
             ],
 
             'mail' => [
-                'enabled'    => (bool) env('AB_TESTING_MAIL_ENABLED', false),
+                'enabled' => (bool) env('AB_TESTING_MAIL_ENABLED', false),
                 'recipients' => array_filter(explode(',', env('AB_TESTING_MAIL_RECIPIENTS', ''))),
             ],
         ],
 
         'queue_connection' => env('AB_TESTING_NOTIFICATION_QUEUE_CONNECTION'),
-        'queue_name'       => env('AB_TESTING_NOTIFICATION_QUEUE', 'default'),
+        'queue_name' => env('AB_TESTING_NOTIFICATION_QUEUE', 'default'),
     ],
 
     'api' => [
         'v1' => [
             'accept_type' => env('AB_TESTING_ACCEPT_TYPE', 'application/vnd.ab-testing.v1+json'),
-            'middleware'  => ['api'],
+            'middleware' => ['api'],
 
             /*
             |--------------------------------------------------------------------------
@@ -313,7 +315,7 @@ return [
 
             'manage_gate' => env('AB_TESTING_API_MANAGE_GATE', 'manageAbTestingApi'),
 
-            'endpoints'   => [
+            'endpoints' => [
 
                 /*
                 | assignments — Expose server-resolved assignments for the current
@@ -322,7 +324,7 @@ return [
                 */
                 'assignments' => [
                     'enabled' => (bool) env('AB_TESTING_ASSIGNMENTS_ENDPOINT', true),
-                    'path'    => 'assignments',
+                    'path' => 'assignments',
                 ],
 
                 /*
@@ -334,7 +336,7 @@ return [
                 */
                 'experiments' => [
                     'enabled' => (bool) env('AB_TESTING_EXPERIMENTS_API_ENABLED', true),
-                    'prefix'  => env('AB_TESTING_API_PREFIX', 'api/v1/ab-testing'),
+                    'prefix' => env('AB_TESTING_API_PREFIX', 'api/v1/ab-testing'),
                 ],
             ],
         ],

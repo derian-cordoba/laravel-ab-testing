@@ -11,15 +11,14 @@ final readonly class SetFlagConditionsCommandHandler
 {
     public function __construct(
         private FeatureFlagRepository $featureFlagRepository,
-    ) {
-    }
+    ) {}
 
     public function handle(SetFlagConditionsCommand $command): void
     {
         $state = $this->featureFlagRepository->findByKey($command->flagKey);
 
         $attributes = [
-            'conditions'       => $command->conditions ?: null,
+            'conditions' => $command->conditions ?: null,
             'conditions_logic' => $command->conditionsLogic,
         ];
 

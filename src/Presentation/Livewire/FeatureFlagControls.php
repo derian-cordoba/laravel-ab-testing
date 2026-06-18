@@ -45,10 +45,13 @@ final class FeatureFlagControls extends Component
     public array $allowedEnvironments = [];
 
     public string $newAttribute = '';
+
     public string $newOperator = 'equals';
+
     public string $newValue = '';
 
     public string $flashMessage = '';
+
     public string $flashType = 'success';
 
     public function mount(string $flagKey): void
@@ -58,9 +61,9 @@ final class FeatureFlagControls extends Component
         $model = FeatureFlagStateModel::query()->firstWhere('key', $flagKey);
 
         if ($model !== null) {
-            $this->rolloutPercentage   = $model->rollout_percentage;
-            $this->conditions          = $model->conditions ?? [];
-            $this->conditionsLogic     = ($model->conditions_logic ?? ConditionsLogic::all)->value;
+            $this->rolloutPercentage = $model->rollout_percentage;
+            $this->conditions = $model->conditions ?? [];
+            $this->conditionsLogic = ($model->conditions_logic ?? ConditionsLogic::all)->value;
             $this->allowedEnvironments = $model->allowed_environments ?? [];
         }
     }
@@ -120,7 +123,7 @@ final class FeatureFlagControls extends Component
     public function addCondition(): void
     {
         $attribute = trim($this->newAttribute);
-        $value     = trim($this->newValue);
+        $value = trim($this->newValue);
 
         if ($attribute === '' || $value === '') {
             return;
@@ -128,12 +131,12 @@ final class FeatureFlagControls extends Component
 
         $this->conditions[] = [
             'attribute' => $attribute,
-            'operator'  => $this->newOperator,
-            'expected'  => $this->parseValue($value, $this->newOperator),
+            'operator' => $this->newOperator,
+            'expected' => $this->parseValue($value, $this->newOperator),
         ];
 
         $this->newAttribute = '';
-        $this->newValue     = '';
+        $this->newValue = '';
     }
 
     /**
@@ -174,11 +177,11 @@ final class FeatureFlagControls extends Component
             app(CommandBus::class)->dispatch($command);
 
             $this->flashMessage = 'Action completed successfully.';
-            $this->flashType    = 'success';
+            $this->flashType = 'success';
             $this->dispatch('flag-updated');
         } catch (Throwable $e) {
-            $this->flashMessage = 'An unexpected error occurred: ' . $e->getMessage();
-            $this->flashType    = 'error';
+            $this->flashMessage = 'An unexpected error occurred: '.$e->getMessage();
+            $this->flashType = 'error';
         }
     }
 

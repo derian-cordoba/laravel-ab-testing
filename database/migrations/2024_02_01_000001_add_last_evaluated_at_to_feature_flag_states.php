@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Schema;
  * Used by stale-flag detection: a flag that is enabled but not evaluated for
  * longer than the configured threshold is surfaced as stale in the dashboard.
  */
-return new class extends Migration
+return new class() extends Migration
 {
     public function up(): void
     {

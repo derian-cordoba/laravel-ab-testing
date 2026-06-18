@@ -31,7 +31,7 @@ final class ExperimentRegistry
      * Register a definition. For code-defined experiments, pass the decorated
      * class name as $experimentClass so it can also be looked up that way.
      *
-     * @param class-string|null $experimentClass
+     * @param  class-string|null  $experimentClass
      */
     public function register(ExperimentDefinition $definition, ?string $experimentClass = null): void
     {
@@ -39,14 +39,14 @@ final class ExperimentRegistry
 
         if ($experimentClass !== null) {
             $this->classToKey[$experimentClass] = $definition->key;
-            $this->keyToClass[$definition->key]  = $experimentClass;
+            $this->keyToClass[$definition->key] = $experimentClass;
         }
     }
 
     /**
      * Look up a definition by the decorated PHP class name.
      *
-     * @param class-string $experimentClass
+     * @param  class-string  $experimentClass
      *
      * @throws ExperimentNotFound
      */

@@ -13,16 +13,15 @@ final readonly class CreateFeatureFlagCommandHandler
     public function __construct(
         private FeatureFlagRepository $featureFlagRepository,
         private AuditLogRepository $auditLogRepository,
-    ) {
-    }
+    ) {}
 
     public function handle(CreateFeatureFlagCommand $command): void
     {
         $this->featureFlagRepository->create([
-            'key'                => $command->key,
-            'is_enabled'         => $command->isEnabled,
+            'key' => $command->key,
+            'is_enabled' => $command->isEnabled,
             'rollout_percentage' => $command->rolloutPercentage,
-            'conditions'         => null,
+            'conditions' => null,
         ]);
 
         $this->auditLogRepository->appendForFlag(
@@ -32,7 +31,7 @@ final readonly class CreateFeatureFlagCommandHandler
             actorType: $command->actorType,
             before: [],
             after: [
-                'is_enabled'         => $command->isEnabled,
+                'is_enabled' => $command->isEnabled,
                 'rollout_percentage' => $command->rolloutPercentage,
             ],
         );

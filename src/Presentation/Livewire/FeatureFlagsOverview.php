@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace ABTests\Presentation\Livewire;
 
-use ABTests\Infrastructure\Database\Models\FeatureFlagStateModel;
 use ABTests\Application\Registry\FeatureFlagRegistry;
+use ABTests\Infrastructure\Database\Models\FeatureFlagStateModel;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Carbon;
 use Livewire\Attributes\On;
@@ -21,7 +21,8 @@ final class FeatureFlagsOverview extends Component
 {
     /** Re-render so card headers reflect the updated state after any action. */
     #[On('flag-updated')]
-    public function onFlagUpdated(): void {
+    public function onFlagUpdated(): void
+    {
         //
     }
 
@@ -36,7 +37,7 @@ final class FeatureFlagsOverview extends Component
 
         /** @var int $staleThresholdDays */
         $staleThresholdDays = config('ab-testing.feature_flags.stale_threshold_days', 90);
-        $staleThreshold     = Carbon::now()->subDays($staleThresholdDays);
+        $staleThreshold = Carbon::now()->subDays($staleThresholdDays);
 
         $rows = array_map(
             static function (FeatureFlagStateModel $model) use ($registry, $staleThreshold): array {
@@ -60,9 +61,9 @@ final class FeatureFlagsOverview extends Component
                     && $activityTimestamp->isBefore($staleThreshold);
 
                 return [
-                    'model'      => $model,
+                    'model' => $model,
                     'definition' => $definition,
-                    'is_stale'   => $isStale,
+                    'is_stale' => $isStale,
                 ];
             },
             $flags,

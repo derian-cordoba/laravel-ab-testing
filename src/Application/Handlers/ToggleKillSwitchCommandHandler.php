@@ -16,8 +16,7 @@ final readonly class ToggleKillSwitchCommandHandler
     public function __construct(
         private ExperimentRepository $experimentRepository,
         private AuditLogRepository $auditLogRepository,
-    ) {
-    }
+    ) {}
 
     public function handle(ToggleKillSwitchCommand $command): void
     {

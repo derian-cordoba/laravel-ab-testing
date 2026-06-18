@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace ABTests\Presentation\Console;
 
-use ABTests\Experiment;
-use ABTests\FeatureFlag;
 use ABTests\Application\Registry\AttributeReader;
 use ABTests\Application\Registry\ClassDiscovery;
 use ABTests\Application\Registry\ExperimentRegistry;
 use ABTests\Application\Registry\FeatureFlagRegistry;
+use ABTests\Experiment;
+use ABTests\FeatureFlag;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Contracts\Container\BindingResolutionException;
@@ -76,6 +76,7 @@ final class CacheDefinitionsCommand extends Command
             if (! class_exists($class)) {
                 $this->error("  Class not found: $class");
                 $failed++;
+
                 continue;
             }
 
@@ -107,12 +108,12 @@ final class CacheDefinitionsCommand extends Command
                 continue;
             }
 
-            $this->error("  Class [$class] does not extend " . Experiment::class . ' or ' . FeatureFlag::class . '.');
+            $this->error("  Class [$class] does not extend ".Experiment::class.' or '.FeatureFlag::class.'.');
             $failed++;
         }
 
         $this->newLine();
-        $this->info("Registered $registered definition(s)." . ($failed > 0 ? " $failed failed." : ''));
+        $this->info("Registered $registered definition(s).".($failed > 0 ? " $failed failed." : ''));
 
         return $failed > 0 ? self::FAILURE : self::SUCCESS;
     }

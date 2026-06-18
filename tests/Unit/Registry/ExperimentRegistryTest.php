@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace ABTests\Tests\Unit\Registry;
 
-use ABTests\Exceptions\ExperimentNotFound;
 use ABTests\Application\Registry\ExperimentRegistry;
+use ABTests\Exceptions\ExperimentNotFound;
 use ABTests\Tests\Support\MakesDefinition;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -79,7 +79,7 @@ final class ExperimentRegistryTest extends TestCase
     public function later_registration_overwrites_same_key(): void
     {
         $registry = new ExperimentRegistry();
-        $first  = $this->makeDefinition(key: 'exp');
+        $first = $this->makeDefinition(key: 'exp');
         $second = $this->makeDefinition(key: 'exp', layer: 'checkout');
 
         $registry->register($first);

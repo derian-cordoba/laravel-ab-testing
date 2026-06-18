@@ -50,9 +50,9 @@ final class ResolutionPayload
     public bool $dryRun = false;
 
     /**
-     * @param float $bucketPosition Deterministic position in [0, 1) for this
-     *                              unit on this experiment, computed by the
-     *                              BucketingStrategy before the pipeline runs.
+     * @param  float  $bucketPosition  Deterministic position in [0, 1) for this
+     *                                 unit on this experiment, computed by the
+     *                                 BucketingStrategy before the pipeline runs.
      */
     public function __construct(
         public readonly ExperimentDefinition $definition,

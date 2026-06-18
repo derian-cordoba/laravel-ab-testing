@@ -11,8 +11,8 @@ use ABTests\Values\VerdictResult;
 final readonly class VariantResultData
 {
     /**
-     * @param list<MetricSummary> $secondaryMetricSummaries
-     * @param array<string, MetricSummary> $guardrailSummaries Keyed by metric key.
+     * @param  list<MetricSummary>  $secondaryMetricSummaries
+     * @param  array<string, MetricSummary>  $guardrailSummaries  Keyed by metric key.
      */
     public function __construct(
         public Variant $variant,

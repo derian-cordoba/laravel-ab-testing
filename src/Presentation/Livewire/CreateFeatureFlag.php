@@ -29,6 +29,7 @@ final class CreateFeatureFlag extends Component
     public int $rolloutPercentage = 100;
 
     public string $flashMessage = '';
+
     public string $flashType = 'error';
 
     public function save(): void
@@ -39,16 +40,16 @@ final class CreateFeatureFlag extends Component
 
         try {
             app(CommandBus::class)->dispatch(new CreateFeatureFlagCommand(
-                key:               $normalizedKey,
-                isEnabled:         $this->isEnabled,
+                key: $normalizedKey,
+                isEnabled: $this->isEnabled,
                 rolloutPercentage: $this->rolloutPercentage,
-                actorIdentifier:   $this->actorIdentifier(),
+                actorIdentifier: $this->actorIdentifier(),
             ));
 
             $this->redirect(route('ab-testing.feature-flag.show', $normalizedKey), navigate: true);
         } catch (Throwable $e) {
-            $this->flashMessage = 'Failed to create feature flag: ' . $e->getMessage();
-            $this->flashType    = 'error';
+            $this->flashMessage = 'Failed to create feature flag: '.$e->getMessage();
+            $this->flashType = 'error';
         }
     }
 

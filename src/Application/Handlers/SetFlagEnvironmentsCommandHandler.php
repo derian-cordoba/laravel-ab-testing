@@ -15,8 +15,7 @@ final readonly class SetFlagEnvironmentsCommandHandler
     public function __construct(
         private FeatureFlagRepository $featureFlagRepository,
         private AuditLogRepository $auditLogRepository,
-    ) {
-    }
+    ) {}
 
     public function handle(SetFlagEnvironmentsCommand $command): void
     {

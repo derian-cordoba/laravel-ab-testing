@@ -12,7 +12,7 @@ use ABTests\Tests\Integration\DatabaseTestCase;
  * Helper: upsert variant rows for an experiment, mimicking what
  * StartExperimentCommandHandler does — keyed by (experiment_id, key).
  *
- * @param list<array{key: string, weight: int, is_control: bool}> $variantData
+ * @param  list<array{key: string, weight: int, is_control: bool}>  $variantData
  */
 function syncVariants(ExperimentModel $model, array $variantData): void
 {
@@ -34,22 +34,22 @@ final class VariantModelTest extends DatabaseTestCase
     public function test_variant_can_be_created_and_retrieved(): void
     {
         $experiment = ExperimentModel::query()->create([
-            'key'    => 'test-experiment',
+            'key' => 'test-experiment',
             'status' => 'draft',
         ]);
 
         VariantModel::query()->create([
             'experiment_id' => $experiment->id,
-            'key'           => 'control',
-            'weight'        => 50,
-            'is_control'    => true,
+            'key' => 'control',
+            'weight' => 50,
+            'is_control' => true,
         ]);
 
         VariantModel::query()->create([
             'experiment_id' => $experiment->id,
-            'key'           => 'treatment',
-            'weight'        => 50,
-            'is_control'    => false,
+            'key' => 'treatment',
+            'weight' => 50,
+            'is_control' => false,
         ]);
 
         $variants = VariantModel::query()
@@ -73,21 +73,21 @@ final class VariantModelTest extends DatabaseTestCase
     public function test_experiment_has_many_variants_relationship(): void
     {
         $experiment = ExperimentModel::query()->create([
-            'key'    => 'another-experiment',
+            'key' => 'another-experiment',
             'status' => 'draft',
         ]);
 
         VariantModel::query()->create([
             'experiment_id' => $experiment->id,
-            'key'           => 'control',
-            'weight'        => 50,
-            'is_control'    => true,
+            'key' => 'control',
+            'weight' => 50,
+            'is_control' => true,
         ]);
         VariantModel::query()->create([
             'experiment_id' => $experiment->id,
-            'key'           => 'treatment',
-            'weight'        => 50,
-            'is_control'    => false,
+            'key' => 'treatment',
+            'weight' => 50,
+            'is_control' => false,
         ]);
 
         $loaded = ExperimentModel::query()->with('variants')->find($experiment->id);
@@ -99,7 +99,7 @@ final class VariantModelTest extends DatabaseTestCase
     public function test_sync_variants_creates_rows_idempotently(): void
     {
         $experiment = ExperimentModel::query()->create([
-            'key'    => 'sync-experiment',
+            'key' => 'sync-experiment',
             'status' => 'draft',
         ]);
 
@@ -120,7 +120,7 @@ final class VariantModelTest extends DatabaseTestCase
     public function test_sync_variants_updates_weight_on_re_sync(): void
     {
         $experiment = ExperimentModel::query()->create([
-            'key'    => 'ramp-experiment',
+            'key' => 'ramp-experiment',
             'status' => 'draft',
         ]);
 
@@ -145,15 +145,15 @@ final class VariantModelTest extends DatabaseTestCase
     public function test_deleting_experiment_cascades_to_variants(): void
     {
         $experiment = ExperimentModel::query()->create([
-            'key'    => 'cascade-experiment',
+            'key' => 'cascade-experiment',
             'status' => 'draft',
         ]);
 
         VariantModel::query()->create([
             'experiment_id' => $experiment->id,
-            'key'           => 'control',
-            'weight'        => 100,
-            'is_control'    => true,
+            'key' => 'control',
+            'weight' => 100,
+            'is_control' => true,
         ]);
 
         $experimentId = $experiment->id;
@@ -166,15 +166,15 @@ final class VariantModelTest extends DatabaseTestCase
     public function test_variant_belongs_to_experiment(): void
     {
         $experiment = ExperimentModel::query()->create([
-            'key'    => 'belongs-to-experiment',
+            'key' => 'belongs-to-experiment',
             'status' => 'draft',
         ]);
 
         $variant = VariantModel::query()->create([
             'experiment_id' => $experiment->id,
-            'key'           => 'control',
-            'weight'        => 100,
-            'is_control'    => true,
+            'key' => 'control',
+            'weight' => 100,
+            'is_control' => true,
         ]);
 
         $loadedExperiment = $variant->experiment;

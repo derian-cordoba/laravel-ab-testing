@@ -53,9 +53,9 @@ final readonly class VariantData implements Arrayable
     public function toArray(): array
     {
         return [
-            'id'         => $this->id,
-            'key'        => $this->key,
-            'weight'     => $this->weight,
+            'id' => $this->id,
+            'key' => $this->key,
+            'weight' => $this->weight,
             'is_control' => $this->isControl,
         ];
     }

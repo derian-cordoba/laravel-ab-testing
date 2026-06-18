@@ -31,21 +31,21 @@ final class ExperimentStatusTest extends TestCase
     public static function transitionProvider(): array
     {
         return [
-            'draft → scheduled'         => [ExperimentStatus::draft,     ExperimentStatus::scheduled,  true],
-            'draft → running'           => [ExperimentStatus::draft,     ExperimentStatus::running,    true],
-            'draft → archived'          => [ExperimentStatus::draft,     ExperimentStatus::archived,   true],
-            'draft → paused (invalid)'  => [ExperimentStatus::draft,     ExperimentStatus::paused,     false],
-            'scheduled → running'       => [ExperimentStatus::scheduled, ExperimentStatus::running,    true],
-            'scheduled → draft'         => [ExperimentStatus::scheduled, ExperimentStatus::draft,      true],
-            'scheduled → archived'      => [ExperimentStatus::scheduled, ExperimentStatus::archived,   true],
-            'running → paused'          => [ExperimentStatus::running,   ExperimentStatus::paused,     true],
-            'running → completed'       => [ExperimentStatus::running,   ExperimentStatus::completed,  true],
+            'draft → scheduled' => [ExperimentStatus::draft,     ExperimentStatus::scheduled,  true],
+            'draft → running' => [ExperimentStatus::draft,     ExperimentStatus::running,    true],
+            'draft → archived' => [ExperimentStatus::draft,     ExperimentStatus::archived,   true],
+            'draft → paused (invalid)' => [ExperimentStatus::draft,     ExperimentStatus::paused,     false],
+            'scheduled → running' => [ExperimentStatus::scheduled, ExperimentStatus::running,    true],
+            'scheduled → draft' => [ExperimentStatus::scheduled, ExperimentStatus::draft,      true],
+            'scheduled → archived' => [ExperimentStatus::scheduled, ExperimentStatus::archived,   true],
+            'running → paused' => [ExperimentStatus::running,   ExperimentStatus::paused,     true],
+            'running → completed' => [ExperimentStatus::running,   ExperimentStatus::completed,  true],
             'running → draft (invalid)' => [ExperimentStatus::running,   ExperimentStatus::draft,      false],
-            'paused → running'          => [ExperimentStatus::paused,    ExperimentStatus::running,    true],
-            'paused → completed'        => [ExperimentStatus::paused,    ExperimentStatus::completed,  true],
-            'completed → archived'      => [ExperimentStatus::completed, ExperimentStatus::archived,   true],
-            'completed → running'       => [ExperimentStatus::completed, ExperimentStatus::running,    false],
-            'archived → anything'       => [ExperimentStatus::archived,  ExperimentStatus::draft,      false],
+            'paused → running' => [ExperimentStatus::paused,    ExperimentStatus::running,    true],
+            'paused → completed' => [ExperimentStatus::paused,    ExperimentStatus::completed,  true],
+            'completed → archived' => [ExperimentStatus::completed, ExperimentStatus::archived,   true],
+            'completed → running' => [ExperimentStatus::completed, ExperimentStatus::running,    false],
+            'archived → anything' => [ExperimentStatus::archived,  ExperimentStatus::draft,      false],
         ];
     }
 

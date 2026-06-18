@@ -13,14 +13,14 @@ namespace ABTests\Values;
 final readonly class PowerAnalysisResult
 {
     /**
-     * @param int   $sampleSizePerVariant    Units required in each arm to achieve the target power.
-     * @param int   $numberOfVariants        Number of arms (including control).
-     * @param float $baselineRate            Observed or assumed baseline rate / mean.
-     * @param float $minimumDetectableEffect Smallest absolute or relative effect worth detecting.
-     * @param bool  $isRelativeEffect        True when $minimumDetectableEffect is relative (e.g. 0.05 = 5%).
-     * @param float $confidenceLevel         1 - α (e.g. 0.95).
-     * @param float $power                   1 - β (e.g. 0.80).
-     * @param int   $totalSampleSize         sampleSizePerVariant × numberOfVariants.
+     * @param  int  $sampleSizePerVariant  Units required in each arm to achieve the target power.
+     * @param  int  $numberOfVariants  Number of arms (including control).
+     * @param  float  $baselineRate  Observed or assumed baseline rate / mean.
+     * @param  float  $minimumDetectableEffect  Smallest absolute or relative effect worth detecting.
+     * @param  bool  $isRelativeEffect  True when $minimumDetectableEffect is relative (e.g. 0.05 = 5%).
+     * @param  float  $confidenceLevel  1 - α (e.g. 0.95).
+     * @param  float  $power  1 - β (e.g. 0.80).
+     * @param  int  $totalSampleSize  sampleSizePerVariant × numberOfVariants.
      */
     public function __construct(
         public int $sampleSizePerVariant,
@@ -41,14 +41,14 @@ final readonly class PowerAnalysisResult
     public function toArray(): array
     {
         return [
-            'sampleSizePerVariant'    => $this->sampleSizePerVariant,
-            'numberOfVariants'        => $this->numberOfVariants,
-            'baselineRate'            => $this->baselineRate,
+            'sampleSizePerVariant' => $this->sampleSizePerVariant,
+            'numberOfVariants' => $this->numberOfVariants,
+            'baselineRate' => $this->baselineRate,
             'minimumDetectableEffect' => $this->minimumDetectableEffect,
-            'isRelativeEffect'        => $this->isRelativeEffect,
-            'confidenceLevel'         => $this->confidenceLevel,
-            'power'                   => $this->power,
-            'totalSampleSize'         => $this->totalSampleSize,
+            'isRelativeEffect' => $this->isRelativeEffect,
+            'confidenceLevel' => $this->confidenceLevel,
+            'power' => $this->power,
+            'totalSampleSize' => $this->totalSampleSize,
         ];
     }
 }

@@ -21,7 +21,7 @@ final readonly class Criterion
     }
 
     /**
-     * @param array<string, mixed> $attributes
+     * @param  array<string, mixed>  $attributes
      */
     public function matches(array $attributes): bool
     {

@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace ABTests\Tests\Integration\Application\CommandHandlers;
 
-use ABTests\Application\Handlers\ToggleFlagKillSwitchCommandHandler;
 use ABTests\Application\Commands\ToggleFlagKillSwitchCommand;
+use ABTests\Application\Handlers\ToggleFlagKillSwitchCommandHandler;
 use ABTests\Domain\Events\KillSwitchActivatedEvent;
+use ABTests\Infrastructure\Database\DatabaseFeatureFlagRepository;
 use ABTests\Infrastructure\Database\Models\FeatureFlagStateModel;
 use ABTests\Tests\Integration\DatabaseTestCase;
+use Carbon\Carbon;
 use Illuminate\Container\Container;
 use PHPUnit\Framework\Attributes\Test;
-use ABTests\Infrastructure\Database\DatabaseFeatureFlagRepository;
 
 final class ToggleFlagKillSwitchCommandHandlerTest extends DatabaseTestCase
 {
@@ -19,9 +20,9 @@ final class ToggleFlagKillSwitchCommandHandlerTest extends DatabaseTestCase
     public function activating_the_kill_switch_sets_killed_at_to_a_timestamp(): void
     {
         FeatureFlagStateModel::query()->create([
-            'key'        => 'my-flag',
+            'key' => 'my-flag',
             'is_enabled' => true,
-            'killed_at'  => null,
+            'killed_at' => null,
         ]);
 
         (new ToggleFlagKillSwitchCommandHandler(new DatabaseFeatureFlagRepository()))->handle(new ToggleFlagKillSwitchCommand(
@@ -39,9 +40,9 @@ final class ToggleFlagKillSwitchCommandHandlerTest extends DatabaseTestCase
     public function deactivating_the_kill_switch_clears_killed_at(): void
     {
         FeatureFlagStateModel::query()->create([
-            'key'        => 'my-flag',
+            'key' => 'my-flag',
             'is_enabled' => true,
-            'killed_at'  => \Carbon\Carbon::now(),
+            'killed_at' => Carbon::now(),
         ]);
 
         (new ToggleFlagKillSwitchCommandHandler(new DatabaseFeatureFlagRepository()))->handle(new ToggleFlagKillSwitchCommand(
@@ -74,9 +75,9 @@ final class ToggleFlagKillSwitchCommandHandlerTest extends DatabaseTestCase
     public function does_not_change_is_enabled_when_toggling_kill_switch(): void
     {
         FeatureFlagStateModel::query()->create([
-            'key'        => 'my-flag',
+            'key' => 'my-flag',
             'is_enabled' => true,
-            'killed_at'  => null,
+            'killed_at' => null,
         ]);
 
         (new ToggleFlagKillSwitchCommandHandler(new DatabaseFeatureFlagRepository()))->handle(new ToggleFlagKillSwitchCommand(
@@ -86,7 +87,7 @@ final class ToggleFlagKillSwitchCommandHandlerTest extends DatabaseTestCase
         ));
 
         self::assertTrue(
-            FeatureFlagStateModel::query()->firstWhere('key', 'my-flag')->is_enabled
+            FeatureFlagStateModel::query()->firstWhere('key', 'my-flag')->is_enabled,
         );
     }
 
@@ -94,9 +95,9 @@ final class ToggleFlagKillSwitchCommandHandlerTest extends DatabaseTestCase
     public function dispatches_kill_switch_activated_event_with_flag_key(): void
     {
         FeatureFlagStateModel::query()->create([
-            'key'        => 'my-flag',
+            'key' => 'my-flag',
             'is_enabled' => true,
-            'killed_at'  => null,
+            'killed_at' => null,
         ]);
 
         /** @var list<KillSwitchActivatedEvent> $fired */
@@ -125,9 +126,9 @@ final class ToggleFlagKillSwitchCommandHandlerTest extends DatabaseTestCase
     public function dispatches_kill_switch_activated_event_with_activated_false_when_deactivating(): void
     {
         FeatureFlagStateModel::query()->create([
-            'key'        => 'my-flag',
+            'key' => 'my-flag',
             'is_enabled' => true,
-            'killed_at'  => \Carbon\Carbon::now(),
+            'killed_at' => Carbon::now(),
         ]);
 
         /** @var list<KillSwitchActivatedEvent> $fired */

@@ -29,7 +29,7 @@ abstract class Metric
      * Subclasses may override this method when the value requires custom
      * derivation beyond reading a single event property.
      *
-     * @param array<string, mixed> $properties
+     * @param  array<string, mixed>  $properties
      */
     public function valueOf(array $properties): float
     {

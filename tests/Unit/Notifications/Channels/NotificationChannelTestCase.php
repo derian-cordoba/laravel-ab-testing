@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ABTests\Tests\Unit\Notifications\Channels;
 
+use ABTests\Infrastructure\Notifications\NotificationPayload;
 use ABTests\Tests\Support\TestApplication;
 use Illuminate\Config\Repository as ConfigRepository;
 use Illuminate\Container\Container;
@@ -59,9 +60,9 @@ abstract class NotificationChannelTestCase extends TestCase
      */
     abstract protected function channelConfig(): array;
 
-    protected function makePayload(string $event = 'experiment_paused'): \ABTests\Infrastructure\Notifications\NotificationPayload
+    protected function makePayload(string $event = 'experiment_paused'): NotificationPayload
     {
-        return new \ABTests\Infrastructure\Notifications\NotificationPayload(
+        return new NotificationPayload(
             event: $event,
             title: 'Experiment paused: checkout-button-color',
             experimentKey: 'checkout-button-color',

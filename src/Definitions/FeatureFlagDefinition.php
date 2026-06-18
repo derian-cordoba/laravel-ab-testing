@@ -13,10 +13,10 @@ namespace ABTests\Definitions;
 final readonly class FeatureFlagDefinition
 {
     /**
-     * @param string $key       Stable kebab-case identifier.
-     * @param string $unitType  The unit's stable type key (e.g. "user").
-     * @param mixed  $defaultValue Returned when resolution cannot complete.
-     * @param string|null $name Human-readable display name (optional).
+     * @param  string  $key  Stable kebab-case identifier.
+     * @param  string  $unitType  The unit's stable type key (e.g. "user").
+     * @param  mixed  $defaultValue  Returned when resolution cannot complete.
+     * @param  string|null  $name  Human-readable display name (optional).
      */
     public function __construct(
         public string $key,

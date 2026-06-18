@@ -12,7 +12,7 @@ final class InvalidStateTransition extends DomainException implements ABTestingE
     public function __construct(ExperimentStatus $from, ExperimentStatus $to)
     {
         parent::__construct(
-            "Cannot transition experiment from [$from->value] to [$to->value]."
+            "Cannot transition experiment from [$from->value] to [$to->value].",
         );
     }
 }

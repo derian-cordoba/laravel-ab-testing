@@ -4,16 +4,17 @@ declare(strict_types=1);
 
 namespace ABTests\Tests\Unit\Testing;
 
-use ABTests\Enums\EventType;
-use ABTests\Experiments;
 use ABTests\Application\Registry\AttributeReader;
 use ABTests\Application\Registry\ExperimentRegistry;
 use ABTests\Application\Registry\FeatureFlagRegistry;
+use ABTests\Enums\EventType;
+use ABTests\Experiments;
 use ABTests\Testing\FakeExperiments;
 use ABTests\Tests\Fixtures\TestExperiment;
 use ABTests\Tests\Fixtures\TestMetric;
 use ABTests\Tests\Fixtures\TestUnitType;
 use ABTests\Tests\Fixtures\TestVariant;
+use PHPUnit\Framework\AssertionFailedError;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -23,6 +24,7 @@ use PHPUnit\Framework\TestCase;
 final class FakeExperimentsTest extends TestCase
 {
     private ExperimentRegistry $registry;
+
     private FakeExperiments $fake;
 
     protected function setUp(): void
@@ -30,8 +32,8 @@ final class FakeExperimentsTest extends TestCase
         parent::setUp();
 
         $this->registry = new ExperimentRegistry();
-        $reader         = new AttributeReader();
-        $definition     = $reader->readExperiment(TestExperiment::class);
+        $reader = new AttributeReader();
+        $definition = $reader->readExperiment(TestExperiment::class);
         $this->registry->register($definition, TestExperiment::class);
 
         $this->fake = FakeExperiments::bootWithRegistries(
@@ -42,7 +44,7 @@ final class FakeExperimentsTest extends TestCase
 
     public function test_no_forced_variant_returns_null(): void
     {
-        $unit    = new TestUnitType('user-1', ['plan' => 'pro']);
+        $unit = new TestUnitType('user-1', ['plan' => 'pro']);
         $variant = Experiments::for($unit)->variant(TestExperiment::class);
 
         self::assertNull($variant);
@@ -64,7 +66,7 @@ final class FakeExperimentsTest extends TestCase
         $this->fake->forceVariant(TestExperiment::class, TestVariant::treatment);
         $this->fake->removeForced(TestExperiment::class);
 
-        $unit    = new TestUnitType('user-1', ['plan' => 'pro']);
+        $unit = new TestUnitType('user-1', ['plan' => 'pro']);
         $variant = Experiments::for($unit)->variant(TestExperiment::class);
 
         self::assertNull($variant);
@@ -95,7 +97,7 @@ final class FakeExperimentsTest extends TestCase
     {
         $unit = new TestUnitType('user-1', ['plan' => 'pro']);
 
-        $this->expectException(\PHPUnit\Framework\AssertionFailedError::class);
+        $this->expectException(AssertionFailedError::class);
         $this->fake->assertExposed(TestExperiment::class, $unit);
     }
 
@@ -116,7 +118,7 @@ final class FakeExperimentsTest extends TestCase
         $unit = new TestUnitType('user-1', ['plan' => 'pro']);
         Experiments::for($unit)->variant(TestExperiment::class);
 
-        $this->expectException(\PHPUnit\Framework\AssertionFailedError::class);
+        $this->expectException(AssertionFailedError::class);
         $this->fake->assertExposedToVariant(TestExperiment::class, $unit, TestVariant::control);
     }
 
@@ -174,9 +176,9 @@ final class FakeExperimentsTest extends TestCase
         Experiments::for($unit)->variant(TestExperiment::class);
         Experiments::for($unit)->track(TestMetric::class);
 
-        $events    = $this->fake->recordedEvents();
+        $events = $this->fake->recordedEvents();
         $exposures = array_filter($events, static fn ($e) => $e->type === EventType::exposure);
-        $metrics   = array_filter($events, static fn ($e) => $e->type === EventType::metric);
+        $metrics = array_filter($events, static fn ($e) => $e->type === EventType::metric);
 
         // Exactly one exposure event.
         self::assertCount(1, $exposures);

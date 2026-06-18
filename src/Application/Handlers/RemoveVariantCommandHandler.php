@@ -16,8 +16,7 @@ final readonly class RemoveVariantCommandHandler
     public function __construct(
         private ExperimentRepository $experimentRepository,
         private AuditLogRepository $auditLogRepository,
-    ) {
-    }
+    ) {}
 
     public function handle(RemoveVariantCommand $command): void
     {
@@ -27,7 +26,7 @@ final readonly class RemoveVariantCommandHandler
 
         if (in_array($status, [ExperimentStatus::completed, ExperimentStatus::archived], true)) {
             throw new InvalidVariantOperation(
-                "Variants cannot be changed on completed or archived experiments. Current status: [{$status->value}]."
+                "Variants cannot be changed on completed or archived experiments. Current status: [{$status->value}].",
             );
         }
 
@@ -43,7 +42,7 @@ final readonly class RemoveVariantCommandHandler
 
         if ($variant->is_control) {
             throw new InvalidVariantOperation(
-                'Cannot remove the control variant. Designate another variant as control first.'
+                'Cannot remove the control variant. Designate another variant as control first.',
             );
         }
 
@@ -54,7 +53,7 @@ final readonly class RemoveVariantCommandHandler
 
             if ($totalVariants < 3) {
                 throw new InvalidVariantOperation(
-                    'A running or paused experiment must retain at least 2 variants. Cannot remove this variant.'
+                    'A running or paused experiment must retain at least 2 variants. Cannot remove this variant.',
                 );
             }
         }

@@ -23,7 +23,7 @@ final class FeatureFlagRegistry
     private array $classToKey = [];
 
     /**
-     * @param class-string|null $flagClass
+     * @param  class-string|null  $flagClass
      */
     public function register(FeatureFlagDefinition $definition, ?string $flagClass = null): void
     {
@@ -35,7 +35,7 @@ final class FeatureFlagRegistry
     }
 
     /**
-     * @param class-string $flagClass
+     * @param  class-string  $flagClass
      *
      * @throws FeatureFlagNotFound
      */

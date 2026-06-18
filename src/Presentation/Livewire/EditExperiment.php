@@ -36,6 +36,7 @@ final class EditExperiment extends Component
     public bool $layerLocked = false;
 
     public string $flashMessage = '';
+
     public string $flashType = 'success';
 
     public function mount(string $experimentKey): void
@@ -54,24 +55,24 @@ final class EditExperiment extends Component
     {
         $this->validate();
 
-        $normalizedName   = $this->name !== null && trim($this->name) !== '' ? trim($this->name) : null;
-        $normalizedLayer  = $this->layer !== null && trim($this->layer) !== '' ? trim($this->layer) : null;
+        $normalizedName = $this->name !== null && trim($this->name) !== '' ? trim($this->name) : null;
+        $normalizedLayer = $this->layer !== null && trim($this->layer) !== '' ? trim($this->layer) : null;
 
         try {
             app(CommandBus::class)->dispatch(new UpdateExperimentCommand(
-                experimentKey:   $this->experimentKey,
-                name:            $normalizedName,
-                layer:           $normalizedLayer,
+                experimentKey: $this->experimentKey,
+                name: $normalizedName,
+                layer: $normalizedLayer,
                 targetSampleSize: $this->targetSampleSize,
                 actorIdentifier: $this->actorIdentifier(),
             ));
 
             $this->flashMessage = 'Settings saved.';
-            $this->flashType    = 'success';
+            $this->flashType = 'success';
             $this->dispatch('experiment-updated');
         } catch (Throwable $e) {
-            $this->flashMessage = 'Failed to save: ' . $e->getMessage();
-            $this->flashType    = 'error';
+            $this->flashMessage = 'Failed to save: '.$e->getMessage();
+            $this->flashType = 'error';
         }
     }
 
@@ -88,8 +89,8 @@ final class EditExperiment extends Component
             return;
         }
 
-        $this->name             = $model->name;
-        $this->layer            = $model->layer;
+        $this->name = $model->name;
+        $this->layer = $model->layer;
         $this->targetSampleSize = $model->target_sample_size;
 
         $editableStatuses = [ExperimentStatus::draft->value, ExperimentStatus::scheduled->value];

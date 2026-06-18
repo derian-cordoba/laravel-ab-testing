@@ -94,7 +94,7 @@ final class AllocationTest extends TestCase
         $allocation = Allocation::fromVariants(ThreeWayVariant::cases());
 
         // control: [0, 0.34), variantA: [0.34, 0.67), variantB: [0.67, 1.00)
-        self::assertSame(ThreeWayVariant::control,  $allocation->variantAt(0.10));
+        self::assertSame(ThreeWayVariant::control, $allocation->variantAt(0.10));
         self::assertSame(ThreeWayVariant::variantA, $allocation->variantAt(0.50));
         self::assertSame(ThreeWayVariant::variantB, $allocation->variantAt(0.80));
     }

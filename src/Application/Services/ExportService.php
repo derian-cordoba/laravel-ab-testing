@@ -43,22 +43,22 @@ final readonly class ExportService
             ->orderBy('metric_key')
             ->get()
             ->map(static fn (RollupModel $r): array => [
-                'variant_key'             => $r->variant_key,
-                'metric_key'              => $r->metric_key,
-                'count_of_units'          => $r->count_of_units,
-                'exposures'               => $r->exposures,
-                'conversions'             => $r->conversions,
-                'sum_of_values'           => $r->sum_of_values,
-                'sum_of_squared_values'   => $r->sum_of_squared_values,
-                'updated_through_at'      => $r->updated_through_at,
+                'variant_key' => $r->variant_key,
+                'metric_key' => $r->metric_key,
+                'count_of_units' => $r->count_of_units,
+                'exposures' => $r->exposures,
+                'conversions' => $r->conversions,
+                'sum_of_values' => $r->sum_of_values,
+                'sum_of_squared_values' => $r->sum_of_squared_values,
+                'updated_through_at' => $r->updated_through_at,
             ])
             ->all();
 
         return [
             'experiment_key' => $experimentKey,
-            'exported_at'    => now()->toIso8601String(),
-            'status'         => $model->status,
-            'rollups'        => $rollups,
+            'exported_at' => now()->toIso8601String(),
+            'status' => $model->status,
+            'rollups' => $rollups,
         ];
     }
 
@@ -66,8 +66,8 @@ final readonly class ExportService
      * Stream the raw event CSV for one experiment to the given file handle or
      * memory buffer. Yields one row per event; the caller controls the output.
      *
-     * @param resource $handle  A writable stream (e.g. php://output or fopen(...)).
-     * @param int      $chunkSize Events per DB query batch.
+     * @param  resource  $handle  A writable stream (e.g. php://output or fopen(...)).
+     * @param  int  $chunkSize  Events per DB query batch.
      */
     public function streamEventsCsv(string $experimentKey, mixed $handle, int $chunkSize = 5000): void
     {

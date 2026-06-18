@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace ABTests\Application\Resolution\Steps;
 
-use ABTests\Contracts\AssignmentRepository;
 use ABTests\Application\Resolution\Contracts\ResolutionStep;
 use ABTests\Application\Resolution\ResolutionPayload;
+use ABTests\Contracts\AssignmentRepository;
 use ABTests\Values\Assignment;
 use DateTimeImmutable;
 

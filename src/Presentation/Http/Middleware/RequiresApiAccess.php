@@ -39,7 +39,7 @@ final readonly class RequiresApiAccess
             'errors' => [
                 [
                     'status' => (string) $status,
-                    'title'  => $title,
+                    'title' => $title,
                     'detail' => $detail,
                 ],
             ],

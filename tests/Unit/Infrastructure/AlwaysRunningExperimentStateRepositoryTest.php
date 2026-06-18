@@ -14,7 +14,7 @@ final class AlwaysRunningExperimentStateRepositoryTest extends TestCase
     #[Test]
     public function always_returns_running_state_for_any_key(): void
     {
-        $repo  = new AlwaysRunningExperimentStateRepository();
+        $repo = new AlwaysRunningExperimentStateRepository();
         $state = $repo->findState('any-experiment');
 
         self::assertSame('any-experiment', $state->experimentKey);

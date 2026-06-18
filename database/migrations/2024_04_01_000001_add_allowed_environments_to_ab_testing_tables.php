@@ -14,7 +14,8 @@ use Illuminate\Support\Facades\Schema;
  *
  * Values match ABTests\Enums\Environment: 'local', 'staging', 'production'.
  */
-return new class extends Migration {
+return new class() extends Migration
+{
     public function up(): void
     {
         Schema::table('ab_testing_experiments', static function (Blueprint $table): void {

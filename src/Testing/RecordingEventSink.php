@@ -54,8 +54,7 @@ final class RecordingEventSink implements EventSink
     {
         return array_values(array_filter(
             $this->events,
-            static fn (RecordedEvent $e): bool =>
-                $e->type === EventType::exposure
+            static fn (RecordedEvent $e): bool => $e->type === EventType::exposure
                 && $e->experimentKey === $experimentKey
                 && $e->unitKey === $unitKey,
         ));
@@ -70,8 +69,7 @@ final class RecordingEventSink implements EventSink
     {
         return array_values(array_filter(
             $this->events,
-            static fn (RecordedEvent $e): bool =>
-                $e->type === EventType::metric
+            static fn (RecordedEvent $e): bool => $e->type === EventType::metric
                 && $e->metricKey === $metricKey
                 && $e->unitKey === $unitKey,
         ));

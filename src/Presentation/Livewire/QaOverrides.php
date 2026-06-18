@@ -25,9 +25,12 @@ final class QaOverrides extends Component
     // ── Create form ───────────────────────────────────────────────────────────
 
     public string $newExperimentKey = '';
-    public string $newUnitType      = 'user';
-    public string $newUnitKey       = '';
-    public string $newVariantKey    = '';
+
+    public string $newUnitType = 'user';
+
+    public string $newUnitKey = '';
+
+    public string $newVariantKey = '';
 
     // ── Filter ───────────────────────────────────────────────────────────────
 
@@ -45,20 +48,20 @@ final class QaOverrides extends Component
     {
         $this->validate([
             'newExperimentKey' => 'required|string|max:255',
-            'newUnitType'      => 'required|string|max:100',
-            'newUnitKey'       => 'required|string|max:500',
-            'newVariantKey'    => 'required|string|max:255',
+            'newUnitType' => 'required|string|max:100',
+            'newUnitKey' => 'required|string|max:500',
+            'newVariantKey' => 'required|string|max:255',
         ]);
 
         AssignmentModel::query()->updateOrCreate(
             [
                 'experiment_key' => $this->newExperimentKey,
-                'unit_type'      => $this->newUnitType,
-                'unit_key'       => $this->newUnitKey,
+                'unit_type' => $this->newUnitType,
+                'unit_key' => $this->newUnitKey,
             ],
             [
                 'variant_key' => $this->newVariantKey,
-                'layer'       => ExperimentModel::query()->where('key', $this->newExperimentKey)->value('layer'),
+                'layer' => ExperimentModel::query()->where('key', $this->newExperimentKey)->value('layer'),
                 'assigned_at' => Carbon::now(),
             ],
         );
@@ -91,8 +94,8 @@ final class QaOverrides extends Component
             ->orderBy('key')
             ->get(['key', 'name', 'status'])
             ->map(static fn ($e): array => [
-                'key'    => $e->key,
-                'label'  => $e->name ?? $e->key,
+                'key' => $e->key,
+                'label' => $e->name ?? $e->key,
                 'status' => $e->status,
             ]);
 
@@ -112,16 +115,16 @@ final class QaOverrides extends Component
         $query = AssignmentModel::query()->orderByDesc('assigned_at');
 
         if ($this->search !== '') {
-            $query->where('unit_key', 'like', '%' . $this->search . '%');
+            $query->where('unit_key', 'like', '%'.$this->search.'%');
         }
 
         if ($this->experimentSearch !== '') {
-            $query->where('experiment_key', 'like', '%' . $this->experimentSearch . '%');
+            $query->where('experiment_key', 'like', '%'.$this->experimentSearch.'%');
         }
 
-        $total       = $query->count();
+        $total = $query->count();
         $assignments = $query->limit($this->perPage)->get();
-        $hasMore     = $total > $this->perPage;
+        $hasMore = $total > $this->perPage;
 
         return view(
             'ab-testing::livewire.qa-overrides',

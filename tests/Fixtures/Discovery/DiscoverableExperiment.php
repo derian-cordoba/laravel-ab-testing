@@ -9,6 +9,4 @@ use ABTests\Experiment;
 /**
  * A minimal class file that ClassDiscovery should detect during scanning tests.
  */
-final class DiscoverableExperiment extends Experiment
-{
-}
+final class DiscoverableExperiment extends Experiment {}

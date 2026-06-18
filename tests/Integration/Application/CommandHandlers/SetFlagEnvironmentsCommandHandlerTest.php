@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace ABTests\Tests\Integration\Application\CommandHandlers;
 
-use ABTests\Application\Handlers\SetFlagEnvironmentsCommandHandler;
 use ABTests\Application\Commands\SetFlagEnvironmentsCommand;
+use ABTests\Application\Handlers\SetFlagEnvironmentsCommandHandler;
 use ABTests\Domain\Events\FeatureFlagEnvironmentsUpdatedEvent;
 use ABTests\Exceptions\FeatureFlagNotFound;
+use ABTests\Infrastructure\Database\DatabaseAuditLogRepository;
+use ABTests\Infrastructure\Database\DatabaseFeatureFlagRepository;
 use ABTests\Infrastructure\Database\Models\FeatureFlagStateModel;
 use ABTests\Tests\Integration\DatabaseTestCase;
 use Illuminate\Container\Container;
 use PHPUnit\Framework\Attributes\Test;
-use ABTests\Infrastructure\Database\DatabaseFeatureFlagRepository;
-use ABTests\Infrastructure\Database\DatabaseAuditLogRepository;
 
 final class SetFlagEnvironmentsCommandHandlerTest extends DatabaseTestCase
 {
@@ -21,7 +21,7 @@ final class SetFlagEnvironmentsCommandHandlerTest extends DatabaseTestCase
     public function sets_allowed_environments_on_existing_flag(): void
     {
         FeatureFlagStateModel::query()->create([
-            'key'        => 'my-flag',
+            'key' => 'my-flag',
             'is_enabled' => true,
         ]);
 
@@ -40,8 +40,8 @@ final class SetFlagEnvironmentsCommandHandlerTest extends DatabaseTestCase
     public function clears_restriction_when_allowed_environments_is_null(): void
     {
         FeatureFlagStateModel::query()->create([
-            'key'                  => 'my-flag',
-            'is_enabled'           => true,
+            'key' => 'my-flag',
+            'is_enabled' => true,
             'allowed_environments' => ['production'],
         ]);
 
@@ -72,8 +72,8 @@ final class SetFlagEnvironmentsCommandHandlerTest extends DatabaseTestCase
     public function does_not_change_other_flag_fields(): void
     {
         FeatureFlagStateModel::query()->create([
-            'key'                => 'my-flag',
-            'is_enabled'         => true,
+            'key' => 'my-flag',
+            'is_enabled' => true,
             'rollout_percentage' => 60,
         ]);
 
@@ -93,7 +93,7 @@ final class SetFlagEnvironmentsCommandHandlerTest extends DatabaseTestCase
     public function dispatches_feature_flag_environments_updated_event(): void
     {
         FeatureFlagStateModel::query()->create([
-            'key'        => 'my-flag',
+            'key' => 'my-flag',
             'is_enabled' => false,
         ]);
 
@@ -122,8 +122,8 @@ final class SetFlagEnvironmentsCommandHandlerTest extends DatabaseTestCase
     public function event_carries_null_when_restriction_is_cleared(): void
     {
         FeatureFlagStateModel::query()->create([
-            'key'                  => 'my-flag',
-            'is_enabled'           => true,
+            'key' => 'my-flag',
+            'is_enabled' => true,
             'allowed_environments' => ['production'],
         ]);
 

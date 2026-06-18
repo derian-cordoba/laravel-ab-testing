@@ -18,10 +18,10 @@ final readonly class AsUnit
     public string $key;
 
     /**
-     * @param string|UnitEnum $key Stable type key used to namespace assignments and events.
-     *                              Accepts a backed enum case (returns its value) or a unit
-     *                              enum case (returns its name), following the same semantics
-     *                              as Laravel's enum_value().
+     * @param  string|UnitEnum  $key  Stable type key used to namespace assignments and events.
+     *                                Accepts a backed enum case (returns its value) or a unit
+     *                                enum case (returns its name), following the same semantics
+     *                                as Laravel's enum_value().
      */
     public function __construct(string|UnitEnum $key)
     {

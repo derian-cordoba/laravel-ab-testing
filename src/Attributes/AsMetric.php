@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace ABTests\Attributes;
 
-use Attribute;
-use UnitEnum;
 use ABTests\Enums\Aggregate;
 use ABTests\Enums\MetricType;
+use Attribute;
+use UnitEnum;
 
 /**
  * Declares a reusable metric. An experiment references metrics and assigns
@@ -21,15 +21,15 @@ final readonly class AsMetric
     public string $key;
 
     /**
-     * @param string|UnitEnum  $key                Stable, kebab-case identifier. Accepts a
-     *                                             backed enum case (returns its value) or a
-     *                                             unit enum case (returns its name), following
-     *                                             the same semantics as Laravel's enum_value().
-     * @param MetricType       $type               Selects the statistical test.
-     * @param string           $event              Name of the raw event that feeds this metric.
-     * @param Aggregate        $aggregate          How a unit's events collapse to one observation.
-     * @param string|null      $valueFromProperty  Event property to read for continuous metrics.
-     * @param string           $attributionWindow  Time from exposure within which an event counts.
+     * @param  string|UnitEnum  $key  Stable, kebab-case identifier. Accepts a
+     *                                backed enum case (returns its value) or a
+     *                                unit enum case (returns its name), following
+     *                                the same semantics as Laravel's enum_value().
+     * @param  MetricType  $type  Selects the statistical test.
+     * @param  string  $event  Name of the raw event that feeds this metric.
+     * @param  Aggregate  $aggregate  How a unit's events collapse to one observation.
+     * @param  string|null  $valueFromProperty  Event property to read for continuous metrics.
+     * @param  string  $attributionWindow  Time from exposure within which an event counts.
      */
     public function __construct(
         string|UnitEnum $key,

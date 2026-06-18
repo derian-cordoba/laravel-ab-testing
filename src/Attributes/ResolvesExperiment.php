@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace ABTests\Attributes;
 
-use Attribute;
 use ABTests\Experiment;
+use Attribute;
 
 /**
  * Binds an experiment to a controller action. Middleware resolves the variant,
@@ -16,7 +16,7 @@ use ABTests\Experiment;
 final readonly class ResolvesExperiment
 {
     /**
-     * @param class-string<Experiment> $experiment
+     * @param  class-string<Experiment>  $experiment
      */
     public function __construct(public string $experiment)
     {

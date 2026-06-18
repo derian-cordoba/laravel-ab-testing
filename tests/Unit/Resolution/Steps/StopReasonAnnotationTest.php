@@ -38,7 +38,7 @@ final class StopReasonAnnotationTest extends TestCase
     #[Test]
     public function check_experiment_active_sets_killed_reason_when_kill_switch_is_on(): void
     {
-        $state   = new ExperimentState('exp', ExperimentStatus::running, 100, isKilled: true);
+        $state = new ExperimentState('exp', ExperimentStatus::running, 100, isKilled: true);
         $payload = $this->makePayload(state: $state);
 
         (new CheckExperimentActiveStep())->handle($payload);
@@ -49,7 +49,7 @@ final class StopReasonAnnotationTest extends TestCase
     #[Test]
     public function check_experiment_active_sets_not_running_reason_when_paused(): void
     {
-        $state   = new ExperimentState('exp', ExperimentStatus::paused, 100);
+        $state = new ExperimentState('exp', ExperimentStatus::paused, 100);
         $payload = $this->makePayload(state: $state);
 
         (new CheckExperimentActiveStep())->handle($payload);
@@ -60,7 +60,7 @@ final class StopReasonAnnotationTest extends TestCase
     #[Test]
     public function check_experiment_active_leaves_reason_null_when_running(): void
     {
-        $state   = ExperimentState::alwaysRunning('exp');
+        $state = ExperimentState::alwaysRunning('exp');
         $payload = $this->makePayload(state: $state);
 
         (new CheckExperimentActiveStep())->handle($payload);
@@ -76,8 +76,8 @@ final class StopReasonAnnotationTest extends TestCase
     public function check_segment_sets_not_in_audience_reason_when_unit_does_not_match(): void
     {
         $definition = $this->makeDefinition(audience: Segment::where('plan', 'pro'));
-        $unit       = new TestUnit(attributes: ['plan' => 'free']);
-        $payload    = $this->makePayload(definition: $definition, unit: $unit);
+        $unit = new TestUnit(attributes: ['plan' => 'free']);
+        $payload = $this->makePayload(definition: $definition, unit: $unit);
 
         (new CheckSegmentStep())->handle($payload);
 
@@ -88,8 +88,8 @@ final class StopReasonAnnotationTest extends TestCase
     public function check_segment_leaves_reason_null_when_unit_matches(): void
     {
         $definition = $this->makeDefinition(audience: Segment::where('plan', 'pro'));
-        $unit       = new TestUnit(attributes: ['plan' => 'pro']);
-        $payload    = $this->makePayload(definition: $definition, unit: $unit);
+        $unit = new TestUnit(attributes: ['plan' => 'pro']);
+        $payload = $this->makePayload(definition: $definition, unit: $unit);
 
         (new CheckSegmentStep())->handle($payload);
 
@@ -103,7 +103,7 @@ final class StopReasonAnnotationTest extends TestCase
     #[Test]
     public function check_traffic_sets_outside_allocation_reason_when_unit_is_held_out(): void
     {
-        $state   = new ExperimentState('exp', ExperimentStatus::running, 10); // 10% traffic
+        $state = new ExperimentState('exp', ExperimentStatus::running, 10); // 10% traffic
         $payload = $this->makePayload(state: $state, bucketPosition: 0.5);      // position > 10%
 
         (new CheckTrafficAllocationStep())->handle($payload);
@@ -114,7 +114,7 @@ final class StopReasonAnnotationTest extends TestCase
     #[Test]
     public function check_traffic_leaves_reason_null_when_unit_is_in_traffic_slice(): void
     {
-        $state   = new ExperimentState('exp', ExperimentStatus::running, 80); // 80% traffic
+        $state = new ExperimentState('exp', ExperimentStatus::running, 80); // 80% traffic
         $payload = $this->makePayload(state: $state);     // position < 80%
 
         (new CheckTrafficAllocationStep())->handle($payload);
@@ -130,7 +130,7 @@ final class StopReasonAnnotationTest extends TestCase
     public function check_layer_exclusion_sets_layer_excluded_reason_when_unit_is_in_another_experiment(): void
     {
         $assignmentRepository = new InMemoryAssignmentRepository();
-        $definition           = $this->makeDefinition(key: 'exp-a', layer: 'checkout');
+        $definition = $this->makeDefinition(key: 'exp-a', layer: 'checkout');
 
         // Pre-seed an assignment for a DIFFERENT experiment in the same layer.
         $assignmentRepository->storeAssignment(new Assignment(
@@ -153,8 +153,8 @@ final class StopReasonAnnotationTest extends TestCase
     public function check_layer_exclusion_leaves_reason_null_when_no_layer_conflict(): void
     {
         $assignmentRepository = new InMemoryAssignmentRepository();
-        $definition           = $this->makeDefinition(key: 'exp-a', layer: 'checkout');
-        $payload              = $this->makePayload(definition: $definition);
+        $definition = $this->makeDefinition(key: 'exp-a', layer: 'checkout');
+        $payload = $this->makePayload(definition: $definition);
 
         (new CheckLayerExclusionStep($assignmentRepository))->handle($payload);
 
@@ -169,8 +169,8 @@ final class StopReasonAnnotationTest extends TestCase
     public function load_existing_assignment_sets_sticky_reason_when_assignment_found(): void
     {
         $assignmentRepository = new InMemoryAssignmentRepository();
-        $definition           = $this->makeDefinition();
-        $payload              = $this->makePayload(definition: $definition);
+        $definition = $this->makeDefinition();
+        $payload = $this->makePayload(definition: $definition);
 
         $assignmentRepository->storeAssignment(new Assignment(
             experimentKey: $definition->key,
@@ -192,7 +192,7 @@ final class StopReasonAnnotationTest extends TestCase
     public function load_existing_assignment_leaves_reason_null_when_no_assignment(): void
     {
         $assignmentRepository = new InMemoryAssignmentRepository();
-        $payload              = $this->makePayload();
+        $payload = $this->makePayload();
 
         (new LoadExistingAssignmentStep($assignmentRepository))->handle($payload);
 
@@ -218,9 +218,9 @@ final class StopReasonAnnotationTest extends TestCase
     #[Test]
     public function bucket_step_does_not_override_sticky_reason(): void
     {
-        $payload                        = $this->makePayload(bucketPosition: 0.1);
+        $payload = $this->makePayload(bucketPosition: 0.1);
         $payload->hasExistingAssignment = true;
-        $payload->stopReason            = EvaluationReason::stickyAssignment;
+        $payload->stopReason = EvaluationReason::stickyAssignment;
 
         (new BucketStep())->handle($payload);
 

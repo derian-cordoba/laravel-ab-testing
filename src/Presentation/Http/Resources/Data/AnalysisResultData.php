@@ -14,7 +14,7 @@ use Illuminate\Contracts\Support\Arrayable;
 final readonly class AnalysisResultData implements Arrayable
 {
     /**
-     * @param array{0: float, 1: float} $confidenceInterval
+     * @param  array{0: float, 1: float}  $confidenceInterval
      */
     public function __construct(
         public float $relativeLift,
@@ -45,12 +45,12 @@ final readonly class AnalysisResultData implements Arrayable
     public function toArray(): array
     {
         return [
-            'relative_lift'               => $this->relativeLift,
-            'is_significant'              => $this->isSignificant,
-            'confidence_interval'         => $this->confidenceInterval,
-            'p_value'                     => $this->pValue,
+            'relative_lift' => $this->relativeLift,
+            'is_significant' => $this->isSignificant,
+            'confidence_interval' => $this->confidenceInterval,
+            'p_value' => $this->pValue,
             'probability_to_beat_control' => $this->probabilityToBeatControl,
-            'expected_loss'               => $this->expectedLoss,
+            'expected_loss' => $this->expectedLoss,
         ];
     }
 }

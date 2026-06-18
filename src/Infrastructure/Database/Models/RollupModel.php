@@ -8,18 +8,18 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * @property int         $id
- * @property string      $experiment_key
- * @property string      $variant_key
- * @property string      $metric_key
- * @property int         $count_of_units
- * @property int         $exposures
- * @property float       $sum_of_values
- * @property float       $sum_of_squared_values
- * @property int         $conversions
- * @property float|null  $sum_of_denominators
- * @property float|null  $sum_of_squared_denominators
- * @property float|null  $sum_of_numerator_denominator
+ * @property int $id
+ * @property string $experiment_key
+ * @property string $variant_key
+ * @property string $metric_key
+ * @property int $count_of_units
+ * @property int $exposures
+ * @property float $sum_of_values
+ * @property float $sum_of_squared_values
+ * @property int $conversions
+ * @property float|null $sum_of_denominators
+ * @property float|null $sum_of_squared_denominators
+ * @property float|null $sum_of_numerator_denominator
  * @property Carbon|null $updated_through_at
  * @property Carbon|null $updated_at
  */

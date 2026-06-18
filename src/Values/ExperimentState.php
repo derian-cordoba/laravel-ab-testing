@@ -15,7 +15,7 @@ use ABTests\Enums\ExperimentStatus;
 final readonly class ExperimentState
 {
     /**
-     * @param list<string>|null $allowedEnvironments null = all environments (no restriction).
+     * @param  list<string>|null  $allowedEnvironments  null = all environments (no restriction).
      */
     public function __construct(
         public string $experimentKey,

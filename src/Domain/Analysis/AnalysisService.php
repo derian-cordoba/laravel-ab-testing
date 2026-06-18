@@ -39,11 +39,11 @@ final readonly class AnalysisService
     /**
      * Analyze a single treatment arm against control.
      *
-     * @param list<MetricSummary> $allSummaries All variant summaries for SRM detection
-     *                                          (include both control and treatment).
-     * @param string|null         $metricKey    When provided, CUPED covariate data is
-     *                                          looked up for this metric and the
-     *                                          experiment key derived from the definition.
+     * @param  list<MetricSummary>  $allSummaries  All variant summaries for SRM detection
+     *                                             (include both control and treatment).
+     * @param  string|null  $metricKey  When provided, CUPED covariate data is
+     *                                  looked up for this metric and the
+     *                                  experiment key derived from the definition.
      */
     public function analyse(
         ExperimentDefinition $definition,
@@ -95,7 +95,7 @@ final readonly class AnalysisService
      * Apply CUPED variance reduction when covariate rows exist for the metric.
      * Returns the (possibly adjusted) control, treatment, and full allSummaries.
      *
-     * @param list<MetricSummary> $allSummaries
+     * @param  list<MetricSummary>  $allSummaries
      * @return array{0: MetricSummary, 1: MetricSummary, 2: list<MetricSummary>}
      */
     private function applyRatioReduction(
@@ -119,10 +119,10 @@ final readonly class AnalysisService
         $adjustedSummaries = $cuped->adjust($allSummaries, $experimentKey, $metricKey);
 
         // Re-locate control and treatment in the adjusted array (same order, same variant).
-        $controlKey   = $control->variant->key();
+        $controlKey = $control->variant->key();
         $treatmentKey = $treatment->variant->key();
 
-        $adjustedControl   = $control;
+        $adjustedControl = $control;
         $adjustedTreatment = $treatment;
 
         foreach ($adjustedSummaries as $adjusted) {

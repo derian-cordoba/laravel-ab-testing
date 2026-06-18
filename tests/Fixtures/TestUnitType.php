@@ -14,8 +14,7 @@ final class TestUnitType implements Bucketable
     public function __construct(
         private string $id = 'user-1',
         private array $attributes = [],
-    ) {
-    }
+    ) {}
 
     public function bucketingKey(): string
     {

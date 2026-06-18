@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace ABTests\Application\Resolution;
 
+use ABTests\Application\Resolution\Contracts\ResolutionStep;
 use ABTests\Contracts\Bucketable;
 use ABTests\Contracts\BucketingStrategy;
 use ABTests\Contracts\ExperimentStateRepository;
 use ABTests\Contracts\ResolvesVariant;
 use ABTests\Definitions\ExperimentDefinition;
 use ABTests\Enums\EvaluationReason;
-use ABTests\Application\Resolution\Contracts\ResolutionStep;
 use ABTests\Values\EvaluationResult;
 
 /**
@@ -27,7 +27,7 @@ use ABTests\Values\EvaluationResult;
 final readonly class Resolver implements ResolvesVariant
 {
     /**
-     * @param list<ResolutionStep> $steps Ordered pipeline steps.
+     * @param  list<ResolutionStep>  $steps  Ordered pipeline steps.
      */
     public function __construct(
         private BucketingStrategy $bucketingStrategy,
@@ -54,7 +54,7 @@ final readonly class Resolver implements ResolvesVariant
         }
 
         $bucketPosition = $this->bucketingStrategy->position($definition->key, $unit);
-        $payload        = new ResolutionPayload($definition, $unit, $state, $bucketPosition);
+        $payload = new ResolutionPayload($definition, $unit, $state, $bucketPosition);
         $payload->dryRun = $dryRun;
 
         foreach ($this->steps as $step) {

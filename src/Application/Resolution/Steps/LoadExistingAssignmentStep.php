@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace ABTests\Application\Resolution\Steps;
 
-use ABTests\Contracts\AssignmentRepository;
 use ABTests\Application\Resolution\Contracts\ResolutionStep;
 use ABTests\Application\Resolution\ResolutionPayload;
+use ABTests\Contracts\AssignmentRepository;
 use ABTests\Enums\EvaluationReason;
 
 /**
@@ -47,9 +47,9 @@ final readonly class LoadExistingAssignmentStep implements ResolutionStep
             return true;
         }
 
-        $payload->resolvedVariant       = $variant;
+        $payload->resolvedVariant = $variant;
         $payload->hasExistingAssignment = true;
-        $payload->stopReason            = EvaluationReason::stickyAssignment;
+        $payload->stopReason = EvaluationReason::stickyAssignment;
 
         return true;
     }

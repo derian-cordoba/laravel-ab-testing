@@ -32,7 +32,7 @@ final class ExposeAssignmentsMiddleware
         $response = $next($request);
 
         $unitType = $request->attributes->get('ab_unit_type');
-        $unitKey  = $request->attributes->get('ab_unit_key');
+        $unitKey = $request->attributes->get('ab_unit_key');
 
         if (! is_string($unitType) || ! is_string($unitKey) || $unitType === '' || $unitKey === '') {
             return $response;
@@ -54,7 +54,7 @@ final class ExposeAssignmentsMiddleware
         $content = $response->getContent();
 
         if (is_string($content) && str_contains($content, '</head>')) {
-            $content = str_replace('</head>', $metaTag . "\n</head>", $content);
+            $content = str_replace('</head>', $metaTag."\n</head>", $content);
             $response->setContent($content);
         }
 

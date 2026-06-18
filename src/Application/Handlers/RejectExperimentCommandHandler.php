@@ -16,8 +16,7 @@ final readonly class RejectExperimentCommandHandler
     public function __construct(
         private ExperimentRepository $experimentRepository,
         private AuditLogRepository $auditLogRepository,
-    ) {
-    }
+    ) {}
 
     public function handle(RejectExperimentCommand $command): void
     {
@@ -32,11 +31,11 @@ final readonly class RejectExperimentCommandHandler
 
         if ($approval !== null) {
             $approval->update([
-                'status'           => ApprovalStatus::rejected->value,
-                'reviewed_by'      => $command->actorIdentifier,
+                'status' => ApprovalStatus::rejected->value,
+                'reviewed_by' => $command->actorIdentifier,
                 'reviewed_by_type' => $command->actorType,
-                'notes'            => $command->notes ?? $approval->notes,
-                'reviewed_at'      => Carbon::now(),
+                'notes' => $command->notes ?? $approval->notes,
+                'reviewed_at' => Carbon::now(),
             ]);
         }
 

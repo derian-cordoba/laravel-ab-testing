@@ -15,14 +15,12 @@ use ABTests\Exceptions\InvalidAllocation;
 final readonly class Allocation
 {
     /**
-     * @param list<Variant> $variants
+     * @param  list<Variant>  $variants
      */
-    private function __construct(public array $variants)
-    {
-    }
+    private function __construct(public array $variants) {}
 
     /**
-     * @param list<Variant> $variants
+     * @param  list<Variant>  $variants
      */
     public static function fromVariants(array $variants): self
     {
@@ -37,7 +35,7 @@ final readonly class Allocation
 
         if ($totalWeight !== 100) {
             throw new InvalidAllocation(
-                "Variant weights must sum to 100, got $totalWeight."
+                "Variant weights must sum to 100, got $totalWeight.",
             );
         }
 
@@ -48,7 +46,7 @@ final readonly class Allocation
 
         if (count($controls) !== 1) {
             throw new InvalidAllocation(
-                'An experiment must declare exactly one control variant.'
+                'An experiment must declare exactly one control variant.',
             );
         }
 
@@ -83,7 +81,7 @@ final readonly class Allocation
     {
         return array_find(
             $this->variants,
-            static fn(Variant $variant) => $variant->key() === $key,
+            static fn (Variant $variant) => $variant->key() === $key,
         );
     }
 

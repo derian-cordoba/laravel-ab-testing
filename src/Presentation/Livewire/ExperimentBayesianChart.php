@@ -73,7 +73,7 @@ final class ExperimentBayesianChart extends Component
 
         foreach ($rollups as $rollup) {
             $conversions = (int) $rollup->conversions;
-            $units       = (int) $rollup->count_of_units;
+            $units = (int) $rollup->count_of_units;
 
             // Skip variants with missing or incoherent data (conversions can never
             // exceed units for a binary metric; such rows indicate a rollup bug).
@@ -82,11 +82,11 @@ final class ExperimentBayesianChart extends Component
             }
 
             $alpha = $conversions + 1;      // uniform prior: Beta(1,1)
-            $beta  = ($units - $conversions) + 1;
+            $beta = ($units - $conversions) + 1;
 
             $mean = $alpha / ($alpha + $beta);
-            $var  = ($alpha * $beta) / (($alpha + $beta) ** 2 * ($alpha + $beta + 1));
-            $sd   = sqrt($var);
+            $var = ($alpha * $beta) / (($alpha + $beta) ** 2 * ($alpha + $beta + 1));
+            $sd = sqrt($var);
 
             $posteriorParams[$rollup->variant_key] = compact('alpha', 'beta', 'mean', 'sd');
         }
@@ -97,14 +97,14 @@ final class ExperimentBayesianChart extends Component
 
         // Determine x range: ±4 standard deviations around the widest posterior,
         // clamped to (0.001, 0.999) to keep log(x) defined.
-        $means  = array_column($posteriorParams, 'mean');
-        $sds    = array_column($posteriorParams, 'sd');
-        $maxSd  = max($sds);
-        $xMin   = max(0.001, min($means) - 4.5 * $maxSd);
-        $xMax   = min(0.999, max($means) + 4.5 * $maxSd);
+        $means = array_column($posteriorParams, 'mean');
+        $sds = array_column($posteriorParams, 'sd');
+        $maxSd = max($sds);
+        $xMin = max(0.001, min($means) - 4.5 * $maxSd);
+        $xMax = min(0.999, max($means) + 4.5 * $maxSd);
 
         $numPoints = 200;
-        $xValues   = [];
+        $xValues = [];
 
         for ($i = 0; $i < $numPoints; $i++) {
             $xValues[] = $xMin + ($xMax - $xMin) * $i / ($numPoints - 1);
@@ -133,10 +133,10 @@ final class ExperimentBayesianChart extends Component
             [$credibleLow, $credibleHigh] = self::credibleInterval($params['alpha'], $params['beta'], 0.95);
 
             $series[] = [
-                'key'         => $variantKey,
-                'color'       => $colors[$i % count($colors)],
-                'points'      => $points,
-                'mean'        => round($params['mean'] * 100, 3),
+                'key' => $variantKey,
+                'color' => $colors[$i % count($colors)],
+                'points' => $points,
+                'mean' => round($params['mean'] * 100, 3),
                 'credibleLow' => round($credibleLow * 100, 3),
                 'credibleHigh' => round($credibleHigh * 100, 3),
             ];
@@ -157,7 +157,7 @@ final class ExperimentBayesianChart extends Component
         }
 
         $logPdf = ($alpha - 1.0) * log($x)
-                + ($beta  - 1.0) * log(1.0 - $x)
+                + ($beta - 1.0) * log(1.0 - $x)
                 + self::lgamma($alpha + $beta)
                 - self::lgamma($alpha)
                 - self::lgamma($beta);
@@ -174,7 +174,7 @@ final class ExperimentBayesianChart extends Component
      */
     private static function credibleInterval(float $alpha, float $beta, float $credibility): array
     {
-        $tail  = (1.0 - $credibility) / 2.0;
+        $tail = (1.0 - $credibility) / 2.0;
         $lower = self::betaQuantile($tail, $alpha, $beta);
         $upper = self::betaQuantile(1.0 - $tail, $alpha, $beta);
 
@@ -188,8 +188,8 @@ final class ExperimentBayesianChart extends Component
     private static function betaQuantile(float $p, float $alpha, float $beta): float
     {
         $mean = $alpha / ($alpha + $beta);
-        $var  = ($alpha * $beta) / (($alpha + $beta) ** 2 * ($alpha + $beta + 1));
-        $sd   = sqrt($var);
+        $var = ($alpha * $beta) / (($alpha + $beta) ** 2 * ($alpha + $beta + 1));
+        $sd = sqrt($var);
 
         // Normal approximation seed (Abramowitz & Stegun 26.2.17).
         $t = self::normalQuantile($p);
@@ -205,7 +205,7 @@ final class ExperimentBayesianChart extends Component
             }
 
             $x -= ($cdf - $p) / $pdf;
-            $x  = max(1e-6, min(1.0 - 1e-6, $x));
+            $x = max(1e-6, min(1.0 - 1e-6, $x));
         }
 
         return $x;
@@ -231,14 +231,14 @@ final class ExperimentBayesianChart extends Component
         }
 
         $logBeta = self::lgamma($alpha) + self::lgamma($beta) - self::lgamma($alpha + $beta);
-        $front   = exp(log($x) * $alpha + log(1.0 - $x) * $beta - $logBeta) / $alpha;
+        $front = exp(log($x) * $alpha + log(1.0 - $x) * $beta - $logBeta) / $alpha;
 
         // Continued fraction via Lentz's algorithm.
-        $eps   = 1e-10;
-        $tiny  = 1e-30;
-        $f     = $tiny;
-        $C     = $f;
-        $D     = 0.0;
+        $eps = 1e-10;
+        $tiny = 1e-30;
+        $f = $tiny;
+        $C = $f;
+        $D = 0.0;
 
         for ($m = 0; $m <= 200; $m++) {
             for ($sub = 0; $sub <= 1; $sub++) {
@@ -253,14 +253,18 @@ final class ExperimentBayesianChart extends Component
                 }
 
                 $D = 1.0 + $numVal * $D;
-                if (abs($D) < $tiny) { $D = $tiny; }
+                if (abs($D) < $tiny) {
+                    $D = $tiny;
+                }
                 $D = 1.0 / $D;
 
                 $C = 1.0 + $numVal / $C;
-                if (abs($C) < $tiny) { $C = $tiny; }
+                if (abs($C) < $tiny) {
+                    $C = $tiny;
+                }
 
                 $delta = $C * $D;
-                $f    *= $delta;
+                $f *= $delta;
 
                 if (abs($delta - 1.0) < $eps) {
                     return $front * $f;
@@ -324,9 +328,9 @@ final class ExperimentBayesianChart extends Component
             return log(M_PI / abs(sin(M_PI * $x))) - self::lgamma(1.0 - $x);
         }
 
-        $x  -= 1.0;
-        $a   = $c[0];
-        $t   = $x + 7.5;   // g = 7
+        $x -= 1.0;
+        $a = $c[0];
+        $t = $x + 7.5;   // g = 7
 
         for ($i = 1; $i <= 8; $i++) {
             $a += $c[$i] / ($x + $i);

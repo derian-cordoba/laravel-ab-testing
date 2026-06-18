@@ -15,7 +15,7 @@ final class FeatureFlagNotFound extends RuntimeException implements ABTestingExc
     public function __construct(string $identifier)
     {
         parent::__construct(
-            "Feature flag [$identifier] is not registered. Did you add it to config/ab-testing.php or run php artisan ab:cache?"
+            "Feature flag [$identifier] is not registered. Did you add it to config/ab-testing.php or run php artisan ab:cache?",
         );
     }
 }

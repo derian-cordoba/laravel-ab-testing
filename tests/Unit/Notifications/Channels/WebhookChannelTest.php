@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ABTests\Tests\Unit\Notifications\Channels;
 
 use ABTests\Infrastructure\Notifications\Channels\WebhookChannel;
+use Illuminate\Container\Container;
 use Illuminate\Support\Facades\Http;
 use PHPUnit\Framework\Attributes\Test;
 
@@ -14,8 +15,8 @@ final class WebhookChannelTest extends NotificationChannelTestCase
     {
         return [
             'webhook' => [
-                'url'     => 'https://example.com/webhook',
-                'secret'  => 'test-secret',
+                'url' => 'https://example.com/webhook',
+                'secret' => 'test-secret',
                 'timeout' => 5,
                 'enabled' => true,
             ],
@@ -29,7 +30,7 @@ final class WebhookChannelTest extends NotificationChannelTestCase
 
         (new WebhookChannel())->send($this->makePayload());
 
-        Http::assertSent(fn($request) => $request->url() === 'https://example.com/webhook');
+        Http::assertSent(fn ($request) => $request->url() === 'https://example.com/webhook');
     }
 
     #[Test]
@@ -39,7 +40,7 @@ final class WebhookChannelTest extends NotificationChannelTestCase
 
         (new WebhookChannel())->send($this->makePayload());
 
-        Http::assertSent(fn($request) => $request->header('Content-Type')[0] === 'application/json');
+        Http::assertSent(fn ($request) => $request->header('Content-Type')[0] === 'application/json');
     }
 
     #[Test]
@@ -50,7 +51,7 @@ final class WebhookChannelTest extends NotificationChannelTestCase
         (new WebhookChannel())->send($this->makePayload('experiment_paused'));
 
         Http::assertSent(
-            fn($request) => $request->header('X-ABTesting-Event')[0] === 'experiment_paused',
+            fn ($request) => $request->header('X-ABTesting-Event')[0] === 'experiment_paused',
         );
     }
 
@@ -95,7 +96,7 @@ final class WebhookChannelTest extends NotificationChannelTestCase
 
         Http::assertSent(function ($request) use ($payload) {
             $expectedBody = json_encode($payload->toArray(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-            $expectedSig  = 'sha256=' . hash_hmac('sha256', $expectedBody, 'test-secret');
+            $expectedSig = 'sha256='.hash_hmac('sha256', $expectedBody, 'test-secret');
 
             return $request->header('X-ABTesting-Signature')[0] === $expectedSig;
         });
@@ -125,7 +126,7 @@ final class WebhookChannelTest extends NotificationChannelTestCase
         Http::fake(['*' => Http::response([], 200)]);
 
         // Override config so URL is empty.
-        \Illuminate\Container\Container::getInstance()
+        Container::getInstance()
             ->make('config')
             ->set('ab-testing.notifications.channels.webhook.url', '');
 

@@ -23,7 +23,7 @@ final class AssignmentsRequest extends FormRequest
     {
         return [
             'unit_type' => ['required', 'string'],
-            'unit_key'  => ['required', 'string'],
+            'unit_key' => ['required', 'string'],
         ];
     }
 }

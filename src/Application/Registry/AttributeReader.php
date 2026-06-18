@@ -38,10 +38,10 @@ use ReflectionException;
 final readonly class AttributeReader
 {
     /**
-     * @param class-string<Experiment> $experimentClass
+     * @param  class-string<Experiment>  $experimentClass
      *
      * @throws InvalidArgumentException|ReflectionException When a required attribute is missing or
-     *                                   the variants enum is malformed.
+     *                                                      the variants enum is malformed.
      */
     public function readExperiment(string $experimentClass): ExperimentDefinition
     {
@@ -55,7 +55,7 @@ final readonly class AttributeReader
 
         if (! is_a($variantsClass, BackedEnum::class, true)) {
             throw new InvalidArgumentException(
-                "Variants class [$variantsClass] must be a backed enum that implements Variant."
+                "Variants class [$variantsClass] must be a backed enum that implements Variant.",
             );
         }
 
@@ -80,7 +80,7 @@ final readonly class AttributeReader
     }
 
     /**
-     * @param class-string<FeatureFlag> $flagClass
+     * @param  class-string<FeatureFlag>  $flagClass
      *
      * @throws InvalidArgumentException|ReflectionException
      */
@@ -91,7 +91,7 @@ final readonly class AttributeReader
 
         if ($attrs === []) {
             throw new InvalidArgumentException(
-                "Class [$flagClass] is missing the required #[AsFeatureFlag] attribute."
+                "Class [$flagClass] is missing the required #[AsFeatureFlag] attribute.",
             );
         }
 
@@ -111,7 +111,7 @@ final readonly class AttributeReader
      * Used by the rollup job to decide which metrics need the delta-method
      * sufficient statistics. Returns an empty array for runtime-defined classes.
      *
-     * @param class-string $experimentClass
+     * @param  class-string  $experimentClass
      * @return array<string, MetricType>
      */
     public function readMetricTypes(string $experimentClass): array
@@ -156,8 +156,9 @@ final readonly class AttributeReader
     /**
      * @template TAttr of object
      * @template TClass of object
-     * @param ReflectionClass<TClass>  $reflector
-     * @param class-string<TAttr>      $attributeClass
+     *
+     * @param  ReflectionClass<TClass>  $reflector
+     * @param  class-string<TAttr>  $attributeClass
      * @return TAttr
      */
     private function readRequiredAttribute(
@@ -169,7 +170,7 @@ final readonly class AttributeReader
 
         if ($attrs === []) {
             throw new InvalidArgumentException(
-                "Class [$experimentClass] is missing the required #[$attributeClass] attribute."
+                "Class [$experimentClass] is missing the required #[$attributeClass] attribute.",
             );
         }
 
@@ -179,7 +180,7 @@ final readonly class AttributeReader
     /**
      * Read the stable type key from the unit class's #[AsUnit] attribute.
      *
-     * @param class-string $unitClass
+     * @param  class-string  $unitClass
      *
      * @throws ReflectionException
      */
@@ -190,8 +191,8 @@ final readonly class AttributeReader
 
         if ($attrs === []) {
             throw new InvalidArgumentException(
-                "Unit class [$unitClass] is missing the #[AsUnit] attribute. " .
-                "Add #[AsUnit(key: 'your-type-key')] to the class."
+                "Unit class [$unitClass] is missing the #[AsUnit] attribute. ".
+                "Add #[AsUnit(key: 'your-type-key')] to the class.",
             );
         }
 
@@ -202,7 +203,7 @@ final readonly class AttributeReader
      * Instantiate each case of the variants enum (which must use the IsVariant
      * trait) and wrap them into a validated Allocation.
      *
-     * @param class-string<BackedEnum&Variant> $variantsEnum
+     * @param  class-string<BackedEnum&Variant>  $variantsEnum
      */
     private function buildAllocation(string $variantsEnum): Allocation
     {
@@ -214,7 +215,8 @@ final readonly class AttributeReader
 
     /**
      * @template TClass of object
-     * @param ReflectionClass<TClass> $reflector
+     *
+     * @param  ReflectionClass<TClass>  $reflector
      * @return list<MetricBinding>
      */
     private function readMetricBindings(ReflectionClass $reflector): array
@@ -245,7 +247,8 @@ final readonly class AttributeReader
 
     /**
      * @template TClass of object
-     * @param ReflectionClass<TClass> $reflector
+     *
+     * @param  ReflectionClass<TClass>  $reflector
      */
     private function readAnalysisConfiguration(ReflectionClass $reflector): AnalysisConfiguration
     {

@@ -4,16 +4,14 @@ declare(strict_types=1);
 
 namespace ABTests;
 
-use ABTests\Application\Handlers\ForgetUnitCommandHandler;
-use ABTests\Application\Handlers\RecordCovariateCommandHandler;
 use ABTests\Application\Commands\ForgetUnitCommand;
 use ABTests\Application\Commands\RecordCovariateCommand;
+use ABTests\Application\Handlers\ForgetUnitCommandHandler;
+use ABTests\Application\Handlers\RecordCovariateCommandHandler;
+use ABTests\Application\Registry\ExperimentRegistry;
+use ABTests\Application\Registry\FeatureFlagRegistry;
 use ABTests\Attributes\AsFeatureFlag;
 use ABTests\Attributes\AsMetric;
-use Illuminate\Support\Carbon;
-use ReflectionClass;
-use RuntimeException;
-use Throwable;
 use ABTests\Contracts\AssignmentRepository;
 use ABTests\Contracts\Bucketable;
 use ABTests\Contracts\BucketingStrategy;
@@ -24,10 +22,12 @@ use ABTests\Contracts\ResolvesVariant;
 use ABTests\Enums\ConditionsLogic;
 use ABTests\Enums\Environment;
 use ABTests\Enums\Operator;
-use ABTests\Application\Registry\ExperimentRegistry;
-use ABTests\Application\Registry\FeatureFlagRegistry;
 use ABTests\Values\Context;
 use ABTests\Values\Criterion;
+use Illuminate\Support\Carbon;
+use ReflectionClass;
+use RuntimeException;
+use Throwable;
 
 /**
  * Primary entry point for the A/B testing framework.
@@ -85,8 +85,8 @@ final class Experiments
     {
         if (self::$instance === null) {
             throw new RuntimeException(
-                'Experiments has not been initialised. ' .
-                'Ensure ABTests\ABTestingServiceProvider is registered.'
+                'Experiments has not been initialised. '.
+                'Ensure ABTests\ABTestingServiceProvider is registered.',
             );
         }
 
@@ -123,7 +123,7 @@ final class Experiments
      *
      *   $showNewCheckout = Experiments::flag(NewCheckoutFlag::class, $user);
      *
-     * @param class-string<FeatureFlag> $flagClass
+     * @param  class-string<FeatureFlag>  $flagClass
      */
     public static function flag(string $flagClass, Bucketable $unit): mixed
     {
@@ -133,7 +133,7 @@ final class Experiments
     /**
      * Convenience static shorthand for tracking a metric event.
      *
-     * @param class-string<Metric>|string $metricClassOrKey
+     * @param  class-string<Metric>|string  $metricClassOrKey
      */
     public static function track(
         string $metricClassOrKey,
@@ -150,7 +150,7 @@ final class Experiments
      * job that computes last-30-day metric values). The analysis engine will
      * automatically use these values to reduce variance when results are computed.
      *
-     * @param class-string<Metric>|string $metricClassOrKey
+     * @param  class-string<Metric>|string  $metricClassOrKey
      */
     public static function recordCovariate(
         string $metricClassOrKey,
@@ -182,7 +182,7 @@ final class Experiments
                 unitType: $unitType,
                 unitKey: $unitKey,
                 value: $value,
-            )
+            ),
         );
     }
 
@@ -203,7 +203,7 @@ final class Experiments
                 unitType: $unitType,
                 unitKey: $unitKey,
                 actorIdentifier: $actorIdentifier,
-            )
+            ),
         );
     }
 
@@ -231,7 +231,7 @@ final class Experiments
     // -------------------------------------------------------------------------
 
     /**
-     * @param class-string<FeatureFlag> $flagClass
+     * @param  class-string<FeatureFlag>  $flagClass
      */
     private function resolveFlag(string $flagClass, Bucketable $unit): mixed
     {
@@ -304,7 +304,7 @@ final class Experiments
      * - ConditionsLogic::any — OR disjunction: at least one criterion must match.
      * Returns true when there are no conditions (open targeting).
      *
-     * @param list<array{attribute: string, operator: string, expected: mixed}> $conditions
+     * @param  list<array{attribute: string, operator: string, expected: mixed}>  $conditions
      */
     private function unitMatchesConditions(
         Bucketable $unit,
@@ -318,9 +318,9 @@ final class Experiments
         $attributes = $unit->attributes();
 
         foreach ($conditions as $raw) {
-            $operator  = Operator::tryFrom($raw['operator'] ?? '') ?? Operator::equals;
+            $operator = Operator::tryFrom($raw['operator'] ?? '') ?? Operator::equals;
             $criterion = new Criterion($raw['attribute'], $operator, $raw['expected']);
-            $matches   = $criterion->matches($attributes);
+            $matches = $criterion->matches($attributes);
 
             if ($logic === ConditionsLogic::any && $matches) {
                 return true;  // short-circuit: one match is enough
@@ -336,7 +336,7 @@ final class Experiments
     }
 
     /**
-     * @param class-string<FeatureFlag> $flagClass
+     * @param  class-string<FeatureFlag>  $flagClass
      */
     private function defaultForFlagClass(string $flagClass): mixed
     {

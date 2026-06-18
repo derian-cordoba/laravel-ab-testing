@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace ABTests\Tests\Integration\Application\CommandHandlers;
 
-use ABTests\Application\Handlers\EnableFeatureFlagCommandHandler;
 use ABTests\Application\Commands\EnableFeatureFlagCommand;
+use ABTests\Application\Handlers\EnableFeatureFlagCommandHandler;
 use ABTests\Domain\Events\FeatureFlagEnabledEvent;
+use ABTests\Infrastructure\Database\DatabaseFeatureFlagRepository;
 use ABTests\Infrastructure\Database\Models\FeatureFlagStateModel;
 use ABTests\Tests\Integration\DatabaseTestCase;
 use Illuminate\Container\Container;
 use PHPUnit\Framework\Attributes\Test;
-use ABTests\Infrastructure\Database\DatabaseFeatureFlagRepository;
 
 final class EnableFeatureFlagCommandHandlerTest extends DatabaseTestCase
 {
@@ -33,7 +33,7 @@ final class EnableFeatureFlagCommandHandlerTest extends DatabaseTestCase
     public function enables_an_existing_disabled_flag(): void
     {
         FeatureFlagStateModel::query()->create([
-            'key'        => 'new-checkout',
+            'key' => 'new-checkout',
             'is_enabled' => false,
         ]);
 
@@ -51,7 +51,7 @@ final class EnableFeatureFlagCommandHandlerTest extends DatabaseTestCase
     public function enabling_an_already_enabled_flag_is_idempotent(): void
     {
         FeatureFlagStateModel::query()->create([
-            'key'        => 'new-checkout',
+            'key' => 'new-checkout',
             'is_enabled' => true,
         ]);
 
@@ -62,7 +62,7 @@ final class EnableFeatureFlagCommandHandlerTest extends DatabaseTestCase
 
         self::assertSame(1, FeatureFlagStateModel::query()->where('key', 'new-checkout')->count());
         self::assertTrue(
-            FeatureFlagStateModel::query()->firstWhere('key', 'new-checkout')->is_enabled
+            FeatureFlagStateModel::query()->firstWhere('key', 'new-checkout')->is_enabled,
         );
     }
 
@@ -70,7 +70,7 @@ final class EnableFeatureFlagCommandHandlerTest extends DatabaseTestCase
     public function does_not_affect_other_flag_records(): void
     {
         FeatureFlagStateModel::query()->create([
-            'key'        => 'other-flag',
+            'key' => 'other-flag',
             'is_enabled' => false,
         ]);
 
@@ -80,7 +80,7 @@ final class EnableFeatureFlagCommandHandlerTest extends DatabaseTestCase
         ));
 
         self::assertFalse(
-            FeatureFlagStateModel::query()->firstWhere('key', 'other-flag')->is_enabled
+            FeatureFlagStateModel::query()->firstWhere('key', 'other-flag')->is_enabled,
         );
     }
 

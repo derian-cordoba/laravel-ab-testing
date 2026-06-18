@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Schema;
  * allocation, metrics) lives in code; this table holds the mutable state that
  * the dashboard controls: status, traffic percentage, and kill switch.
  */
-return new class extends Migration
+return new class() extends Migration
 {
     public function up(): void
     {

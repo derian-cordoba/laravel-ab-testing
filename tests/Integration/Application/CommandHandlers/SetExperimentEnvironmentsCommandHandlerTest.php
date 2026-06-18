@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace ABTests\Tests\Integration\Application\CommandHandlers;
 
-use ABTests\Application\Handlers\SetExperimentEnvironmentsCommandHandler;
 use ABTests\Application\Commands\SetExperimentEnvironmentsCommand;
+use ABTests\Application\Handlers\SetExperimentEnvironmentsCommandHandler;
 use ABTests\Domain\Events\ExperimentEnvironmentsUpdatedEvent;
 use ABTests\Enums\ExperimentStatus;
 use ABTests\Exceptions\ExperimentNotFound;
+use ABTests\Infrastructure\Database\DatabaseAuditLogRepository;
+use ABTests\Infrastructure\Database\DatabaseExperimentRepository;
 use ABTests\Infrastructure\Database\Models\ExperimentModel;
 use ABTests\Tests\Integration\DatabaseTestCase;
 use Illuminate\Container\Container;
 use PHPUnit\Framework\Attributes\Test;
-use ABTests\Infrastructure\Database\DatabaseExperimentRepository;
-use ABTests\Infrastructure\Database\DatabaseAuditLogRepository;
 
 final class SetExperimentEnvironmentsCommandHandlerTest extends DatabaseTestCase
 {
@@ -22,10 +22,10 @@ final class SetExperimentEnvironmentsCommandHandlerTest extends DatabaseTestCase
     public function sets_allowed_environments_on_existing_experiment(): void
     {
         ExperimentModel::query()->create([
-            'key'                => 'my-exp',
-            'status'             => ExperimentStatus::running->value,
+            'key' => 'my-exp',
+            'status' => ExperimentStatus::running->value,
             'traffic_percentage' => 100,
-            'is_killed'          => false,
+            'is_killed' => false,
         ]);
 
         (new SetExperimentEnvironmentsCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository()))->handle(new SetExperimentEnvironmentsCommand(
@@ -43,10 +43,10 @@ final class SetExperimentEnvironmentsCommandHandlerTest extends DatabaseTestCase
     public function clears_restriction_when_allowed_environments_is_null(): void
     {
         ExperimentModel::query()->create([
-            'key'                  => 'my-exp',
-            'status'               => ExperimentStatus::running->value,
-            'traffic_percentage'   => 100,
-            'is_killed'            => false,
+            'key' => 'my-exp',
+            'status' => ExperimentStatus::running->value,
+            'traffic_percentage' => 100,
+            'is_killed' => false,
             'allowed_environments' => ['production'],
         ]);
 
@@ -77,10 +77,10 @@ final class SetExperimentEnvironmentsCommandHandlerTest extends DatabaseTestCase
     public function does_not_change_other_experiment_fields(): void
     {
         ExperimentModel::query()->create([
-            'key'                => 'my-exp',
-            'status'             => ExperimentStatus::running->value,
+            'key' => 'my-exp',
+            'status' => ExperimentStatus::running->value,
             'traffic_percentage' => 75,
-            'is_killed'          => false,
+            'is_killed' => false,
         ]);
 
         (new SetExperimentEnvironmentsCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository()))->handle(new SetExperimentEnvironmentsCommand(
@@ -100,10 +100,10 @@ final class SetExperimentEnvironmentsCommandHandlerTest extends DatabaseTestCase
     public function dispatches_experiment_environments_updated_event(): void
     {
         ExperimentModel::query()->create([
-            'key'                => 'my-exp',
-            'status'             => ExperimentStatus::draft->value,
+            'key' => 'my-exp',
+            'status' => ExperimentStatus::draft->value,
             'traffic_percentage' => 0,
-            'is_killed'          => false,
+            'is_killed' => false,
         ]);
 
         /** @var list<ExperimentEnvironmentsUpdatedEvent> $fired */
@@ -131,10 +131,10 @@ final class SetExperimentEnvironmentsCommandHandlerTest extends DatabaseTestCase
     public function event_carries_null_when_restriction_is_cleared(): void
     {
         ExperimentModel::query()->create([
-            'key'                  => 'my-exp',
-            'status'               => ExperimentStatus::running->value,
-            'traffic_percentage'   => 100,
-            'is_killed'            => false,
+            'key' => 'my-exp',
+            'status' => ExperimentStatus::running->value,
+            'traffic_percentage' => 100,
+            'is_killed' => false,
             'allowed_environments' => ['staging'],
         ]);
 

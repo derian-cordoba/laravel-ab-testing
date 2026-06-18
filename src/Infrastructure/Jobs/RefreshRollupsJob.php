@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace ABTests\Infrastructure\Jobs;
 
+use ABTests\Application\Registry\AttributeReader;
+use ABTests\Application\Registry\ExperimentRegistry;
 use ABTests\Definitions\MetricBinding;
 use ABTests\Domain\Events\GuardrailBreachedEvent;
 use ABTests\Enums\EventType;
@@ -12,13 +14,11 @@ use ABTests\Enums\MetricType;
 use ABTests\Infrastructure\Database\Models\ExperimentModel;
 use ABTests\Infrastructure\Database\Models\GuardrailBreachModel;
 use ABTests\Infrastructure\Database\Models\RollupModel;
-use ABTests\Application\Registry\AttributeReader;
-use ABTests\Application\Registry\ExperimentRegistry;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Carbon;
 use Throwable;
 
 /**
@@ -115,9 +115,9 @@ final class RefreshRollupsJob implements ShouldQueue
     }
 
     /**
-     * @param iterable<object> $events
-     * @param list<string>     $metricKeys
-     * @param array<string, true> $ratioMetricKeys Keys that are MetricType::Ratio
+     * @param  iterable<object>  $events
+     * @param  list<string>  $metricKeys
+     * @param  array<string, true>  $ratioMetricKeys  Keys that are MetricType::Ratio
      */
     private function processEventChunk(
         iterable $events,
@@ -140,7 +140,7 @@ final class RefreshRollupsJob implements ShouldQueue
 
             foreach ($metricKeys as $metricKey) {
                 $groupKey = "$variantKey|$metricKey";
-                $isRatio  = isset($ratioMetricKeys[$metricKey]);
+                $isRatio = isset($ratioMetricKeys[$metricKey]);
 
                 $deltas[$groupKey] ??= [
                     'variant_key' => $variantKey,
@@ -196,19 +196,19 @@ final class RefreshRollupsJob implements ShouldQueue
             $isRatio = $delta['is_ratio'];
 
             $insertRow = [
-                'experiment_key'       => $experimentKey,
-                'variant_key'          => $delta['variant_key'],
-                'metric_key'           => $delta['metric_key'],
-                'exposures'            => $delta['exposures_delta'],
-                'sum_of_values'        => $delta['sum_of_values_delta'],
+                'experiment_key' => $experimentKey,
+                'variant_key' => $delta['variant_key'],
+                'metric_key' => $delta['metric_key'],
+                'exposures' => $delta['exposures_delta'],
+                'sum_of_values' => $delta['sum_of_values_delta'],
                 'sum_of_squared_values' => $delta['sum_of_squared_values_delta'],
-                'conversions'          => $delta['conversions_delta'],
-                'updated_through_at'   => $latestOccurredAt,
-                'updated_at'           => Carbon::now(),
+                'conversions' => $delta['conversions_delta'],
+                'updated_through_at' => $latestOccurredAt,
+                'updated_at' => Carbon::now(),
             ];
 
             if ($isRatio) {
-                $insertRow['sum_of_denominators']         = $delta['sum_of_denominators_delta'];
+                $insertRow['sum_of_denominators'] = $delta['sum_of_denominators_delta'];
                 $insertRow['sum_of_squared_denominators'] = $delta['sum_of_squared_denominators_delta'];
                 $insertRow['sum_of_numerator_denominator'] = $delta['sum_of_numerator_denominator_delta'];
             }
@@ -221,23 +221,23 @@ final class RefreshRollupsJob implements ShouldQueue
 
             if ($inserted === 0) {
                 $updateFields = [
-                    'exposures'            => DB::raw("exposures + {$delta['exposures_delta']}"),
-                    'sum_of_values'        => DB::raw("sum_of_values + {$delta['sum_of_values_delta']}"),
+                    'exposures' => DB::raw("exposures + {$delta['exposures_delta']}"),
+                    'sum_of_values' => DB::raw("sum_of_values + {$delta['sum_of_values_delta']}"),
                     'sum_of_squared_values' => DB::raw("sum_of_squared_values + {$delta['sum_of_squared_values_delta']}"),
-                    'conversions'          => DB::raw("conversions + {$delta['conversions_delta']}"),
-                    'updated_through_at'   => $latestOccurredAt,
-                    'updated_at'           => Carbon::now(),
+                    'conversions' => DB::raw("conversions + {$delta['conversions_delta']}"),
+                    'updated_through_at' => $latestOccurredAt,
+                    'updated_at' => Carbon::now(),
                 ];
 
                 if ($isRatio) {
                     $updateFields['sum_of_denominators'] = DB::raw(
-                        "COALESCE(sum_of_denominators, 0) + {$delta['sum_of_denominators_delta']}"
+                        "COALESCE(sum_of_denominators, 0) + {$delta['sum_of_denominators_delta']}",
                     );
                     $updateFields['sum_of_squared_denominators'] = DB::raw(
-                        "COALESCE(sum_of_squared_denominators, 0) + {$delta['sum_of_squared_denominators_delta']}"
+                        "COALESCE(sum_of_squared_denominators, 0) + {$delta['sum_of_squared_denominators_delta']}",
                     );
                     $updateFields['sum_of_numerator_denominator'] = DB::raw(
-                        "COALESCE(sum_of_numerator_denominator, 0) + {$delta['sum_of_numerator_denominator_delta']}"
+                        "COALESCE(sum_of_numerator_denominator, 0) + {$delta['sum_of_numerator_denominator_delta']}",
                     );
                 }
 
@@ -255,9 +255,7 @@ final class RefreshRollupsJob implements ShouldQueue
      * Used to decide whether to populate the delta-method sufficient statistics
      * columns in the rollup table.
      *
-     * @param list<MetricBinding> $metrics
-     * @param ExperimentRegistry  $registry
-     * @param string              $experimentKey
+     * @param  list<MetricBinding>  $metrics
      * @return array<string, true>
      */
     private function resolveRatioMetricKeys(array $metrics, ExperimentRegistry $registry, string $experimentKey): array
@@ -304,7 +302,7 @@ final class RefreshRollupsJob implements ShouldQueue
     }
 
     /**
-     * @param list<MetricBinding> $guardrails
+     * @param  list<MetricBinding>  $guardrails
      */
     private function checkGuardrails(string $experimentKey, array $guardrails, string $controlVariantKey): void
     {
@@ -315,7 +313,7 @@ final class RefreshRollupsJob implements ShouldQueue
                 ->get();
 
             $controlRollup = $rollups->first(
-                static fn (RollupModel $rollup): bool => $rollup->variant_key === $controlVariantKey
+                static fn (RollupModel $rollup): bool => $rollup->variant_key === $controlVariantKey,
             );
 
             foreach ($rollups as $rollup) {

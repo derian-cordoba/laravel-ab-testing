@@ -14,8 +14,8 @@ use Illuminate\Database\Eloquent\Collection;
 final readonly class ExperimentResultsData
 {
     /**
-     * @param list<VariantResultData>                   $variantResults
-     * @param Collection<int, GuardrailBreachModel>     $activeGuardrailBreaches
+     * @param  list<VariantResultData>  $variantResults
+     * @param  Collection<int, GuardrailBreachModel>  $activeGuardrailBreaches
      */
     public function __construct(
         public ExperimentDefinition $definition,

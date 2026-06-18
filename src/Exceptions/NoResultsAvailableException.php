@@ -19,7 +19,7 @@ final class NoResultsAvailableException extends RuntimeException implements ABTe
     public function __construct(private readonly string $experimentKey)
     {
         parent::__construct(
-            "No results are available yet for experiment [$experimentKey]."
+            "No results are available yet for experiment [$experimentKey].",
         );
     }
 
@@ -29,9 +29,9 @@ final class NoResultsAvailableException extends RuntimeException implements ABTe
             'errors' => [
                 [
                     'status' => '404',
-                    'title'  => 'No Results Available',
+                    'title' => 'No Results Available',
                     'detail' => 'No results available yet for this experiment.',
-                    'meta'   => ['experiment_key' => $this->experimentKey],
+                    'meta' => ['experiment_key' => $this->experimentKey],
                 ],
             ],
         ], 404);

@@ -17,6 +17,7 @@ use ReflectionEnumBackedCase;
  * type-safe declaration of an experiment's arms.
  *
  * @mixin BackedEnum
+ *
  * @phpstan-require-implements Variant
  */
 trait IsVariant

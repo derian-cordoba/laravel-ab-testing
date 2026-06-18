@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace ABTests\Tests\Integration\Application\CommandHandlers;
 
-use ABTests\Application\Handlers\DisableFeatureFlagCommandHandler;
 use ABTests\Application\Commands\DisableFeatureFlagCommand;
+use ABTests\Application\Handlers\DisableFeatureFlagCommandHandler;
 use ABTests\Domain\Events\FeatureFlagDisabledEvent;
+use ABTests\Infrastructure\Database\DatabaseFeatureFlagRepository;
 use ABTests\Infrastructure\Database\Models\FeatureFlagStateModel;
 use ABTests\Tests\Integration\DatabaseTestCase;
 use Illuminate\Container\Container;
 use PHPUnit\Framework\Attributes\Test;
-use ABTests\Infrastructure\Database\DatabaseFeatureFlagRepository;
 
 final class DisableFeatureFlagCommandHandlerTest extends DatabaseTestCase
 {
@@ -33,7 +33,7 @@ final class DisableFeatureFlagCommandHandlerTest extends DatabaseTestCase
     public function disables_an_existing_enabled_flag(): void
     {
         FeatureFlagStateModel::query()->create([
-            'key'        => 'my-flag',
+            'key' => 'my-flag',
             'is_enabled' => true,
         ]);
 
@@ -43,7 +43,7 @@ final class DisableFeatureFlagCommandHandlerTest extends DatabaseTestCase
         ));
 
         self::assertFalse(
-            FeatureFlagStateModel::query()->firstWhere('key', 'my-flag')->is_enabled
+            FeatureFlagStateModel::query()->firstWhere('key', 'my-flag')->is_enabled,
         );
     }
 
@@ -51,7 +51,7 @@ final class DisableFeatureFlagCommandHandlerTest extends DatabaseTestCase
     public function disabling_an_already_disabled_flag_is_idempotent(): void
     {
         FeatureFlagStateModel::query()->create([
-            'key'        => 'my-flag',
+            'key' => 'my-flag',
             'is_enabled' => false,
         ]);
 
@@ -62,7 +62,7 @@ final class DisableFeatureFlagCommandHandlerTest extends DatabaseTestCase
 
         self::assertSame(1, FeatureFlagStateModel::query()->where('key', 'my-flag')->count());
         self::assertFalse(
-            FeatureFlagStateModel::query()->firstWhere('key', 'my-flag')->is_enabled
+            FeatureFlagStateModel::query()->firstWhere('key', 'my-flag')->is_enabled,
         );
     }
 

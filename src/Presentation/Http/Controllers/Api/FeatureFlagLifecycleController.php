@@ -11,10 +11,10 @@ use ABTests\Application\Commands\SetFlagRolloutPercentageCommand;
 use ABTests\Application\Commands\ToggleFlagKillSwitchCommand;
 use ABTests\Contracts\CommandBus;
 use ABTests\Enums\ConditionsLogic;
+use ABTests\Infrastructure\Database\Models\FeatureFlagStateModel;
 use ABTests\Presentation\Http\Requests\Api\SetFlagConditionsRequest;
 use ABTests\Presentation\Http\Requests\Api\SetRolloutPercentageRequest;
 use ABTests\Presentation\Http\Resources\Api\FeatureFlagResource;
-use ABTests\Infrastructure\Database\Models\FeatureFlagStateModel;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 

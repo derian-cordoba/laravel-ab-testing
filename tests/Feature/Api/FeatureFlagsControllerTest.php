@@ -20,8 +20,8 @@ final class FeatureFlagsControllerTest extends FeatureTestCase
     {
         /** @var FeatureFlagStateModel $model */
         $model = FeatureFlagStateModel::query()->create([
-            'key'                => $key,
-            'is_enabled'         => $isEnabled,
+            'key' => $key,
+            'is_enabled' => $isEnabled,
             'rollout_percentage' => $rolloutPercentage,
         ]);
 
@@ -126,7 +126,7 @@ final class FeatureFlagsControllerTest extends FeatureTestCase
         $response->assertJsonPath('data.attributes.rollout_percentage', 100);
 
         $this->assertDatabaseHas('ab_testing_feature_flag_states', [
-            'key'        => 'dark-mode',
+            'key' => 'dark-mode',
             'is_enabled' => false,
         ]);
     }
@@ -135,8 +135,8 @@ final class FeatureFlagsControllerTest extends FeatureTestCase
     public function store_creates_flag_with_explicit_enabled_state_and_rollout(): void
     {
         $response = $this->postJson(route('ab-testing.api.v1.feature-flags.store'), [
-            'key'                => 'new-checkout',
-            'is_enabled'         => true,
+            'key' => 'new-checkout',
+            'is_enabled' => true,
             'rollout_percentage' => 25,
         ]);
 
@@ -145,8 +145,8 @@ final class FeatureFlagsControllerTest extends FeatureTestCase
         $response->assertJsonPath('data.attributes.rollout_percentage', 25);
 
         $this->assertDatabaseHas('ab_testing_feature_flag_states', [
-            'key'                => 'new-checkout',
-            'is_enabled'         => true,
+            'key' => 'new-checkout',
+            'is_enabled' => true,
             'rollout_percentage' => 25,
         ]);
     }
@@ -165,7 +165,7 @@ final class FeatureFlagsControllerTest extends FeatureTestCase
     public function store_returns_422_when_rollout_percentage_is_out_of_range(): void
     {
         $response = $this->postJson(route('ab-testing.api.v1.feature-flags.store'), [
-            'key'                => 'bad-flag',
+            'key' => 'bad-flag',
             'rollout_percentage' => 150,
         ]);
 

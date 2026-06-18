@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace ABTests\Tests\Integration\Application\CommandHandlers;
 
-use ABTests\Application\Handlers\SetFlagRolloutPercentageCommandHandler;
 use ABTests\Application\Commands\SetFlagRolloutPercentageCommand;
+use ABTests\Application\Handlers\SetFlagRolloutPercentageCommandHandler;
+use ABTests\Infrastructure\Database\DatabaseFeatureFlagRepository;
 use ABTests\Infrastructure\Database\Models\FeatureFlagStateModel;
 use ABTests\Tests\Integration\DatabaseTestCase;
 use PHPUnit\Framework\Attributes\Test;
-use ABTests\Infrastructure\Database\DatabaseFeatureFlagRepository;
 
 final class SetFlagRolloutPercentageCommandHandlerTest extends DatabaseTestCase
 {
@@ -32,8 +32,8 @@ final class SetFlagRolloutPercentageCommandHandlerTest extends DatabaseTestCase
     public function updates_percentage_on_existing_record(): void
     {
         FeatureFlagStateModel::query()->create([
-            'key'                => 'my-flag',
-            'is_enabled'         => true,
+            'key' => 'my-flag',
+            'is_enabled' => true,
             'rollout_percentage' => 10,
         ]);
 
@@ -45,7 +45,7 @@ final class SetFlagRolloutPercentageCommandHandlerTest extends DatabaseTestCase
 
         self::assertSame(
             75,
-            FeatureFlagStateModel::query()->firstWhere('key', 'my-flag')->rollout_percentage
+            FeatureFlagStateModel::query()->firstWhere('key', 'my-flag')->rollout_percentage,
         );
     }
 
@@ -53,8 +53,8 @@ final class SetFlagRolloutPercentageCommandHandlerTest extends DatabaseTestCase
     public function does_not_change_is_enabled_when_updating_percentage(): void
     {
         FeatureFlagStateModel::query()->create([
-            'key'                => 'my-flag',
-            'is_enabled'         => true,
+            'key' => 'my-flag',
+            'is_enabled' => true,
             'rollout_percentage' => 100,
         ]);
 
@@ -65,7 +65,7 @@ final class SetFlagRolloutPercentageCommandHandlerTest extends DatabaseTestCase
         ));
 
         self::assertTrue(
-            FeatureFlagStateModel::query()->firstWhere('key', 'my-flag')->is_enabled
+            FeatureFlagStateModel::query()->firstWhere('key', 'my-flag')->is_enabled,
         );
     }
 
@@ -80,7 +80,7 @@ final class SetFlagRolloutPercentageCommandHandlerTest extends DatabaseTestCase
 
         self::assertSame(
             0,
-            FeatureFlagStateModel::query()->firstWhere('key', 'my-flag')->rollout_percentage
+            FeatureFlagStateModel::query()->firstWhere('key', 'my-flag')->rollout_percentage,
         );
     }
 
@@ -95,7 +95,7 @@ final class SetFlagRolloutPercentageCommandHandlerTest extends DatabaseTestCase
 
         self::assertSame(
             100,
-            FeatureFlagStateModel::query()->firstWhere('key', 'my-flag')->rollout_percentage
+            FeatureFlagStateModel::query()->firstWhere('key', 'my-flag')->rollout_percentage,
         );
     }
 }

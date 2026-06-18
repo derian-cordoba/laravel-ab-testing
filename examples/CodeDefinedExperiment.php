@@ -50,9 +50,7 @@ enum ButtonColor: string implements Variant
 final readonly class TenantUnit implements Bucketable
 {
     /** @param object{id: int|string, plan: string, country: string, seats: int} $tenant */
-    public function __construct(private object $tenant)
-    {
-    }
+    public function __construct(private object $tenant) {}
 
     public function bucketingKey(): string
     {
@@ -70,14 +68,10 @@ final readonly class TenantUnit implements Bucketable
 }
 
 #[AsMetric(key: 'checkout-conversion', type: MetricType::binary, event: 'checkout.completed')]
-final class CheckoutConversion extends Metric
-{
-}
+final class CheckoutConversion extends Metric {}
 
 #[AsMetric(key: 'error-rate', type: MetricType::continuous, event: 'request.failed', aggregate: Aggregate::average)]
-final class ErrorRate extends Metric
-{
-}
+final class ErrorRate extends Metric {}
 
 /** The experiment: all structure declared, no magic strings anywhere. */
 #[AsExperiment(

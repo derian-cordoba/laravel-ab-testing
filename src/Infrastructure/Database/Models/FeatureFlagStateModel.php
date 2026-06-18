@@ -11,15 +11,15 @@ use Illuminate\Support\Carbon;
 /**
  * Operational state for a feature flag.
  *
- * @property int                                                              $id
- * @property string                                                           $key
- * @property bool                                                             $is_enabled
- * @property list<string>|null                                                $allowed_environments
- * @property int                                                              $rollout_percentage
+ * @property int $id
+ * @property string $key
+ * @property bool $is_enabled
+ * @property list<string>|null $allowed_environments
+ * @property int $rollout_percentage
  * @property list<array{attribute:string,operator:string,expected:mixed}>|null $conditions
- * @property ConditionsLogic                                                  $conditions_logic
- * @property Carbon|null                                                      $killed_at
- * @property Carbon|null                                                      $last_evaluated_at
+ * @property ConditionsLogic $conditions_logic
+ * @property Carbon|null $killed_at
+ * @property Carbon|null $last_evaluated_at
  */
 final class FeatureFlagStateModel extends Model
 {
@@ -37,11 +37,11 @@ final class FeatureFlagStateModel extends Model
     ];
 
     protected $casts = [
-        'is_enabled'           => 'boolean',
+        'is_enabled' => 'boolean',
         'allowed_environments' => 'array',
-        'conditions'           => 'array',
-        'conditions_logic'     => ConditionsLogic::class,
-        'killed_at'            => 'datetime',
-        'last_evaluated_at'    => 'datetime',
+        'conditions' => 'array',
+        'conditions_logic' => ConditionsLogic::class,
+        'killed_at' => 'datetime',
+        'last_evaluated_at' => 'datetime',
     ];
 }

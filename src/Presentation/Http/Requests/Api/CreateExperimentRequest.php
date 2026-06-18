@@ -19,9 +19,9 @@ final class CreateExperimentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'key'                => ['required', 'string', 'max:255'],
-            'name'               => ['nullable', 'string', 'max:255'],
-            'layer'              => ['nullable', 'string', 'max:255'],
+            'key' => ['required', 'string', 'max:255'],
+            'name' => ['nullable', 'string', 'max:255'],
+            'layer' => ['nullable', 'string', 'max:255'],
             'traffic_percentage' => ['nullable', 'integer', 'min:0', 'max:100'],
         ];
     }

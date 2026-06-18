@@ -16,8 +16,7 @@ final readonly class ApproveExperimentCommandHandler
     public function __construct(
         private ExperimentRepository $experimentRepository,
         private AuditLogRepository $auditLogRepository,
-    ) {
-    }
+    ) {}
 
     public function handle(ApproveExperimentCommand $command): void
     {
@@ -32,22 +31,22 @@ final readonly class ApproveExperimentCommandHandler
 
         if ($approval !== null) {
             $approval->update([
-                'status'           => ApprovalStatus::approved->value,
-                'reviewed_by'      => $command->actorIdentifier,
+                'status' => ApprovalStatus::approved->value,
+                'reviewed_by' => $command->actorIdentifier,
                 'reviewed_by_type' => $command->actorType,
-                'notes'            => $command->notes ?? $approval->notes,
-                'reviewed_at'      => Carbon::now(),
+                'notes' => $command->notes ?? $approval->notes,
+                'reviewed_at' => Carbon::now(),
             ]);
         } else {
             ExperimentApprovalModel::query()->create([
-                'experiment_key'    => $command->experimentKey,
-                'status'            => ApprovalStatus::approved->value,
-                'requested_by'      => $command->actorIdentifier,
+                'experiment_key' => $command->experimentKey,
+                'status' => ApprovalStatus::approved->value,
+                'requested_by' => $command->actorIdentifier,
                 'requested_by_type' => $command->actorType,
-                'reviewed_by'       => $command->actorIdentifier,
-                'reviewed_by_type'  => $command->actorType,
-                'notes'             => $command->notes,
-                'reviewed_at'       => Carbon::now(),
+                'reviewed_by' => $command->actorIdentifier,
+                'reviewed_by_type' => $command->actorType,
+                'notes' => $command->notes,
+                'reviewed_at' => Carbon::now(),
             ]);
         }
 

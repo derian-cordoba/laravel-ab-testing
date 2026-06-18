@@ -4,24 +4,22 @@ declare(strict_types=1);
 
 namespace ABTests\Tests\Integration\Experiments;
 
-use ABTests\Contracts\AssignmentRepository;
+use ABTests\Application\Registry\AttributeReader;
+use ABTests\Application\Registry\ExperimentRegistry;
+use ABTests\Application\Registry\FeatureFlagRegistry;
+use ABTests\Application\Resolution\Resolver;
 use ABTests\Contracts\Bucketable;
 use ABTests\Contracts\BucketingStrategy;
-use ABTests\Contracts\EventSink;
-use ABTests\Contracts\ExperimentStateRepository;
 use ABTests\Experiments;
 use ABTests\Infrastructure\AlwaysRunningExperimentStateRepository;
 use ABTests\Infrastructure\Database\DatabaseFeatureFlagRepository;
 use ABTests\Infrastructure\Database\Models\FeatureFlagStateModel;
 use ABTests\Infrastructure\InMemoryAssignmentRepository;
 use ABTests\Infrastructure\NullEventSink;
-use ABTests\Application\Registry\AttributeReader;
-use ABTests\Application\Registry\ExperimentRegistry;
-use ABTests\Application\Registry\FeatureFlagRegistry;
-use ABTests\Application\Resolution\Resolver;
 use ABTests\Tests\Fixtures\TestFeatureFlag;
 use ABTests\Tests\Fixtures\TestUnit;
 use ABTests\Tests\Integration\DatabaseTestCase;
+use Carbon\Carbon;
 use PHPUnit\Framework\Attributes\Test;
 
 /**
@@ -37,7 +35,7 @@ final class FlagResolutionTest extends DatabaseTestCase
     {
         parent::setUp();
 
-        $reader             = new AttributeReader();
+        $reader = new AttributeReader();
         $this->flagRegistry = new FeatureFlagRegistry();
 
         $definition = $reader->readFeatureFlag(TestFeatureFlag::class);
@@ -67,8 +65,8 @@ final class FlagResolutionTest extends DatabaseTestCase
     public function returns_default_value_when_flag_is_disabled(): void
     {
         FeatureFlagStateModel::query()->create([
-            'key'                => 'test-flag',
-            'is_enabled'         => false,
+            'key' => 'test-flag',
+            'is_enabled' => false,
             'rollout_percentage' => 100,
         ]);
 
@@ -85,10 +83,10 @@ final class FlagResolutionTest extends DatabaseTestCase
     public function returns_default_value_when_kill_switch_is_active(): void
     {
         FeatureFlagStateModel::query()->create([
-            'key'                => 'test-flag',
-            'is_enabled'         => true,
+            'key' => 'test-flag',
+            'is_enabled' => true,
             'rollout_percentage' => 100,
-            'killed_at'          => \Carbon\Carbon::now(),
+            'killed_at' => Carbon::now(),
         ]);
 
         $result = Experiments::flag(TestFeatureFlag::class, new TestUnit('user-1'));
@@ -100,10 +98,10 @@ final class FlagResolutionTest extends DatabaseTestCase
     public function does_not_short_circuit_when_kill_switch_is_inactive(): void
     {
         FeatureFlagStateModel::query()->create([
-            'key'                => 'test-flag',
-            'is_enabled'         => true,
+            'key' => 'test-flag',
+            'is_enabled' => true,
             'rollout_percentage' => 100,
-            'killed_at'          => null,
+            'killed_at' => null,
         ]);
 
         // With a position of 0.0 (always in rollout) the flag resolves to true
@@ -121,8 +119,8 @@ final class FlagResolutionTest extends DatabaseTestCase
     public function returns_default_when_unit_position_is_at_or_above_rollout_threshold(): void
     {
         FeatureFlagStateModel::query()->create([
-            'key'                => 'test-flag',
-            'is_enabled'         => true,
+            'key' => 'test-flag',
+            'is_enabled' => true,
             'rollout_percentage' => 50,
         ]);
 
@@ -136,8 +134,8 @@ final class FlagResolutionTest extends DatabaseTestCase
     public function resolves_flag_when_unit_position_is_below_rollout_threshold(): void
     {
         FeatureFlagStateModel::query()->create([
-            'key'                => 'test-flag',
-            'is_enabled'         => true,
+            'key' => 'test-flag',
+            'is_enabled' => true,
             'rollout_percentage' => 50,
         ]);
 
@@ -151,8 +149,8 @@ final class FlagResolutionTest extends DatabaseTestCase
     public function zero_percent_rollout_excludes_all_units(): void
     {
         FeatureFlagStateModel::query()->create([
-            'key'                => 'test-flag',
-            'is_enabled'         => true,
+            'key' => 'test-flag',
+            'is_enabled' => true,
             'rollout_percentage' => 0,
         ]);
 
@@ -165,8 +163,8 @@ final class FlagResolutionTest extends DatabaseTestCase
     public function full_100_percent_rollout_includes_all_units(): void
     {
         FeatureFlagStateModel::query()->create([
-            'key'                => 'test-flag',
-            'is_enabled'         => true,
+            'key' => 'test-flag',
+            'is_enabled' => true,
             'rollout_percentage' => 100,
         ]);
 
@@ -183,10 +181,10 @@ final class FlagResolutionTest extends DatabaseTestCase
     public function resolves_flag_when_no_conditions_are_set(): void
     {
         FeatureFlagStateModel::query()->create([
-            'key'                => 'test-flag',
-            'is_enabled'         => true,
+            'key' => 'test-flag',
+            'is_enabled' => true,
             'rollout_percentage' => 100,
-            'conditions'         => null,
+            'conditions' => null,
         ]);
 
         $result = $this->resolveWithPosition(0.0);
@@ -198,10 +196,10 @@ final class FlagResolutionTest extends DatabaseTestCase
     public function returns_default_when_unit_does_not_match_conditions(): void
     {
         FeatureFlagStateModel::query()->create([
-            'key'                => 'test-flag',
-            'is_enabled'         => true,
+            'key' => 'test-flag',
+            'is_enabled' => true,
             'rollout_percentage' => 100,
-            'conditions'         => [
+            'conditions' => [
                 ['attribute' => 'plan', 'operator' => 'equals', 'expected' => 'pro'],
             ],
         ]);
@@ -216,10 +214,10 @@ final class FlagResolutionTest extends DatabaseTestCase
     public function resolves_flag_when_unit_matches_all_conditions(): void
     {
         FeatureFlagStateModel::query()->create([
-            'key'                => 'test-flag',
-            'is_enabled'         => true,
+            'key' => 'test-flag',
+            'is_enabled' => true,
             'rollout_percentage' => 100,
-            'conditions'         => [
+            'conditions' => [
                 ['attribute' => 'plan', 'operator' => 'equals', 'expected' => 'pro'],
             ],
         ]);
@@ -233,10 +231,10 @@ final class FlagResolutionTest extends DatabaseTestCase
     public function all_conditions_must_match_and_logic(): void
     {
         FeatureFlagStateModel::query()->create([
-            'key'                => 'test-flag',
-            'is_enabled'         => true,
+            'key' => 'test-flag',
+            'is_enabled' => true,
             'rollout_percentage' => 100,
-            'conditions'         => [
+            'conditions' => [
                 ['attribute' => 'plan',    'operator' => 'equals', 'expected' => 'pro'],
                 ['attribute' => 'country', 'operator' => 'equals', 'expected' => 'US'],
             ],
@@ -255,11 +253,11 @@ final class FlagResolutionTest extends DatabaseTestCase
     public function any_condition_suffices_with_or_logic(): void
     {
         FeatureFlagStateModel::query()->create([
-            'key'                => 'test-flag',
-            'is_enabled'         => true,
+            'key' => 'test-flag',
+            'is_enabled' => true,
             'rollout_percentage' => 100,
-            'conditions_logic'   => 'any',
-            'conditions'         => [
+            'conditions_logic' => 'any',
+            'conditions' => [
                 ['attribute' => 'plan',    'operator' => 'equals', 'expected' => 'enterprise'],
                 ['attribute' => 'country', 'operator' => 'equals', 'expected' => 'US'],
             ],
@@ -282,11 +280,11 @@ final class FlagResolutionTest extends DatabaseTestCase
     public function or_logic_with_no_conditions_returns_true(): void
     {
         FeatureFlagStateModel::query()->create([
-            'key'                => 'test-flag',
-            'is_enabled'         => true,
+            'key' => 'test-flag',
+            'is_enabled' => true,
             'rollout_percentage' => 100,
-            'conditions_logic'   => 'any',
-            'conditions'         => null,
+            'conditions_logic' => 'any',
+            'conditions' => null,
         ]);
 
         $result = $this->resolveWithPosition(0.0);
@@ -298,16 +296,16 @@ final class FlagResolutionTest extends DatabaseTestCase
     public function conditions_support_in_operator(): void
     {
         FeatureFlagStateModel::query()->create([
-            'key'                => 'test-flag',
-            'is_enabled'         => true,
+            'key' => 'test-flag',
+            'is_enabled' => true,
             'rollout_percentage' => 100,
-            'conditions'         => [
+            'conditions' => [
                 ['attribute' => 'plan', 'operator' => 'in', 'expected' => ['pro', 'enterprise']],
             ],
         ]);
 
-        $free       = Experiments::flag(TestFeatureFlag::class, new TestUnit('u1', ['plan' => 'free']));
-        $pro        = Experiments::flag(TestFeatureFlag::class, new TestUnit('u2', ['plan' => 'pro']));
+        $free = Experiments::flag(TestFeatureFlag::class, new TestUnit('u1', ['plan' => 'free']));
+        $pro = Experiments::flag(TestFeatureFlag::class, new TestUnit('u2', ['plan' => 'pro']));
         $enterprise = Experiments::flag(TestFeatureFlag::class, new TestUnit('u3', ['plan' => 'enterprise']));
 
         self::assertFalse($free);
@@ -323,9 +321,9 @@ final class FlagResolutionTest extends DatabaseTestCase
     public function resolves_flag_when_allowed_environments_is_null(): void
     {
         FeatureFlagStateModel::query()->create([
-            'key'                  => 'test-flag',
-            'is_enabled'           => true,
-            'rollout_percentage'   => 100,
+            'key' => 'test-flag',
+            'is_enabled' => true,
+            'rollout_percentage' => 100,
             'allowed_environments' => null,
         ]);
 
@@ -338,9 +336,9 @@ final class FlagResolutionTest extends DatabaseTestCase
     public function returns_default_when_allowed_environments_is_empty(): void
     {
         FeatureFlagStateModel::query()->create([
-            'key'                  => 'test-flag',
-            'is_enabled'           => true,
-            'rollout_percentage'   => 100,
+            'key' => 'test-flag',
+            'is_enabled' => true,
+            'rollout_percentage' => 100,
             'allowed_environments' => [],
         ]);
 
@@ -355,9 +353,9 @@ final class FlagResolutionTest extends DatabaseTestCase
         // TestApplication::environment() returns 'testing', which is not a
         // valid Environment enum value — the gate must return the default.
         FeatureFlagStateModel::query()->create([
-            'key'                  => 'test-flag',
-            'is_enabled'           => true,
-            'rollout_percentage'   => 100,
+            'key' => 'test-flag',
+            'is_enabled' => true,
+            'rollout_percentage' => 100,
             'allowed_environments' => ['production'],
         ]);
 
@@ -442,7 +440,8 @@ final class FlagResolutionTest extends DatabaseTestCase
 
     private function fixedPosition(float $position): BucketingStrategy
     {
-        return new readonly class ($position) implements BucketingStrategy {
+        return new readonly class($position) implements BucketingStrategy
+        {
             public function __construct(private float $position) {}
 
             public function position(string $salt, Bucketable $unit): float

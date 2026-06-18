@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace ABTests\Attributes;
 
-use Attribute;
 use ABTests\Enums\StatisticalEngine;
+use Attribute;
 
 /**
  * Configures how an experiment's results are computed and read.
@@ -14,11 +14,11 @@ use ABTests\Enums\StatisticalEngine;
 final readonly class Analysis
 {
     /**
-     * @param StatisticalEngine $engine          Which engine(s) to run.
-     * @param float             $confidenceLevel Target confidence, e.g. 0.95.
-     * @param bool              $sequential      Use always-valid inference so the live
-     *                                          dashboard can be read at any time without
-     *                                          inflating false positives.
+     * @param  StatisticalEngine  $engine  Which engine(s) to run.
+     * @param  float  $confidenceLevel  Target confidence, e.g. 0.95.
+     * @param  bool  $sequential  Use always-valid inference so the live
+     *                            dashboard can be read at any time without
+     *                            inflating false positives.
      */
     public function __construct(
         public StatisticalEngine $engine = StatisticalEngine::both,

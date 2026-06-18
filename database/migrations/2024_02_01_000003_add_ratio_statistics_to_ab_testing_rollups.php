@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\Schema;
  * These columns are nullable so existing rows remain valid; the rollup job
  * populates them only for ratio-typed metrics.
  */
-return new class extends Migration
+return new class() extends Migration
 {
     public function up(): void
     {

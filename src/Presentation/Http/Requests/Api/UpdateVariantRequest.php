@@ -19,8 +19,8 @@ final class UpdateVariantRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'key'        => ['required', 'string', 'max:255'],
-            'weight'     => ['required', 'integer', 'min:0', 'max:100'],
+            'key' => ['required', 'string', 'max:255'],
+            'weight' => ['required', 'integer', 'min:0', 'max:100'],
             'is_control' => ['sometimes', 'boolean'],
         ];
     }

@@ -28,15 +28,15 @@ final readonly class NotificationDispatcher
         /** @var array<string, mixed> $channels */
         $channels = config('ab-testing.notifications.channels', []);
 
-        if (!empty($channels['webhook']['enabled'])) {
+        if (! empty($channels['webhook']['enabled'])) {
             $this->webhook->send($payload);
         }
 
-        if (!empty($channels['slack']['enabled'])) {
+        if (! empty($channels['slack']['enabled'])) {
             $this->slack->send($payload);
         }
 
-        if (!empty($channels['mail']['enabled'])) {
+        if (! empty($channels['mail']['enabled'])) {
             $this->mail->send($payload);
         }
     }

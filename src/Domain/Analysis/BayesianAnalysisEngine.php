@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace ABTests\Domain\Analysis;
 
 use ABTests\Contracts\AnalysisEngine;
-use ABTests\Enums\StatisticalEngine;
 use ABTests\Domain\Analysis\Support\MathFunctions;
+use ABTests\Enums\StatisticalEngine;
 use ABTests\Values\AnalysisConfiguration;
 use ABTests\Values\AnalysisResult;
 use ABTests\Values\MetricSummary;
@@ -53,7 +53,7 @@ final readonly class BayesianAnalysisEngine implements AnalysisEngine
 
         $varLikelihood = $varControl + $varTreatment;
 
-        $controlMean  = $control->mean();
+        $controlMean = $control->mean();
         $relativeLift = $controlMean !== 0.0 ? $delta / abs($controlMean) : 0.0;
 
         if ($varLikelihood <= 0.0) {

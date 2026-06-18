@@ -46,7 +46,7 @@ final class ExperimentTimeSeriesChart extends Component
         if ($this->shouldDispatchRefresh) {
             // Dispatched after the DOM morph commits, so Alpine can safely read
             // the updated carrier element when it receives the browser event.
-            $this->dispatch('chart-data-refreshed', hasData: !empty($series) && count($dates) >= 2);
+            $this->dispatch('chart-data-refreshed', hasData: ! empty($series) && count($dates) >= 2);
             $this->shouldDispatchRefresh = false;
         }
 
@@ -72,7 +72,7 @@ final class ExperimentTimeSeriesChart extends Component
     private function buildSeries(): array
     {
         $rows = DB::table((new EventModel())->getTable())
-            ->selectRaw("DATE(occurred_at) as day, variant_key, type, COUNT(DISTINCT unit_key) as unit_count")
+            ->selectRaw('DATE(occurred_at) as day, variant_key, type, COUNT(DISTINCT unit_key) as unit_count')
             ->where('experiment_key', $this->experimentKey)
             ->whereIn('type', ['exposure', 'conversion'])
             ->groupByRaw('DATE(occurred_at), variant_key, type')
@@ -84,17 +84,17 @@ final class ExperimentTimeSeriesChart extends Component
         }
 
         // Index by [date][variant][type] = count
-        $indexed     = [];
-        $allDates    = [];
+        $indexed = [];
+        $allDates = [];
         $allVariants = [];
 
         foreach ($rows as $row) {
             $indexed[$row->day][$row->variant_key][$row->type] = (int) $row->unit_count;
-            $allDates[$row->day]    = true;
+            $allDates[$row->day] = true;
             $allVariants[$row->variant_key] = true;
         }
 
-        $dates    = array_keys($allDates);
+        $dates = array_keys($allDates);
         $variants = array_keys($allVariants);
         sort($dates);
 
@@ -110,12 +110,12 @@ final class ExperimentTimeSeriesChart extends Component
         $series = [];
 
         foreach ($variants as $i => $variantKey) {
-            $cumulativeExposures   = 0;
+            $cumulativeExposures = 0;
             $cumulativeConversions = 0;
             $points = [];
 
             foreach ($dates as $date) {
-                $cumulativeExposures   += $indexed[$date][$variantKey]['exposure'] ?? 0;
+                $cumulativeExposures += $indexed[$date][$variantKey]['exposure'] ?? 0;
                 $cumulativeConversions += $indexed[$date][$variantKey]['conversion'] ?? 0;
 
                 $points[] = $cumulativeExposures > 0
@@ -124,8 +124,8 @@ final class ExperimentTimeSeriesChart extends Component
             }
 
             $series[] = [
-                'key'    => $variantKey,
-                'color'  => $colors[$i % count($colors)],
+                'key' => $variantKey,
+                'color' => $colors[$i % count($colors)],
                 'points' => $points,
             ];
         }
@@ -141,9 +141,9 @@ final class ExperimentTimeSeriesChart extends Component
      * critical z-score is z_α/2 / √τ, giving boundary lines that tighten as
      * sample size grows. Returns null when target_sample_size is not set.
      *
-     * @param  array<string, array<string, array<string, int>>> $indexed   [date][variant][type] → count
-     * @param  list<string>                                     $dates     sorted date strings
-     * @param  list<string>                                     $variants  variant keys (control first)
+     * @param  array<string, array<string, array<string, int>>>  $indexed  [date][variant][type] → count
+     * @param  list<string>  $dates  sorted date strings
+     * @param  list<string>  $variants  variant keys (control first)
      * @return array{upper:list<float|null>,lower:list<float|null>}|null
      */
     private function buildSequentialBoundary(array $indexed, array $dates, array $variants): ?array
@@ -164,36 +164,37 @@ final class ExperimentTimeSeriesChart extends Component
             ->where('is_control', true)
             ->value('key') ?? $variants[0];
 
-        $numArms      = count($variants);
+        $numArms = count($variants);
         $targetPerArm = $targetSampleSize / $numArms;
-        $zAlpha2      = 1.959964; // z_{0.025}
+        $zAlpha2 = 1.959964; // z_{0.025}
 
-        $cumulativeControlN           = 0;
+        $cumulativeControlN = 0;
         $cumulativeControlConversions = 0;
-        $boundaryUpper                = [];
-        $boundaryLower                = [];
+        $boundaryUpper = [];
+        $boundaryLower = [];
 
         foreach ($dates as $date) {
-            $cumulativeControlN           += $indexed[$date][$controlKey]['exposure']   ?? 0;
+            $cumulativeControlN += $indexed[$date][$controlKey]['exposure'] ?? 0;
             $cumulativeControlConversions += $indexed[$date][$controlKey]['conversion'] ?? 0;
 
             if ($cumulativeControlN < 5) {
                 // Too few data points — suppress boundary to avoid visual noise.
                 $boundaryUpper[] = null;
                 $boundaryLower[] = null;
+
                 continue;
             }
 
-            $tau          = $cumulativeControlN / $targetPerArm;
+            $tau = $cumulativeControlN / $targetPerArm;
             // O'Brien-Fleming: z_t = z_α/2 / √τ; cap at z_α/2 once fully powered.
-            $zBoundary    = $tau < 1.0 ? min(10.0, $zAlpha2 / sqrt($tau)) : $zAlpha2;
-            $controlRate  = $cumulativeControlConversions / $cumulativeControlN;
-            $se           = $controlRate > 0.0 && $controlRate < 1.0
+            $zBoundary = $tau < 1.0 ? min(10.0, $zAlpha2 / sqrt($tau)) : $zAlpha2;
+            $controlRate = $cumulativeControlConversions / $cumulativeControlN;
+            $se = $controlRate > 0.0 && $controlRate < 1.0
                 ? sqrt($controlRate * (1.0 - $controlRate) / $cumulativeControlN)
                 : 0.0;
 
             $boundaryUpper[] = round(min(100.0, ($controlRate + $zBoundary * $se) * 100.0), 3);
-            $boundaryLower[] = round(max(0.0,   ($controlRate - $zBoundary * $se) * 100.0), 3);
+            $boundaryLower[] = round(max(0.0, ($controlRate - $zBoundary * $se) * 100.0), 3);
         }
 
         return ['upper' => $boundaryUpper, 'lower' => $boundaryLower];

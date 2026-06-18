@@ -27,8 +27,7 @@ final readonly class StartExperimentCommandHandler
         private ExperimentRepository $experimentRepository,
         private AuditLogRepository $auditLogRepository,
         private ExperimentRegistry $registry,
-    ) {
-    }
+    ) {}
 
     public function handle(StartExperimentCommand $command): void
     {
@@ -57,7 +56,7 @@ final readonly class StartExperimentCommandHandler
         $powerAnalysisMode = config('ab-testing.governance.require_power_analysis', 'warn');
 
         if ($powerAnalysisMode !== 'off' && empty($model->target_sample_size)) {
-            $message = "Experiment [{$command->experimentKey}] has no target_sample_size set. " .
+            $message = "Experiment [{$command->experimentKey}] has no target_sample_size set. ".
                 'Run a power analysis (ab:power-analysis or the dashboard) before starting.';
 
             if ($powerAnalysisMode === 'block') {

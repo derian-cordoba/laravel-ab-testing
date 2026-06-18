@@ -16,8 +16,7 @@ final readonly class AddVariantCommandHandler
     public function __construct(
         private ExperimentRepository $experimentRepository,
         private AuditLogRepository $auditLogRepository,
-    ) {
-    }
+    ) {}
 
     public function handle(AddVariantCommand $command): void
     {
@@ -27,7 +26,7 @@ final readonly class AddVariantCommandHandler
 
         if (in_array($status, [ExperimentStatus::completed, ExperimentStatus::archived], true)) {
             throw new InvalidVariantOperation(
-                "Variants cannot be changed on completed or archived experiments. Current status: [{$status->value}]."
+                "Variants cannot be changed on completed or archived experiments. Current status: [{$status->value}].",
             );
         }
 
@@ -43,13 +42,13 @@ final readonly class AddVariantCommandHandler
 
         if ($keyExists) {
             throw new InvalidVariantOperation(
-                "A variant with key [{$command->variantKey}] already exists in this experiment."
+                "A variant with key [{$command->variantKey}] already exists in this experiment.",
             );
         }
 
         if ($command->isControl && $existing->contains('is_control', true)) {
             throw new InvalidVariantOperation(
-                'Another control variant already exists. Mark the new variant as treatment, or update the existing control first.'
+                'Another control variant already exists. Mark the new variant as treatment, or update the existing control first.',
             );
         }
 
@@ -57,15 +56,15 @@ final readonly class AddVariantCommandHandler
 
         if ($newTotal > 100) {
             throw new InvalidVariantOperation(
-                "Adding this variant would bring the total allocation to {$newTotal}%. Reduce other variant weights first."
+                "Adding this variant would bring the total allocation to {$newTotal}%. Reduce other variant weights first.",
             );
         }
 
         VariantModel::query()->create([
             'experiment_id' => $model->id,
-            'key'           => $command->variantKey,
-            'weight'        => $command->weight,
-            'is_control'    => $command->isControl,
+            'key' => $command->variantKey,
+            'weight' => $command->weight,
+            'is_control' => $command->isControl,
         ]);
 
         $this->auditLogRepository->append(
@@ -76,8 +75,8 @@ final readonly class AddVariantCommandHandler
             before: [],
             after: [
                 'variant_key' => $command->variantKey,
-                'weight'      => $command->weight,
-                'is_control'  => $command->isControl,
+                'weight' => $command->weight,
+                'is_control' => $command->isControl,
             ],
         );
     }

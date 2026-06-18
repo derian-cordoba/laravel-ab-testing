@@ -57,7 +57,7 @@ final class InMemoryAssignmentRepositoryTest extends TestCase
     #[Test]
     public function store_is_idempotent_first_write_wins(): void
     {
-        $first  = $this->makeAssignment(variantKey: 'treatment');
+        $first = $this->makeAssignment(variantKey: 'treatment');
         $second = $this->makeAssignment(variantKey: 'control');
 
         $this->repo->storeAssignment($first);
@@ -92,7 +92,7 @@ final class InMemoryAssignmentRepositoryTest extends TestCase
         $this->repo->storeAssignment($this->makeAssignment(unitKey: 'user-1', variantKey: 'control'));
         $this->repo->storeAssignment($this->makeAssignment(unitKey: 'user-2', variantKey: 'treatment'));
 
-        self::assertSame('control',   $this->repo->findAssignment('exp', 'user', 'user-1')?->variantKey);
+        self::assertSame('control', $this->repo->findAssignment('exp', 'user', 'user-1')?->variantKey);
         self::assertSame('treatment', $this->repo->findAssignment('exp', 'user', 'user-2')?->variantKey);
     }
 

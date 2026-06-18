@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace ABTests\Domain\Analysis;
 
-use ABTests\Infrastructure\Database\Models\CovariateModel;
-use ABTests\Infrastructure\Database\Models\RollupModel;
 use ABTests\Values\MetricSummary;
 use Illuminate\Support\Facades\DB;
 
@@ -46,9 +44,7 @@ final readonly class CupedVarianceReduction
      * If covariate data is unavailable or insufficient, the original summaries
      * are returned unchanged — CUPED degrades gracefully to a standard analysis.
      *
-     * @param list<MetricSummary> $summaries One per variant arm.
-     * @param string              $experimentKey
-     * @param string              $metricKey
+     * @param  list<MetricSummary>  $summaries  One per variant arm.
      * @return list<MetricSummary>
      */
     public function adjust(
@@ -132,8 +128,8 @@ final readonly class CupedVarianceReduction
      * Compute θ = Cov(Y, X) / Var(X) using the control arm sufficient statistics.
      * Returns null when variance is zero or data is insufficient.
      *
-     * @param list<MetricSummary>         $summaries
-     * @param array<string, array> $covariateStats
+     * @param  list<MetricSummary>  $summaries
+     * @param  array<string, array>  $covariateStats
      */
     private function computeTheta(array $summaries, array $covariateStats): ?float
     {
@@ -185,13 +181,13 @@ final readonly class CupedVarianceReduction
         $rows = DB::table('ab_testing_covariates as c')
             ->join('ab_testing_assignments as a', static function ($join) use ($experimentKey): void {
                 $join->on('c.unit_type', '=', 'a.unit_type')
-                     ->on('c.unit_key', '=', 'a.unit_key')
-                     ->where('a.experiment_key', '=', $experimentKey);
+                    ->on('c.unit_key', '=', 'a.unit_key')
+                    ->where('a.experiment_key', '=', $experimentKey);
             })
             ->join('ab_testing_rollups as r', static function ($join) use ($experimentKey, $metricKey): void {
                 $join->on('a.variant_key', '=', 'r.variant_key')
-                     ->where('r.experiment_key', '=', $experimentKey)
-                     ->where('r.metric_key', '=', $metricKey);
+                    ->where('r.experiment_key', '=', $experimentKey)
+                    ->where('r.metric_key', '=', $metricKey);
             })
             ->where('c.experiment_key', $experimentKey)
             ->where('c.metric_key', $metricKey)
@@ -212,10 +208,10 @@ final readonly class CupedVarianceReduction
 
         foreach ($rows as $row) {
             $stats[(string) $row->variant_key] = [
-                'mean'     => (float) ($row->cov_mean ?? 0.0),
+                'mean' => (float) ($row->cov_mean ?? 0.0),
                 'variance' => (float) ($row->cov_variance ?? 0.0),
-                'cov_yx'   => (float) ($row->cov_yx_approx ?? 0.0),
-                'n'        => (int) $row->n,
+                'cov_yx' => (float) ($row->cov_yx_approx ?? 0.0),
+                'n' => (int) $row->n,
             ];
         }
 

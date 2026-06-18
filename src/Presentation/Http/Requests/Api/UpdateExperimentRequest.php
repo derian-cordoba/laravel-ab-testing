@@ -19,8 +19,8 @@ final class UpdateExperimentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'               => ['nullable', 'string', 'max:255'],
-            'layer'              => ['nullable', 'string', 'max:255'],
+            'name' => ['nullable', 'string', 'max:255'],
+            'layer' => ['nullable', 'string', 'max:255'],
             'target_sample_size' => ['nullable', 'integer', 'min:1'],
         ];
     }

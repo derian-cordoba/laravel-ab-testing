@@ -7,9 +7,9 @@ namespace ABTests\Presentation\Http\Controllers\Api;
 use ABTests\Application\DTOs\VerdictData;
 use ABTests\Application\ResultsService;
 use ABTests\Exceptions\NoResultsAvailableException;
+use ABTests\Infrastructure\Database\Models\ExperimentModel;
 use ABTests\Presentation\Http\Resources\Api\ExperimentResultsResource;
 use ABTests\Presentation\Http\Resources\Api\VerdictResource;
-use ABTests\Infrastructure\Database\Models\ExperimentModel;
 
 /**
  * Read-only results and verdict endpoints. These are the key CI/CD integration

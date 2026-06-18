@@ -19,12 +19,12 @@ enum Operator: string
     public function label(): string
     {
         return match ($this) {
-            self::equals      => 'equals',
-            self::notEquals   => 'does not equal',
-            self::in          => 'is one of',
-            self::notIn       => 'is not one of',
+            self::equals => 'equals',
+            self::notEquals => 'does not equal',
+            self::in => 'is one of',
+            self::notIn => 'is not one of',
             self::greaterThan => 'greater than',
-            self::lessThan    => 'less than',
+            self::lessThan => 'less than',
         };
     }
 }

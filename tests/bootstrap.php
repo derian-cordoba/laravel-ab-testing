@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Illuminate\Container\Container;
 
-require __DIR__ . '/../vendor/autoload.php';
+require __DIR__.'/../vendor/autoload.php';
 
 /**
  * config() is provided by illuminate/foundation in a full Laravel app.
@@ -13,7 +13,7 @@ require __DIR__ . '/../vendor/autoload.php';
  * container is set up, and falls back to $default otherwise.
  */
 if (! function_exists('config')) {
-    function config(string|null $key = null, mixed $default = null): mixed
+    function config(?string $key = null, mixed $default = null): mixed
     {
         $container = Container::getInstance();
 

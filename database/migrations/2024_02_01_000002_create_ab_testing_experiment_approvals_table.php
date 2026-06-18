@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Schema;
  * is true, an experiment must have a row with status = 'approved' before it can
  * transition to running. Older rows are kept as a history trail.
  */
-return new class extends Migration
+return new class() extends Migration
 {
     public function up(): void
     {

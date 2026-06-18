@@ -14,8 +14,7 @@ final readonly class ToggleFlagKillSwitchCommandHandler
 {
     public function __construct(
         private FeatureFlagRepository $featureFlagRepository,
-    ) {
-    }
+    ) {}
 
     public function handle(ToggleFlagKillSwitchCommand $command): void
     {

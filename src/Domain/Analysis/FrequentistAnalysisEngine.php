@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace ABTests\Domain\Analysis;
 
 use ABTests\Contracts\AnalysisEngine;
-use ABTests\Enums\StatisticalEngine;
 use ABTests\Domain\Analysis\Support\MathFunctions;
+use ABTests\Enums\StatisticalEngine;
 use ABTests\Values\AnalysisConfiguration;
 use ABTests\Values\AnalysisResult;
 use ABTests\Values\MetricSummary;
@@ -44,7 +44,7 @@ final readonly class FrequentistAnalysisEngine implements AnalysisEngine
         // the ratio-of-means is compared with the correct sampling variance rather
         // than the naive mean-of-ratios approximation. For all other metric types,
         // fall back to the standard sample variance.
-        $controlVariance   = $control->isRatioMetric() ? $control->deltaMethodVariance()   : $control->variance();
+        $controlVariance = $control->isRatioMetric() ? $control->deltaMethodVariance() : $control->variance();
         $treatmentVariance = $treatment->isRatioMetric() ? $treatment->deltaMethodVariance() : $treatment->variance();
 
         // Variance of (μ_T - μ_C); guard against zero-count arms.
@@ -59,7 +59,7 @@ final readonly class FrequentistAnalysisEngine implements AnalysisEngine
         $varDelta = $varControl + $varTreatment;
         $se = sqrt($varDelta);
 
-        $controlMean  = $control->mean();
+        $controlMean = $control->mean();
         $relativeLift = $controlMean !== 0.0 ? $delta / abs($controlMean) : 0.0;
 
         if ($se <= 0.0) {

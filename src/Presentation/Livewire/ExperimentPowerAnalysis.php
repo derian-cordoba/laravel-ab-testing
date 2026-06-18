@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace ABTests\Presentation\Livewire;
 
-use ABTests\Enums\MetricType;
-use ABTests\Infrastructure\Database\Models\ExperimentModel;
 use ABTests\Application\Registry\AttributeReader;
 use ABTests\Application\Registry\ExperimentRegistry;
 use ABTests\Domain\Analysis\PowerAnalysis;
+use ABTests\Enums\MetricType;
+use ABTests\Infrastructure\Database\Models\ExperimentModel;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Validate;
@@ -44,12 +44,16 @@ final class ExperimentPowerAnalysis extends Component
 
     /** @var array<string, mixed>|null */
     public ?array $result = null;
+
     public string $flashMessage = '';
+
     public string $flashType = 'success';
 
     /** @var array<string, MetricType> */
     public array $metricTypes = [];
+
     public bool $isBinaryMetric = true;
+
     public float $standardDeviation = 1.0;
 
     public function mount(string $experimentKey): void
@@ -95,7 +99,7 @@ final class ExperimentPowerAnalysis extends Component
 
             $this->flashMessage = '';
         } catch (Throwable $e) {
-            $this->flashMessage = 'Calculation error: ' . $e->getMessage();
+            $this->flashMessage = 'Calculation error: '.$e->getMessage();
             $this->flashType = 'error';
             $this->result = null;
         }
@@ -119,7 +123,7 @@ final class ExperimentPowerAnalysis extends Component
             $this->flashType = 'success';
             $this->dispatch('experiment-updated');
         } catch (Throwable $e) {
-            $this->flashMessage = 'Failed to save: ' . $e->getMessage();
+            $this->flashMessage = 'Failed to save: '.$e->getMessage();
             $this->flashType = 'error';
         }
     }

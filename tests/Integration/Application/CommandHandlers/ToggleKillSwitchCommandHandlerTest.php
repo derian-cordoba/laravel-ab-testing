@@ -4,17 +4,18 @@ declare(strict_types=1);
 
 namespace ABTests\Tests\Integration\Application\CommandHandlers;
 
-use ABTests\Application\Handlers\ToggleKillSwitchCommandHandler;
 use ABTests\Application\Commands\ToggleKillSwitchCommand;
+use ABTests\Application\Handlers\ToggleKillSwitchCommandHandler;
 use ABTests\Domain\Events\KillSwitchActivatedEvent;
 use ABTests\Enums\ExperimentStatus;
 use ABTests\Exceptions\ExperimentNotFound;
+use ABTests\Infrastructure\Database\DatabaseAuditLogRepository;
+use ABTests\Infrastructure\Database\DatabaseExperimentRepository;
 use ABTests\Infrastructure\Database\Models\ExperimentModel;
 use ABTests\Tests\Integration\DatabaseTestCase;
+use Carbon\Carbon;
 use Illuminate\Container\Container;
 use PHPUnit\Framework\Attributes\Test;
-use ABTests\Infrastructure\Database\DatabaseExperimentRepository;
-use ABTests\Infrastructure\Database\DatabaseAuditLogRepository;
 
 final class ToggleKillSwitchCommandHandlerTest extends DatabaseTestCase
 {
@@ -22,11 +23,11 @@ final class ToggleKillSwitchCommandHandlerTest extends DatabaseTestCase
     public function activating_kill_switch_sets_is_killed_and_killed_at(): void
     {
         ExperimentModel::query()->create([
-            'key'                => 'my-exp',
-            'status'             => ExperimentStatus::running->value,
+            'key' => 'my-exp',
+            'status' => ExperimentStatus::running->value,
             'traffic_percentage' => 100,
-            'is_killed'          => false,
-            'killed_at'          => null,
+            'is_killed' => false,
+            'killed_at' => null,
         ]);
 
         (new ToggleKillSwitchCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository()))->handle(new ToggleKillSwitchCommand(
@@ -45,11 +46,11 @@ final class ToggleKillSwitchCommandHandlerTest extends DatabaseTestCase
     public function deactivating_kill_switch_clears_is_killed_and_killed_at(): void
     {
         ExperimentModel::query()->create([
-            'key'                => 'my-exp',
-            'status'             => ExperimentStatus::running->value,
+            'key' => 'my-exp',
+            'status' => ExperimentStatus::running->value,
             'traffic_percentage' => 100,
-            'is_killed'          => true,
-            'killed_at'          => \Carbon\Carbon::now(),
+            'is_killed' => true,
+            'killed_at' => Carbon::now(),
         ]);
 
         (new ToggleKillSwitchCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository()))->handle(new ToggleKillSwitchCommand(
@@ -80,11 +81,11 @@ final class ToggleKillSwitchCommandHandlerTest extends DatabaseTestCase
     public function dispatches_kill_switch_activated_event_with_experiment_key(): void
     {
         ExperimentModel::query()->create([
-            'key'                => 'my-exp',
-            'status'             => ExperimentStatus::running->value,
+            'key' => 'my-exp',
+            'status' => ExperimentStatus::running->value,
             'traffic_percentage' => 100,
-            'is_killed'          => false,
-            'killed_at'          => null,
+            'is_killed' => false,
+            'killed_at' => null,
         ]);
 
         /** @var list<KillSwitchActivatedEvent> $fired */
@@ -113,11 +114,11 @@ final class ToggleKillSwitchCommandHandlerTest extends DatabaseTestCase
     public function dispatches_kill_switch_activated_event_with_activated_false_when_deactivating(): void
     {
         ExperimentModel::query()->create([
-            'key'                => 'my-exp',
-            'status'             => ExperimentStatus::running->value,
+            'key' => 'my-exp',
+            'status' => ExperimentStatus::running->value,
             'traffic_percentage' => 100,
-            'is_killed'          => true,
-            'killed_at'          => \Carbon\Carbon::now(),
+            'is_killed' => true,
+            'killed_at' => Carbon::now(),
         ]);
 
         /** @var list<KillSwitchActivatedEvent> $fired */

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * PHPStan stubs — generic Container::make().
  *
@@ -14,8 +16,9 @@ interface Container
 {
     /**
      * @template T of object
-     * @param class-string<T>|string $abstract
-     * @param array<mixed> $parameters
+     *
+     * @param  class-string<T>|string  $abstract
+     * @param  array<mixed>  $parameters
      * @return ($abstract is class-string<T> ? T : mixed)
      */
     public function make($abstract, array $parameters = []): mixed;

@@ -34,7 +34,7 @@ final readonly class SynchronousCommandBus implements CommandBus
         // We do the namespace swap first, then simply append "Handler" — using a
         // single str_replace on 'Command' → 'CommandHandler' was incorrect because
         // it would also corrupt the already-replaced 'Handlers' segment.
-        $handlerClass = str_replace('\\Commands\\', '\\Handlers\\', get_class($command)) . 'Handler';
+        $handlerClass = str_replace('\\Commands\\', '\\Handlers\\', get_class($command)).'Handler';
 
         $handler = $this->container->make($handlerClass);
         $handler->handle($command);

@@ -2,23 +2,26 @@
 
 declare(strict_types=1);
 
+use Illuminate\Contracts\Debug\ExceptionHandler;
+use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Foundation\Application;
+use Illuminate\Foundation\Exceptions\Handler;
 
 $app = new Application(dirname(__DIR__));
 
 $app->singleton(
-    \Illuminate\Contracts\Http\Kernel::class,
-    \Illuminate\Foundation\Http\Kernel::class,
+    Kernel::class,
+    Illuminate\Foundation\Http\Kernel::class,
 );
 
 $app->singleton(
-    \Illuminate\Contracts\Console\Kernel::class,
-    \Illuminate\Foundation\Console\Kernel::class,
+    Illuminate\Contracts\Console\Kernel::class,
+    Illuminate\Foundation\Console\Kernel::class,
 );
 
 $app->singleton(
-    \Illuminate\Contracts\Debug\ExceptionHandler::class,
-    \Illuminate\Foundation\Exceptions\Handler::class,
+    ExceptionHandler::class,
+    Handler::class,
 );
 
 return $app;

@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace ABTests\Tests\Integration\Application\CommandHandlers;
 
-use ABTests\Application\Handlers\ResumeExperimentCommandHandler;
 use ABTests\Application\Commands\ResumeExperimentCommand;
+use ABTests\Application\Handlers\ResumeExperimentCommandHandler;
 use ABTests\Domain\Events\ExperimentResumedEvent;
 use ABTests\Enums\ExperimentStatus;
 use ABTests\Exceptions\ExperimentNotFound;
 use ABTests\Exceptions\InvalidStateTransition;
+use ABTests\Infrastructure\Database\DatabaseAuditLogRepository;
+use ABTests\Infrastructure\Database\DatabaseExperimentRepository;
 use ABTests\Infrastructure\Database\Models\ExperimentModel;
 use ABTests\Tests\Integration\DatabaseTestCase;
 use Illuminate\Container\Container;
 use PHPUnit\Framework\Attributes\Test;
-use ABTests\Infrastructure\Database\DatabaseExperimentRepository;
-use ABTests\Infrastructure\Database\DatabaseAuditLogRepository;
 
 final class ResumeExperimentCommandHandlerTest extends DatabaseTestCase
 {
@@ -23,10 +23,10 @@ final class ResumeExperimentCommandHandlerTest extends DatabaseTestCase
     public function resume_transitions_paused_experiment_to_running(): void
     {
         ExperimentModel::query()->create([
-            'key'                => 'my-exp',
-            'status'             => ExperimentStatus::paused->value,
+            'key' => 'my-exp',
+            'status' => ExperimentStatus::paused->value,
             'traffic_percentage' => 100,
-            'is_killed'          => false,
+            'is_killed' => false,
         ]);
 
         (new ResumeExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository()))->handle(new ResumeExperimentCommand(
@@ -54,10 +54,10 @@ final class ResumeExperimentCommandHandlerTest extends DatabaseTestCase
     public function resume_throws_when_experiment_cannot_transition_to_running(): void
     {
         ExperimentModel::query()->create([
-            'key'                => 'my-exp',
-            'status'             => ExperimentStatus::completed->value,
+            'key' => 'my-exp',
+            'status' => ExperimentStatus::completed->value,
             'traffic_percentage' => 0,
-            'is_killed'          => false,
+            'is_killed' => false,
         ]);
 
         $this->expectException(InvalidStateTransition::class);
@@ -72,10 +72,10 @@ final class ResumeExperimentCommandHandlerTest extends DatabaseTestCase
     public function dispatches_experiment_resumed_event(): void
     {
         ExperimentModel::query()->create([
-            'key'                => 'my-exp',
-            'status'             => ExperimentStatus::paused->value,
+            'key' => 'my-exp',
+            'status' => ExperimentStatus::paused->value,
             'traffic_percentage' => 100,
-            'is_killed'          => false,
+            'is_killed' => false,
         ]);
 
         /** @var list<ExperimentResumedEvent> $fired */

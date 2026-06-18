@@ -32,29 +32,30 @@ final class CreateExperiment extends Component
     public int $trafficPercentage = 0;
 
     public string $flashMessage = '';
+
     public string $flashType = 'error';
 
     public function save(): void
     {
         $this->validate();
 
-        $normalizedKey  = strtolower(trim($this->key));
+        $normalizedKey = strtolower(trim($this->key));
         $normalizedName = $this->name !== null && trim($this->name) !== '' ? trim($this->name) : null;
         $normalizedLayer = $this->layer !== null && trim($this->layer) !== '' ? trim($this->layer) : null;
 
         try {
             app(CommandBus::class)->dispatch(new CreateExperimentCommand(
-                key:               $normalizedKey,
-                name:              $normalizedName,
-                layer:             $normalizedLayer,
+                key: $normalizedKey,
+                name: $normalizedName,
+                layer: $normalizedLayer,
                 trafficPercentage: $this->trafficPercentage,
-                actorIdentifier:   $this->actorIdentifier(),
+                actorIdentifier: $this->actorIdentifier(),
             ));
 
             $this->redirect(route('ab-testing.experiments.show', $normalizedKey), navigate: true);
         } catch (Throwable $e) {
-            $this->flashMessage = 'Failed to create experiment: ' . $e->getMessage();
-            $this->flashType    = 'error';
+            $this->flashMessage = 'Failed to create experiment: '.$e->getMessage();
+            $this->flashType = 'error';
         }
     }
 

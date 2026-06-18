@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Schema;
  * idempotency_key unique constraint ensures duplicate fires are discarded at
  * the database level without raising exceptions.
  */
-return new class extends Migration
+return new class() extends Migration
 {
     public function up(): void
     {

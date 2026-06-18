@@ -19,8 +19,8 @@ final class CreateFeatureFlagRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'key'                => ['required', 'string', 'max:255'],
-            'is_enabled'         => ['nullable', 'boolean'],
+            'key' => ['required', 'string', 'max:255'],
+            'is_enabled' => ['nullable', 'boolean'],
             'rollout_percentage' => ['nullable', 'integer', 'min:0', 'max:100'],
         ];
     }

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace ABTests\Tests\Unit\Registry;
 
+use ABTests\Application\Registry\FeatureFlagRegistry;
 use ABTests\Definitions\FeatureFlagDefinition;
 use ABTests\Exceptions\FeatureFlagNotFound;
-use ABTests\Application\Registry\FeatureFlagRegistry;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -30,7 +30,7 @@ final class FeatureFlagRegistryTest extends TestCase
     #[Test]
     public function register_and_find_by_key(): void
     {
-        $registry   = new FeatureFlagRegistry();
+        $registry = new FeatureFlagRegistry();
         $definition = $this->makeDefinition('checkout-express-payment');
 
         $registry->register($definition);
@@ -41,7 +41,7 @@ final class FeatureFlagRegistryTest extends TestCase
     #[Test]
     public function register_and_find_by_class(): void
     {
-        $registry   = new FeatureFlagRegistry();
+        $registry = new FeatureFlagRegistry();
         $definition = $this->makeDefinition('new-dashboard');
 
         $registry->register($definition, 'App\\Flags\\NewDashboardFlag');
@@ -98,8 +98,8 @@ final class FeatureFlagRegistryTest extends TestCase
     public function later_registration_overwrites_same_key(): void
     {
         $registry = new FeatureFlagRegistry();
-        $first    = $this->makeDefinition('my-flag', defaultValue: false);
-        $second   = $this->makeDefinition('my-flag', defaultValue: true);
+        $first = $this->makeDefinition('my-flag', defaultValue: false);
+        $second = $this->makeDefinition('my-flag', defaultValue: true);
 
         $registry->register($first);
         $registry->register($second);
@@ -110,7 +110,7 @@ final class FeatureFlagRegistryTest extends TestCase
     #[Test]
     public function later_class_registration_updates_the_class_to_key_mapping(): void
     {
-        $registry   = new FeatureFlagRegistry();
+        $registry = new FeatureFlagRegistry();
         $definition = $this->makeDefinition('my-flag');
 
         $registry->register($definition, 'App\\Flags\\OldName');
@@ -122,7 +122,7 @@ final class FeatureFlagRegistryTest extends TestCase
     #[Test]
     public function stores_default_value_on_definition(): void
     {
-        $registry   = new FeatureFlagRegistry();
+        $registry = new FeatureFlagRegistry();
         $definition = $this->makeDefinition('priced-feature', defaultValue: 'disabled');
 
         $registry->register($definition);

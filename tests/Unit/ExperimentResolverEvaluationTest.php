@@ -4,26 +4,26 @@ declare(strict_types=1);
 
 namespace ABTests\Tests\Unit;
 
-use ABTests\Enums\EvaluationReason;
-use ABTests\Enums\EventType;
-use ABTests\Enums\ExperimentStatus;
-use ABTests\ExperimentResolver;
-use ABTests\Contracts\ExperimentStateRepository;
-use ABTests\Infrastructure\AlwaysRunningExperimentStateRepository;
-use ABTests\Infrastructure\InMemoryAssignmentRepository;
-use ABTests\Infrastructure\Bucketing\Sha256BucketingStrategy;
-use ABTests\Infrastructure\NullEventSink;
 use ABTests\Application\Registry\AttributeReader;
 use ABTests\Application\Registry\ExperimentRegistry;
 use ABTests\Application\Resolution\Resolver;
 use ABTests\Application\Resolution\Steps\BucketStep;
-use ABTests\Application\Resolution\Steps\CheckExperimentActiveStep;
 use ABTests\Application\Resolution\Steps\CheckEnvironmentStep;
+use ABTests\Application\Resolution\Steps\CheckExperimentActiveStep;
 use ABTests\Application\Resolution\Steps\CheckLayerExclusionStep;
 use ABTests\Application\Resolution\Steps\CheckSegmentStep;
 use ABTests\Application\Resolution\Steps\CheckTrafficAllocationStep;
 use ABTests\Application\Resolution\Steps\LoadExistingAssignmentStep;
 use ABTests\Application\Resolution\Steps\PersistAssignmentStep;
+use ABTests\Contracts\ExperimentStateRepository;
+use ABTests\Enums\EvaluationReason;
+use ABTests\Enums\EventType;
+use ABTests\Enums\ExperimentStatus;
+use ABTests\ExperimentResolver;
+use ABTests\Infrastructure\AlwaysRunningExperimentStateRepository;
+use ABTests\Infrastructure\Bucketing\Sha256BucketingStrategy;
+use ABTests\Infrastructure\InMemoryAssignmentRepository;
+use ABTests\Infrastructure\NullEventSink;
 use ABTests\Testing\RecordingEventSink;
 use ABTests\Tests\Fixtures\TestExperiment;
 use ABTests\Tests\Fixtures\TestUnit;
@@ -46,8 +46,11 @@ use PHPUnit\Framework\TestCase;
 final class ExperimentResolverEvaluationTest extends TestCase
 {
     private ExperimentRegistry $registry;
+
     private InMemoryAssignmentRepository $assignmentRepository;
+
     private AlwaysRunningExperimentStateRepository $stateRepository;
+
     private Sha256BucketingStrategy $bucketingStrategy;
 
     protected function setUp(): void
@@ -55,13 +58,13 @@ final class ExperimentResolverEvaluationTest extends TestCase
         parent::setUp();
 
         $this->registry = new ExperimentRegistry();
-        $reader         = new AttributeReader();
-        $definition     = $reader->readExperiment(TestExperiment::class);
+        $reader = new AttributeReader();
+        $definition = $reader->readExperiment(TestExperiment::class);
         $this->registry->register($definition, TestExperiment::class);
 
         $this->assignmentRepository = new InMemoryAssignmentRepository();
-        $this->stateRepository      = new AlwaysRunningExperimentStateRepository();
-        $this->bucketingStrategy    = new Sha256BucketingStrategy();
+        $this->stateRepository = new AlwaysRunningExperimentStateRepository();
+        $this->bucketingStrategy = new Sha256BucketingStrategy();
     }
 
     // =========================================================================
@@ -89,7 +92,7 @@ final class ExperimentResolverEvaluationTest extends TestCase
     public function resolve_does_not_record_exposure_event(): void
     {
         $eventSink = new RecordingEventSink();
-        $resolver  = $this->makeResolver(eventSink: $eventSink);
+        $resolver = $this->makeResolver(eventSink: $eventSink);
 
         $resolver->resolve(TestExperiment::class);
 
@@ -99,7 +102,8 @@ final class ExperimentResolverEvaluationTest extends TestCase
     #[Test]
     public function resolve_returns_null_variant_when_experiment_is_paused(): void
     {
-        $stateRepo = new class implements ExperimentStateRepository {
+        $stateRepo = new class() implements ExperimentStateRepository
+        {
             public function findState(string $experimentKey): ?ExperimentState
             {
                 return new ExperimentState(
@@ -111,7 +115,7 @@ final class ExperimentResolverEvaluationTest extends TestCase
         };
 
         $resolver = $this->makeResolver(stateRepository: $stateRepo);
-        $result   = $resolver->resolve(TestExperiment::class);
+        $result = $resolver->resolve(TestExperiment::class);
 
         self::assertNull($result->variant);
         self::assertFalse($result->assigned);
@@ -127,7 +131,7 @@ final class ExperimentResolverEvaluationTest extends TestCase
     public function resolve_then_expose_records_the_exposure_event(): void
     {
         $eventSink = new RecordingEventSink();
-        $resolver  = $this->makeResolver(eventSink: $eventSink);
+        $resolver = $this->makeResolver(eventSink: $eventSink);
 
         $evaluation = $resolver->resolve(TestExperiment::class);
         self::assertCount(0, $eventSink->ofType(EventType::exposure), 'No event before expose()');
@@ -139,7 +143,7 @@ final class ExperimentResolverEvaluationTest extends TestCase
     #[Test]
     public function resolve_expose_returns_new_result_with_exposed_true(): void
     {
-        $resolver   = $this->makeResolver();
+        $resolver = $this->makeResolver();
         $evaluation = $resolver->resolve(TestExperiment::class);
 
         self::assertFalse($evaluation->exposed);
@@ -158,7 +162,7 @@ final class ExperimentResolverEvaluationTest extends TestCase
     public function expose_records_exposure_and_returns_variant(): void
     {
         $eventSink = new RecordingEventSink();
-        $resolver  = $this->makeResolver(eventSink: $eventSink);
+        $resolver = $this->makeResolver(eventSink: $eventSink);
 
         $variant = $resolver->expose(TestExperiment::class);
 
@@ -169,7 +173,8 @@ final class ExperimentResolverEvaluationTest extends TestCase
     #[Test]
     public function expose_returns_null_when_unit_not_assigned(): void
     {
-        $stateRepo = new class implements ExperimentStateRepository {
+        $stateRepo = new class() implements ExperimentStateRepository
+        {
             public function findState(string $experimentKey): ?ExperimentState
             {
                 return new ExperimentState(
@@ -181,7 +186,7 @@ final class ExperimentResolverEvaluationTest extends TestCase
         };
 
         $resolver = $this->makeResolver(stateRepository: $stateRepo);
-        $variant  = $resolver->expose(TestExperiment::class);
+        $variant = $resolver->expose(TestExperiment::class);
 
         self::assertNull($variant);
     }
@@ -194,7 +199,7 @@ final class ExperimentResolverEvaluationTest extends TestCase
     public function peek_returns_no_assignment_when_unit_has_no_assignment(): void
     {
         $resolver = $this->makeResolver(unitKey: 'user-never-assigned');
-        $result   = $resolver->peek(TestExperiment::class);
+        $result = $resolver->peek(TestExperiment::class);
 
         self::assertNull($result->variant);
         self::assertFalse($result->assigned);
@@ -216,7 +221,7 @@ final class ExperimentResolverEvaluationTest extends TestCase
         ));
 
         $resolver = $this->makeResolver(unitKey: 'user-peeked');
-        $result   = $resolver->peek(TestExperiment::class);
+        $result = $resolver->peek(TestExperiment::class);
 
         self::assertSame(TestVariant::control, $result->variant);
         self::assertTrue($result->assigned);
@@ -254,7 +259,7 @@ final class ExperimentResolverEvaluationTest extends TestCase
         ));
 
         $eventSink = new RecordingEventSink();
-        $resolver  = $this->makeResolver(unitKey: 'user-peek-expose', eventSink: $eventSink);
+        $resolver = $this->makeResolver(unitKey: 'user-peek-expose', eventSink: $eventSink);
 
         $result = $resolver->peek(TestExperiment::class);
         self::assertCount(0, $eventSink->ofType(EventType::exposure));
@@ -303,7 +308,8 @@ final class ExperimentResolverEvaluationTest extends TestCase
     #[Test]
     public function is_eligible_returns_false_when_experiment_is_not_running(): void
     {
-        $stateRepo = new class implements ExperimentStateRepository {
+        $stateRepo = new class() implements ExperimentStateRepository
+        {
             public function findState(string $experimentKey): ?ExperimentState
             {
                 return new ExperimentState(
@@ -346,7 +352,7 @@ final class ExperimentResolverEvaluationTest extends TestCase
             assignedAt: new DateTimeImmutable(),
         ));
 
-        $resolver   = $this->makeResolver(unitKey: 'user-assigned');
+        $resolver = $this->makeResolver(unitKey: 'user-assigned');
         $assignment = $resolver->assignment(TestExperiment::class);
 
         self::assertNotNull($assignment);
@@ -361,7 +367,7 @@ final class ExperimentResolverEvaluationTest extends TestCase
     public function variant_still_records_exposure_and_returns_variant(): void
     {
         $eventSink = new RecordingEventSink();
-        $resolver  = $this->makeResolver(
+        $resolver = $this->makeResolver(
             eventSink: $eventSink,
         );
 
@@ -382,7 +388,7 @@ final class ExperimentResolverEvaluationTest extends TestCase
         ?ExperimentStateRepository $stateRepository = null,
     ): ExperimentResolver {
         $assignmentRepository = $this->assignmentRepository;
-        $stateRepo            = $stateRepository ?? $this->stateRepository;
+        $stateRepo = $stateRepository ?? $this->stateRepository;
 
         $resolver = new Resolver(
             bucketingStrategy: $this->bucketingStrategy,

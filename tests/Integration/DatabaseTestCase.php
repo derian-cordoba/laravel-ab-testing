@@ -71,9 +71,9 @@ abstract class DatabaseTestCase extends TestCase
         $capsule = new DB();
         $capsule->setEventDispatcher($dispatcher);
         $capsule->addConnection([
-            'driver'   => 'sqlite',
+            'driver' => 'sqlite',
             'database' => ':memory:',
-            'prefix'   => '',
+            'prefix' => '',
         ]);
         $capsule->setContainer($container);
         $capsule->setAsGlobal();

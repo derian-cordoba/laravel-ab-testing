@@ -58,8 +58,8 @@ final readonly class DispatchNotificationListener
                 experimentKey: $event->experimentKey,
                 flagKey: null,
                 data: [
-                    'actor'              => $event->actorIdentifier,
-                    'actor_type'         => $event->actorType,
+                    'actor' => $event->actorIdentifier,
+                    'actor_type' => $event->actorType,
                     'traffic_percentage' => $event->trafficPercentage,
                 ],
                 occurredAt: new DateTimeImmutable(),
@@ -71,7 +71,7 @@ final readonly class DispatchNotificationListener
                 experimentKey: $event->experimentKey,
                 flagKey: null,
                 data: [
-                    'actor'      => $event->actorIdentifier,
+                    'actor' => $event->actorIdentifier,
                     'actor_type' => $event->actorType,
                 ],
                 occurredAt: new DateTimeImmutable(),
@@ -83,7 +83,7 @@ final readonly class DispatchNotificationListener
                 experimentKey: $event->experimentKey,
                 flagKey: null,
                 data: [
-                    'actor'      => $event->actorIdentifier,
+                    'actor' => $event->actorIdentifier,
                     'actor_type' => $event->actorType,
                 ],
                 occurredAt: new DateTimeImmutable(),
@@ -95,7 +95,7 @@ final readonly class DispatchNotificationListener
                 experimentKey: $event->experimentKey,
                 flagKey: null,
                 data: [
-                    'actor'      => $event->actorIdentifier,
+                    'actor' => $event->actorIdentifier,
                     'actor_type' => $event->actorType,
                 ],
                 occurredAt: new DateTimeImmutable(),
@@ -107,7 +107,7 @@ final readonly class DispatchNotificationListener
                 experimentKey: null,
                 flagKey: $event->flagKey,
                 data: [
-                    'actor'      => $event->actorIdentifier,
+                    'actor' => $event->actorIdentifier,
                     'actor_type' => $event->actorType,
                 ],
                 occurredAt: new DateTimeImmutable(),
@@ -119,7 +119,7 @@ final readonly class DispatchNotificationListener
                 experimentKey: null,
                 flagKey: $event->flagKey,
                 data: [
-                    'actor'      => $event->actorIdentifier,
+                    'actor' => $event->actorIdentifier,
                     'actor_type' => $event->actorType,
                 ],
                 occurredAt: new DateTimeImmutable(),
@@ -128,13 +128,13 @@ final readonly class DispatchNotificationListener
             $event instanceof KillSwitchActivatedEvent => new NotificationPayload(
                 event: 'kill_switch_activated',
                 title: $event->activated
-                    ? 'Kill switch activated: ' . ($event->experimentKey ?? $event->flagKey)
-                    : 'Kill switch deactivated: ' . ($event->experimentKey ?? $event->flagKey),
+                    ? 'Kill switch activated: '.($event->experimentKey ?? $event->flagKey)
+                    : 'Kill switch deactivated: '.($event->experimentKey ?? $event->flagKey),
                 experimentKey: $event->experimentKey,
                 flagKey: $event->flagKey,
                 data: [
-                    'activated'  => $event->activated,
-                    'actor'      => $event->actorIdentifier,
+                    'activated' => $event->activated,
+                    'actor' => $event->actorIdentifier,
                     'actor_type' => $event->actorType,
                 ],
                 occurredAt: new DateTimeImmutable(),
@@ -146,8 +146,8 @@ final readonly class DispatchNotificationListener
                 experimentKey: $event->experimentKey,
                 flagKey: null,
                 data: [
-                    'actor'                => $event->actorIdentifier,
-                    'actor_type'           => $event->actorType,
+                    'actor' => $event->actorIdentifier,
+                    'actor_type' => $event->actorType,
                     'allowed_environments' => $event->allowedEnvironments ?? 'all',
                 ],
                 occurredAt: new DateTimeImmutable(),
@@ -159,8 +159,8 @@ final readonly class DispatchNotificationListener
                 experimentKey: null,
                 flagKey: $event->flagKey,
                 data: [
-                    'actor'                => $event->actorIdentifier,
-                    'actor_type'           => $event->actorType,
+                    'actor' => $event->actorIdentifier,
+                    'actor_type' => $event->actorType,
                     'allowed_environments' => $event->allowedEnvironments ?? 'all',
                 ],
                 occurredAt: new DateTimeImmutable(),
@@ -172,10 +172,10 @@ final readonly class DispatchNotificationListener
                 experimentKey: $event->experimentKey,
                 flagKey: null,
                 data: [
-                    'metric_key'       => $event->metricKey,
-                    'variant_key'      => $event->variantKey,
-                    'observed_value'   => $event->observedValue,
-                    'threshold_value'  => $event->thresholdValue,
+                    'metric_key' => $event->metricKey,
+                    'variant_key' => $event->variantKey,
+                    'observed_value' => $event->observedValue,
+                    'threshold_value' => $event->thresholdValue,
                 ],
                 occurredAt: new DateTimeImmutable(),
             ),

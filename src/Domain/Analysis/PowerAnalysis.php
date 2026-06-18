@@ -52,12 +52,12 @@ final readonly class PowerAnalysis
     /**
      * Compute the required sample size for a binary (proportion / conversion-rate) metric.
      *
-     * @param float $baselineRate           Current conversion rate, e.g. 0.12 for 12%.
-     * @param float $minimumDetectableEffect The smallest effect worth detecting.
-     *                                       Relative when $isRelativeEffect = true (e.g. 0.05 = 5% lift).
-     *                                       Absolute otherwise (e.g. 0.01 = 1 pp change).
-     * @param bool  $isRelativeEffect        Interpret MDE as a fraction of the baseline.
-     * @param int   $numberOfVariants        Total arms including control (minimum 2).
+     * @param  float  $baselineRate  Current conversion rate, e.g. 0.12 for 12%.
+     * @param  float  $minimumDetectableEffect  The smallest effect worth detecting.
+     *                                          Relative when $isRelativeEffect = true (e.g. 0.05 = 5% lift).
+     *                                          Absolute otherwise (e.g. 0.01 = 1 pp change).
+     * @param  bool  $isRelativeEffect  Interpret MDE as a fraction of the baseline.
+     * @param  int  $numberOfVariants  Total arms including control (minimum 2).
      */
     public function forBinaryMetric(
         float $baselineRate,
@@ -100,12 +100,12 @@ final readonly class PowerAnalysis
     /**
      * Compute the required sample size for a continuous metric.
      *
-     * @param float $baselineMean           Historical / assumed mean of the metric.
-     * @param float $standardDeviation      Pooled standard deviation of the metric.
-     * @param float $minimumDetectableEffect Smallest mean difference worth detecting.
-     *                                       Relative when $isRelativeEffect = true.
-     * @param bool  $isRelativeEffect        Interpret MDE as a fraction of the baseline.
-     * @param int   $numberOfVariants        Total arms including control (minimum 2).
+     * @param  float  $baselineMean  Historical / assumed mean of the metric.
+     * @param  float  $standardDeviation  Pooled standard deviation of the metric.
+     * @param  float  $minimumDetectableEffect  Smallest mean difference worth detecting.
+     *                                          Relative when $isRelativeEffect = true.
+     * @param  bool  $isRelativeEffect  Interpret MDE as a fraction of the baseline.
+     * @param  int  $numberOfVariants  Total arms including control (minimum 2).
      */
     public function forContinuousMetric(
         float $baselineMean,
@@ -154,7 +154,7 @@ final readonly class PowerAnalysis
     {
         $alpha = 1.0 - $this->confidenceLevel;
         $zAlpha = MathFunctions::normalQuantile(1.0 - $alpha / 2.0);
-        $zBeta  = MathFunctions::normalQuantile($this->power);
+        $zBeta = MathFunctions::normalQuantile($this->power);
 
         $n = ($zAlpha + $zBeta) ** 2.0 * $pooledVariance / ($absoluteDelta ** 2.0);
 

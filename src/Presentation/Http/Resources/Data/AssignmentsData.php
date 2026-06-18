@@ -13,7 +13,7 @@ use Illuminate\Contracts\Support\Arrayable;
 final readonly class AssignmentsData implements Arrayable
 {
     /**
-     * @param array<string, string> $assignments
+     * @param  array<string, string>  $assignments
      */
     public function __construct(
         public string $unitType,
@@ -29,8 +29,8 @@ final readonly class AssignmentsData implements Arrayable
     public function toArray(): array
     {
         return [
-            'unit_type'   => $this->unitType,
-            'unit_key'    => $this->unitKey,
+            'unit_type' => $this->unitType,
+            'unit_key' => $this->unitKey,
             'assignments' => $this->assignments,
         ];
     }

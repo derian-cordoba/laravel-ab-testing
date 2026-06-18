@@ -15,8 +15,7 @@ final readonly class RequestApprovalCommandHandler
     public function __construct(
         private ExperimentRepository $experimentRepository,
         private AuditLogRepository $auditLogRepository,
-    ) {
-    }
+    ) {}
 
     public function handle(RequestApprovalCommand $command): ExperimentApprovalModel
     {
@@ -24,11 +23,11 @@ final readonly class RequestApprovalCommandHandler
 
         /** @var ExperimentApprovalModel $approval */
         $approval = ExperimentApprovalModel::query()->create([
-            'experiment_key'    => $command->experimentKey,
-            'status'            => ApprovalStatus::pending->value,
-            'requested_by'      => $command->actorIdentifier,
+            'experiment_key' => $command->experimentKey,
+            'status' => ApprovalStatus::pending->value,
+            'requested_by' => $command->actorIdentifier,
             'requested_by_type' => $command->actorType,
-            'notes'             => $command->notes,
+            'notes' => $command->notes,
         ]);
 
         $this->auditLogRepository->append(

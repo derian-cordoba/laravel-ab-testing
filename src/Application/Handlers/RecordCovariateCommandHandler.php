@@ -26,11 +26,11 @@ final readonly class RecordCovariateCommandHandler
             [
                 [
                     'experiment_key' => $command->experimentKey,
-                    'metric_key'     => $command->metricKey,
-                    'unit_type'      => $command->unitType,
-                    'unit_key'       => $command->unitKey,
-                    'value'          => $command->value,
-                    'recorded_at'    => $recordedAt->toDateTimeString(),
+                    'metric_key' => $command->metricKey,
+                    'unit_type' => $command->unitType,
+                    'unit_key' => $command->unitKey,
+                    'value' => $command->value,
+                    'recorded_at' => $recordedAt->toDateTimeString(),
                 ],
             ],
             uniqueBy: ['experiment_key', 'metric_key', 'unit_type', 'unit_key'],

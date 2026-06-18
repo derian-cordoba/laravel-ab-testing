@@ -17,6 +17,7 @@ use Illuminate\Http\Resources\JsonApi\JsonApiResource;
  * type → experiment-verdicts
  *
  * @mixin VerdictData
+ *
  * @property-read VerdictData $resource
  */
 final class VerdictResource extends JsonApiResource
@@ -37,10 +38,10 @@ final class VerdictResource extends JsonApiResource
     public function toAttributes(Request $request): array
     {
         $attributes = [
-            'status'                 => $this->resource->status,
-            'srm_detected'           => $this->resource->srmDetected,
+            'status' => $this->resource->status,
+            'srm_detected' => $this->resource->srmDetected,
             'overall_recommendation' => $this->resource->overallRecommendation,
-            'variants'               => $this->resource->variants,
+            'variants' => $this->resource->variants,
         ];
 
         if ($this->resource->message !== null) {
@@ -48,8 +49,8 @@ final class VerdictResource extends JsonApiResource
         }
 
         if ($this->resource->computedAt !== null) {
-            $attributes['computed_at']               = $this->resource->computedAt->format('c');
-            $attributes['total_units']               = $this->resource->totalUnits;
+            $attributes['computed_at'] = $this->resource->computedAt->format('c');
+            $attributes['total_units'] = $this->resource->totalUnits;
             $attributes['active_guardrail_breaches'] = $this->resource->activeGuardrailBreaches;
         }
 

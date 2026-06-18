@@ -27,16 +27,16 @@ namespace ABTests\Enums;
  */
 enum EvaluationReason: string
 {
-    case experimentNotRunning     = 'experiment_not_running';
-    case experimentKilled         = 'experiment_killed';
-    case environmentRestricted    = 'environment_restricted';
-    case notInAudience            = 'not_in_audience';
+    case experimentNotRunning = 'experiment_not_running';
+    case experimentKilled = 'experiment_killed';
+    case environmentRestricted = 'environment_restricted';
+    case notInAudience = 'not_in_audience';
     case outsideTrafficAllocation = 'outside_traffic_allocation';
-    case layerExcluded            = 'layer_excluded';
-    case stickyAssignment         = 'sticky_assignment';
-    case newAssignment            = 'new_assignment';
-    case override                 = 'override';
-    case noAssignment             = 'no_assignment';
+    case layerExcluded = 'layer_excluded';
+    case stickyAssignment = 'sticky_assignment';
+    case newAssignment = 'new_assignment';
+    case override = 'override';
+    case noAssignment = 'no_assignment';
 
     /**
      * Whether this reason represents a successful variant assignment.
@@ -47,7 +47,7 @@ enum EvaluationReason: string
             self::stickyAssignment,
             self::newAssignment,
             self::override => true,
-            default        => false,
+            default => false,
         };
     }
 
@@ -62,7 +62,7 @@ enum EvaluationReason: string
             self::stickyAssignment,
             self::newAssignment,
             self::override => true,
-            default        => false,
+            default => false,
         };
     }
 }

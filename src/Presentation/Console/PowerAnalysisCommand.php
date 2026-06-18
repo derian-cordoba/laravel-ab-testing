@@ -35,12 +35,12 @@ final class PowerAnalysisCommand extends Command
     public function handle(ExperimentRegistry $registry, AttributeReader $reader): int
     {
         $experimentKey = (string) $this->argument('experiment');
-        $baseline      = (float) $this->option('baseline');
-        $mde           = (float) $this->option('mde');
-        $isAbsolute    = (bool) $this->option('absolute');
-        $confidence    = (float) $this->option('confidence');
-        $power         = (float) $this->option('power');
-        $stddev        = $this->option('stddev') !== null ? (float) $this->option('stddev') : null;
+        $baseline = (float) $this->option('baseline');
+        $mde = (float) $this->option('mde');
+        $isAbsolute = (bool) $this->option('absolute');
+        $confidence = (float) $this->option('confidence');
+        $power = (float) $this->option('power');
+        $stddev = $this->option('stddev') !== null ? (float) $this->option('stddev') : null;
 
         $numberOfVariants = 2;
         $isBinary = true;
@@ -80,7 +80,7 @@ final class PowerAnalysisCommand extends Command
                 );
             }
         } catch (Throwable $e) {
-            $this->error('Power analysis failed: ' . $e->getMessage());
+            $this->error('Power analysis failed: '.$e->getMessage());
 
             return self::FAILURE;
         }
@@ -92,12 +92,12 @@ final class PowerAnalysisCommand extends Command
         $this->table(
             ['Parameter', 'Value'],
             [
-                ['Baseline rate / mean',    number_format($result->baselineRate * 100, 2) . '%'],
+                ['Baseline rate / mean',    number_format($result->baselineRate * 100, 2).'%'],
                 ['Min detectable effect',   $result->isRelativeEffect
-                    ? number_format($result->minimumDetectableEffect * 100, 1) . '% relative'
-                    : number_format($result->minimumDetectableEffect, 4) . ' absolute'],
-                ['Confidence level',        number_format($result->confidenceLevel * 100) . '%'],
-                ['Statistical power',       number_format($result->power * 100) . '%'],
+                    ? number_format($result->minimumDetectableEffect * 100, 1).'% relative'
+                    : number_format($result->minimumDetectableEffect, 4).' absolute'],
+                ['Confidence level',        number_format($result->confidenceLevel * 100).'%'],
+                ['Statistical power',       number_format($result->power * 100).'%'],
                 ['Number of arms',          $result->numberOfVariants],
                 ['Sample size per variant', number_format($result->sampleSizePerVariant)],
                 ['Total sample size',       number_format($result->totalSampleSize)],

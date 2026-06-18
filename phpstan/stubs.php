@@ -17,12 +17,12 @@ if (! function_exists('enum_value')) {
      * Return the scalar value of a backed enum, the name of a pure enum, or
      * the input itself when it is already a string / other scalar.
      *
-     * @param \BackedEnum|\UnitEnum|string $value
+     * @param  BackedEnum|UnitEnum|string  $value
      */
     function enum_value(mixed $value, mixed $default = null): mixed
     {
-        return $value instanceof \BackedEnum
+        return $value instanceof BackedEnum
             ? $value->value
-            : ($value instanceof \UnitEnum ? $value->name : $value);
+            : ($value instanceof UnitEnum ? $value->name : $value);
     }
 }

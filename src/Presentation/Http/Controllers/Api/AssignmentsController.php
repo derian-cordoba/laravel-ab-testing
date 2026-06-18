@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace ABTests\Presentation\Http\Controllers\Api;
 
+use ABTests\Infrastructure\Database\Models\AssignmentModel;
 use ABTests\Presentation\Http\Requests\Api\AssignmentsRequest;
 use ABTests\Presentation\Http\Resources\Api\AssignmentsResource;
 use ABTests\Presentation\Http\Resources\Data\AssignmentsData;
-use ABTests\Infrastructure\Database\Models\AssignmentModel;
 
 /**
  * Read-only endpoint exposing the current sticky assignments for one unit.

@@ -89,8 +89,8 @@ final readonly class VerdictResolver
     ): ?AnalysisResult {
         return match ($configuration->engine) {
             StatisticalEngine::frequentist => $frequentist,
-            StatisticalEngine::bayesian    => $bayesian,
-            StatisticalEngine::both        => $this->bothSignificant($frequentist, $bayesian),
+            StatisticalEngine::bayesian => $bayesian,
+            StatisticalEngine::both => $this->bothSignificant($frequentist, $bayesian),
         };
     }
 

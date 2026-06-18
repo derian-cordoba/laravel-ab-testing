@@ -12,11 +12,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * an experiment is synced so the dashboard always has variant metadata even
  * when the code-defined class is unavailable.
  *
- * @property int    $id
- * @property int    $experiment_id
+ * @property int $id
+ * @property int $experiment_id
  * @property string $key
- * @property int    $weight
- * @property bool   $is_control
+ * @property int $weight
+ * @property bool $is_control
  */
 final class VariantModel extends Model
 {
@@ -30,7 +30,7 @@ final class VariantModel extends Model
     ];
 
     protected $casts = [
-        'weight'     => 'integer',
+        'weight' => 'integer',
         'is_control' => 'boolean',
     ];
 

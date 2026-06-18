@@ -40,7 +40,7 @@ final readonly class EnforceAcceptHeaderMiddleware
             'errors' => [
                 [
                     'status' => (string) $status,
-                    'title'  => $title,
+                    'title' => $title,
                     'detail' => $detail,
                 ],
             ],

@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Schema;
  * badge. Null means the badge is hidden; a positive integer shows progress
  * toward the goal. Set via the dashboard controls panel.
  */
-return new class extends Migration
+return new class() extends Migration
 {
     public function up(): void
     {

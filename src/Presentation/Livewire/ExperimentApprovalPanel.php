@@ -27,6 +27,7 @@ final class ExperimentApprovalPanel extends Component
     public string $notes = '';
 
     public string $flashMessage = '';
+
     public string $flashType = 'success';
 
     public function mount(string $experimentKey): void
@@ -102,7 +103,7 @@ final class ExperimentApprovalPanel extends Component
             $this->flashType = 'success';
             $this->dispatch('experiment-updated');
         } catch (Throwable $e) {
-            $this->flashMessage = 'Error: ' . $e->getMessage();
+            $this->flashMessage = 'Error: '.$e->getMessage();
             $this->flashType = 'error';
         }
     }

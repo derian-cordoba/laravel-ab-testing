@@ -8,11 +8,11 @@ use ABTests\Application\Commands\AddVariantCommand;
 use ABTests\Application\Commands\RemoveVariantCommand;
 use ABTests\Application\Commands\UpdateVariantCommand;
 use ABTests\Contracts\CommandBus;
+use ABTests\Infrastructure\Database\Models\ExperimentModel;
+use ABTests\Infrastructure\Database\Models\VariantModel;
 use ABTests\Presentation\Http\Requests\Api\StoreVariantRequest;
 use ABTests\Presentation\Http\Requests\Api\UpdateVariantRequest;
 use ABTests\Presentation\Http\Resources\Api\ExperimentResource;
-use ABTests\Infrastructure\Database\Models\ExperimentModel;
-use ABTests\Infrastructure\Database\Models\VariantModel;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 

@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Schema;
  * unit_key) triple. The unique constraint enforces idempotency: the first
  * write wins and subsequent inserts are silently ignored.
  */
-return new class extends Migration
+return new class() extends Migration
 {
     public function up(): void
     {

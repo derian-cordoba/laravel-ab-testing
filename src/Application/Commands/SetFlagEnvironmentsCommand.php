@@ -7,7 +7,7 @@ namespace ABTests\Application\Commands;
 final readonly class SetFlagEnvironmentsCommand
 {
     /**
-     * @param list<string>|null $allowedEnvironments null removes the restriction (all environments).
+     * @param  list<string>|null  $allowedEnvironments  null removes the restriction (all environments).
      */
     public function __construct(
         public string $flagKey,

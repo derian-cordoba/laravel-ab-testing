@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace ABTests\Presentation\Livewire;
 
-use ABTests\Enums\Operator;
-use ABTests\Infrastructure\Database\Models\ExperimentModel;
 use ABTests\Application\Registry\ExperimentRegistry;
+use ABTests\Infrastructure\Database\Models\ExperimentModel;
 use ABTests\Values\Criterion;
 use ABTests\Values\Segment;
 use Illuminate\Contracts\View\View;
@@ -21,7 +20,7 @@ final class SegmentsOverview extends Component
 {
     public function render(): View
     {
-        $registry   = app(ExperimentRegistry::class);
+        $registry = app(ExperimentRegistry::class);
         $definitions = $registry->all();
 
         $dbExperiments = ExperimentModel::query()
@@ -37,18 +36,18 @@ final class SegmentsOverview extends Component
                 ?? $dbExperiments[$experimentKey]?->name
                 ?? $experimentKey;
 
-            $status   = $dbExperiments[$experimentKey]?->status ?? null;
+            $status = $dbExperiments[$experimentKey]?->status ?? null;
             $criteria = $definition->audience->criteria;
 
             $rows[] = [
-                'key'         => $experimentKey,
-                'name'        => $displayName,
-                'status'      => $status,
-                'criteria'    => array_map(
+                'key' => $experimentKey,
+                'name' => $displayName,
+                'status' => $status,
+                'criteria' => array_map(
                     static fn (Criterion $c): array => [
                         'attribute' => $c->attribute,
-                        'operator'  => $c->operator->value,
-                        'expected'  => is_array($c->expected)
+                        'operator' => $c->operator->value,
+                        'expected' => is_array($c->expected)
                             ? implode(', ', $c->expected)
                             : (string) $c->expected,
                     ],

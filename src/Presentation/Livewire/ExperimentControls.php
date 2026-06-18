@@ -5,19 +5,19 @@ declare(strict_types=1);
 namespace ABTests\Presentation\Livewire;
 
 use ABTests\Application\Commands\ArchiveExperimentCommand;
-use ABTests\Application\Commands\SetExperimentEnvironmentsCommand;
-use ABTests\Infrastructure\Jobs\RefreshRollupsJob;
-use ABTests\Application\Registry\ExperimentRegistry;
 use ABTests\Application\Commands\PauseExperimentCommand;
 use ABTests\Application\Commands\RampTrafficCommand;
 use ABTests\Application\Commands\ResumeExperimentCommand;
+use ABTests\Application\Commands\SetExperimentEnvironmentsCommand;
 use ABTests\Application\Commands\StartExperimentCommand;
 use ABTests\Application\Commands\StopExperimentCommand;
 use ABTests\Application\Commands\ToggleKillSwitchCommand;
+use ABTests\Application\Registry\ExperimentRegistry;
 use ABTests\Contracts\CommandBus;
 use ABTests\Enums\ExperimentStatus;
 use ABTests\Exceptions\InvalidStateTransition;
 use ABTests\Infrastructure\Database\Models\ExperimentModel;
+use ABTests\Infrastructure\Jobs\RefreshRollupsJob;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Validate;
@@ -47,6 +47,7 @@ final class ExperimentControls extends Component
     public array $allowedEnvironments = [];
 
     public string $flashMessage = '';
+
     public string $flashType = 'success';
 
     public function mount(string $experimentKey): void
@@ -56,8 +57,8 @@ final class ExperimentControls extends Component
         $model = ExperimentModel::query()->firstWhere('key', $experimentKey);
 
         if ($model !== null) {
-            $this->trafficPercentage    = $model->traffic_percentage;
-            $this->allowedEnvironments  = $model->allowed_environments ?? [];
+            $this->trafficPercentage = $model->traffic_percentage;
+            $this->allowedEnvironments = $model->allowed_environments ?? [];
         }
     }
 
@@ -148,17 +149,17 @@ final class ExperimentControls extends Component
 
             if (! $refreshed) {
                 $this->flashMessage = 'Experiment record not found. Nothing was refreshed.';
-                $this->flashType    = 'error';
+                $this->flashType = 'error';
 
                 return;
             }
 
             $this->flashMessage = 'Rollup refreshed. Results are up to date.';
-            $this->flashType    = 'success';
+            $this->flashType = 'success';
             $this->dispatch('experiment-updated');
         } catch (Throwable $e) {
-            $this->flashMessage = 'Rollup failed: ' . $e->getMessage();
-            $this->flashType    = 'error';
+            $this->flashMessage = 'Rollup failed: '.$e->getMessage();
+            $this->flashType = 'error';
         }
     }
 
@@ -183,7 +184,7 @@ final class ExperimentControls extends Component
             $this->flashMessage = $e->getMessage();
             $this->flashType = 'error';
         } catch (Throwable $e) {
-            $this->flashMessage = 'An unexpected error occurred: ' . $e->getMessage();
+            $this->flashMessage = 'An unexpected error occurred: '.$e->getMessage();
             $this->flashType = 'error';
         }
     }

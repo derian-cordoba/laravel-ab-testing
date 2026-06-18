@@ -20,7 +20,7 @@ return [
                 ],
                 'experiments' => [
                     'enabled' => true,
-                    'prefix'  => 'api/v1/ab-testing',
+                    'prefix' => 'api/v1/ab-testing',
                 ],
             ],
         ],

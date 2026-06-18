@@ -21,10 +21,10 @@ final class ExperimentLifecycleControllerTest extends FeatureTestCase
     {
         /** @var ExperimentModel $model */
         $model = ExperimentModel::query()->create([
-            'key'                => $key,
-            'status'             => $status,
+            'key' => $key,
+            'status' => $status,
             'traffic_percentage' => $traffic,
-            'is_killed'          => false,
+            'is_killed' => false,
         ]);
 
         // Add control + treatment variants so the experiment is valid.
@@ -49,7 +49,7 @@ final class ExperimentLifecycleControllerTest extends FeatureTestCase
         $response->assertJsonPath('data.attributes.status', 'running');
 
         $this->assertDatabaseHas('ab_testing_experiments', [
-            'key'    => 'my-experiment',
+            'key' => 'my-experiment',
             'status' => 'running',
         ]);
     }
@@ -165,7 +165,7 @@ final class ExperimentLifecycleControllerTest extends FeatureTestCase
         $response->assertJsonPath('data.attributes.traffic_percentage', 50);
 
         $this->assertDatabaseHas('ab_testing_experiments', [
-            'key'                => 'my-experiment',
+            'key' => 'my-experiment',
             'traffic_percentage' => 50,
         ]);
     }
@@ -209,7 +209,7 @@ final class ExperimentLifecycleControllerTest extends FeatureTestCase
         $response->assertJsonPath('data.attributes.is_killed', true);
 
         $this->assertDatabaseHas('ab_testing_experiments', [
-            'key'       => 'my-experiment',
+            'key' => 'my-experiment',
             'is_killed' => true,
         ]);
     }

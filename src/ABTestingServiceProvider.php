@@ -6,55 +6,6 @@ namespace ABTests;
 
 use ABTests\Application\Listeners\AutoPauseOnGuardrailBreachListener;
 use ABTests\Application\Listeners\DispatchNotificationListener;
-use ABTests\Application\ResultsService;
-use ABTests\Presentation\Blade\BladeDirectiveHelpers;
-use ABTests\Exceptions\ABTestingException;
-use ABTests\Exceptions\ExperimentNotFound;
-use ABTests\Exceptions\FeatureFlagNotFound;
-use ABTests\Presentation\Http\Middleware\ApiExceptionHandlerMiddleware;
-use ABTests\Presentation\Http\Middleware\ExposeAssignmentsMiddleware;
-use ABTests\Presentation\Http\Middleware\EnforceAcceptHeaderMiddleware;
-use ABTests\Presentation\Http\Middleware\RequiresApiAccess;
-use ABTests\Presentation\Http\Middleware\SetApiContentTypeMiddleware;
-use ABTests\Presentation\Http\Middleware\ResolveExperimentMiddleware;
-use ABTests\Application\SynchronousCommandBus;
-use ABTests\Presentation\Console\CacheDefinitionsCommand;
-use ABTests\Presentation\Console\DetectStaleFlagsCommand;
-use ABTests\Presentation\Console\PowerAnalysisCommand;
-use ABTests\Presentation\Console\PruneEventDataCommand;
-use ABTests\Contracts\AssignmentRepository;
-use ABTests\Contracts\AuditLogRepository;
-use ABTests\Contracts\BucketingStrategy;
-use ABTests\Contracts\CommandBus;
-use ABTests\Contracts\EventSink;
-use ABTests\Contracts\ExperimentRepository;
-use ABTests\Contracts\ExperimentStateRepository;
-use ABTests\Contracts\FeatureFlagRepository;
-use ABTests\Infrastructure\Database\DatabaseAuditLogRepository;
-use ABTests\Infrastructure\Database\DatabaseExperimentRepository;
-use ABTests\Infrastructure\Database\DatabaseFeatureFlagRepository;
-use ABTests\Domain\Events\ExperimentEnvironmentsUpdatedEvent;
-use ABTests\Domain\Events\ExperimentPausedEvent;
-use ABTests\Domain\Events\ExperimentResumedEvent;
-use ABTests\Domain\Events\ExperimentStartedEvent;
-use ABTests\Domain\Events\ExperimentStoppedEvent;
-use ABTests\Domain\Events\FeatureFlagDisabledEvent;
-use ABTests\Domain\Events\FeatureFlagEnabledEvent;
-use ABTests\Domain\Events\FeatureFlagEnvironmentsUpdatedEvent;
-use ABTests\Domain\Events\GuardrailBreachedEvent;
-use ABTests\Domain\Events\KillSwitchActivatedEvent;
-use ABTests\Infrastructure\Notifications\Channels\MailChannel;
-use ABTests\Infrastructure\Notifications\Channels\SlackChannel;
-use ABTests\Infrastructure\Notifications\Channels\WebhookChannel;
-use ABTests\Infrastructure\Notifications\NotificationDispatcher;
-use ABTests\Infrastructure\AlwaysRunningExperimentStateRepository;
-use ABTests\Infrastructure\Database\DatabaseAssignmentRepository;
-use ABTests\Infrastructure\Database\DatabaseEventSink;
-use ABTests\Infrastructure\Database\DatabaseExperimentStateRepository;
-use ABTests\Infrastructure\InMemoryAssignmentRepository;
-use ABTests\Infrastructure\Jobs\PruneEventDataJob;
-use ABTests\Infrastructure\Jobs\RefreshRollupsJob;
-use ABTests\Infrastructure\NullEventSink;
 use ABTests\Application\Registry\AttributeReader;
 use ABTests\Application\Registry\ClassDiscovery;
 use ABTests\Application\Registry\ExperimentRegistry;
@@ -68,17 +19,67 @@ use ABTests\Application\Resolution\Steps\CheckSegmentStep;
 use ABTests\Application\Resolution\Steps\CheckTrafficAllocationStep;
 use ABTests\Application\Resolution\Steps\LoadExistingAssignmentStep;
 use ABTests\Application\Resolution\Steps\PersistAssignmentStep;
+use ABTests\Application\ResultsService;
+use ABTests\Application\SynchronousCommandBus;
+use ABTests\Contracts\AssignmentRepository;
+use ABTests\Contracts\AuditLogRepository;
+use ABTests\Contracts\BucketingStrategy;
+use ABTests\Contracts\CommandBus;
+use ABTests\Contracts\EventSink;
+use ABTests\Contracts\ExperimentRepository;
+use ABTests\Contracts\ExperimentStateRepository;
+use ABTests\Contracts\FeatureFlagRepository;
 use ABTests\Domain\Analysis\AnalysisService;
 use ABTests\Domain\Analysis\BayesianAnalysisEngine;
 use ABTests\Domain\Analysis\FrequentistAnalysisEngine;
 use ABTests\Domain\Analysis\SampleRatioMismatchDetector;
 use ABTests\Domain\Analysis\VerdictResolver;
+use ABTests\Domain\Events\ExperimentEnvironmentsUpdatedEvent;
+use ABTests\Domain\Events\ExperimentPausedEvent;
+use ABTests\Domain\Events\ExperimentResumedEvent;
+use ABTests\Domain\Events\ExperimentStartedEvent;
+use ABTests\Domain\Events\ExperimentStoppedEvent;
+use ABTests\Domain\Events\FeatureFlagDisabledEvent;
+use ABTests\Domain\Events\FeatureFlagEnabledEvent;
+use ABTests\Domain\Events\FeatureFlagEnvironmentsUpdatedEvent;
+use ABTests\Domain\Events\GuardrailBreachedEvent;
+use ABTests\Domain\Events\KillSwitchActivatedEvent;
+use ABTests\Exceptions\ABTestingException;
+use ABTests\Exceptions\ExperimentNotFound;
+use ABTests\Exceptions\FeatureFlagNotFound;
+use ABTests\Infrastructure\AlwaysRunningExperimentStateRepository;
 use ABTests\Infrastructure\Bucketing\Sha256BucketingStrategy;
+use ABTests\Infrastructure\Database\DatabaseAssignmentRepository;
+use ABTests\Infrastructure\Database\DatabaseAuditLogRepository;
+use ABTests\Infrastructure\Database\DatabaseEventSink;
+use ABTests\Infrastructure\Database\DatabaseExperimentRepository;
+use ABTests\Infrastructure\Database\DatabaseExperimentStateRepository;
+use ABTests\Infrastructure\Database\DatabaseFeatureFlagRepository;
+use ABTests\Infrastructure\InMemoryAssignmentRepository;
+use ABTests\Infrastructure\Jobs\PruneEventDataJob;
+use ABTests\Infrastructure\Jobs\RefreshRollupsJob;
+use ABTests\Infrastructure\Notifications\Channels\MailChannel;
+use ABTests\Infrastructure\Notifications\Channels\SlackChannel;
+use ABTests\Infrastructure\Notifications\Channels\WebhookChannel;
+use ABTests\Infrastructure\Notifications\NotificationDispatcher;
+use ABTests\Infrastructure\NullEventSink;
+use ABTests\Presentation\Console\CacheDefinitionsCommand;
+use ABTests\Presentation\Console\DetectStaleFlagsCommand;
+use ABTests\Presentation\Console\PowerAnalysisCommand;
+use ABTests\Presentation\Console\PruneEventDataCommand;
+use ABTests\Presentation\Http\Middleware\ApiExceptionHandlerMiddleware;
+use ABTests\Presentation\Http\Middleware\EnforceAcceptHeaderMiddleware;
+use ABTests\Presentation\Http\Middleware\ExposeAssignmentsMiddleware;
+use ABTests\Presentation\Http\Middleware\RequiresApiAccess;
+use ABTests\Presentation\Http\Middleware\ResolveExperimentMiddleware;
+use ABTests\Presentation\Http\Middleware\SetApiContentTypeMiddleware;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Contracts\Container\BindingResolutionException;
+use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as FoundationHandler;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Blade;
@@ -115,7 +116,7 @@ final class ABTestingServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->mergeConfigFrom(
-            path: __DIR__ . '/../config/ab-testing.php',
+            path: __DIR__.'/../config/ab-testing.php',
             key: 'ab-testing',
         );
 
@@ -139,7 +140,7 @@ final class ABTestingServiceProvider extends ServiceProvider
                     // surfaces individual failures with better context.
                     if ($this->app->bound(LoggerInterface::class)) {
                         $this->app->make(LoggerInterface::class)->warning(
-                            "[ABTesting] Failed to register experiment [$class]: {$e->getMessage()}"
+                            "[ABTesting] Failed to register experiment [$class]: {$e->getMessage()}",
                         );
                     }
                 }
@@ -162,7 +163,7 @@ final class ABTestingServiceProvider extends ServiceProvider
                 } catch (Throwable $e) {
                     if ($this->app->bound(LoggerInterface::class)) {
                         $this->app->make(LoggerInterface::class)->warning(
-                            "[ABTesting] Failed to register feature flag [$class]: {$e->getMessage()}"
+                            "[ABTesting] Failed to register feature flag [$class]: {$e->getMessage()}",
                         );
                     }
                 }
@@ -262,9 +263,9 @@ final class ABTestingServiceProvider extends ServiceProvider
             return;
         }
 
-        $reader           = new AttributeReader();
+        $reader = new AttributeReader();
         $experimentRegistry = $this->app->make(ExperimentRegistry::class);
-        $flagRegistry       = $this->app->make(FeatureFlagRegistry::class);
+        $flagRegistry = $this->app->make(FeatureFlagRegistry::class);
 
         foreach ($discovered as $class) {
             if (! class_exists($class)) {
@@ -278,7 +279,7 @@ final class ABTestingServiceProvider extends ServiceProvider
                 } catch (Throwable $e) {
                     if ($this->app->bound(LoggerInterface::class)) {
                         $this->app->make(LoggerInterface::class)->warning(
-                            "[ABTesting] Discovery: failed to register experiment [$class]: {$e->getMessage()}"
+                            "[ABTesting] Discovery: failed to register experiment [$class]: {$e->getMessage()}",
                         );
                     }
                 }
@@ -293,7 +294,7 @@ final class ABTestingServiceProvider extends ServiceProvider
                 } catch (Throwable $e) {
                     if ($this->app->bound(LoggerInterface::class)) {
                         $this->app->make(LoggerInterface::class)->warning(
-                            "[ABTesting] Discovery: failed to register feature flag [$class]: {$e->getMessage()}"
+                            "[ABTesting] Discovery: failed to register feature flag [$class]: {$e->getMessage()}",
                         );
                     }
                 }
@@ -316,7 +317,7 @@ final class ABTestingServiceProvider extends ServiceProvider
     private function bootApiExceptionRendering(): void
     {
         $this->callAfterResolving(
-            \Illuminate\Contracts\Debug\ExceptionHandler::class,
+            ExceptionHandler::class,
             function (object $handler): void {
                 if (! $handler instanceof FoundationHandler) {
                     return;
@@ -328,15 +329,14 @@ final class ABTestingServiceProvider extends ServiceProvider
                     'api/v1/ab-testing',
                 );
 
-                $isApiRequest = static fn (Request $request): bool =>
-                    $request->is($prefix) || $request->is($prefix . '/*');
+                $isApiRequest = static fn (Request $request): bool => $request->is($prefix) || $request->is($prefix.'/*');
 
-                $errorResponse = static function (int $status, string $title, string $detail): \Illuminate\Http\JsonResponse {
+                $errorResponse = static function (int $status, string $title, string $detail): JsonResponse {
                     return response()->json([
                         'errors' => [
                             [
                                 'status' => (string) $status,
-                                'title'  => $title,
+                                'title' => $title,
                                 'detail' => $detail,
                             ],
                         ],
@@ -355,7 +355,7 @@ final class ABTestingServiceProvider extends ServiceProvider
                             'Not Found',
                             'The requested resource was not found.',
                         );
-                    }
+                    },
                 );
 
                 // ValidationException → 422 with per-field JSON:API errors
@@ -371,15 +371,15 @@ final class ABTestingServiceProvider extends ServiceProvider
                             foreach ($messages as $message) {
                                 $errors[] = [
                                     'status' => (string) Response::HTTP_UNPROCESSABLE_ENTITY,
-                                    'title'  => 'Validation Error',
+                                    'title' => 'Validation Error',
                                     'detail' => $message,
-                                    'source' => ['pointer' => '/data/attributes/' . $field],
+                                    'source' => ['pointer' => '/data/attributes/'.$field],
                                 ];
                             }
                         }
 
                         return response()->json(['errors' => $errors], Response::HTTP_UNPROCESSABLE_ENTITY);
-                    }
+                    },
                 );
 
                 // ABTestingException → 404 (not-found) or 422 (all others)
@@ -398,9 +398,9 @@ final class ABTestingServiceProvider extends ServiceProvider
                         $title = $isNotFound ? 'Not Found' : 'Unprocessable Entity';
 
                         return $errorResponse($status, $title, $e->getMessage());
-                    }
+                    },
                 );
-            }
+            },
         );
     }
 
@@ -443,14 +443,14 @@ final class ABTestingServiceProvider extends ServiceProvider
         $this->bootDiscovery();
         $this->bootApiExceptionRendering();
 
-        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'ab-testing');
-        $this->loadRoutesFrom(__DIR__ . '/Dashboard/routes.php');
-        $this->loadRoutesFrom(__DIR__ . '/Api/routes.php');
+        $this->loadViewsFrom(__DIR__.'/../resources/views', 'ab-testing');
+        $this->loadRoutesFrom(__DIR__.'/Dashboard/routes.php');
+        $this->loadRoutesFrom(__DIR__.'/Api/routes.php');
 
         // Register anonymous Blade components under the ab-testing:: prefix so
         // <x-ab-testing::status-badge> and <x-ab-testing::verdict-badge> resolve
         // to resources/views/components/*.blade.php.
-        Blade::anonymousComponentPath(__DIR__ . '/../resources/views/components', 'ab-testing');
+        Blade::anonymousComponentPath(__DIR__.'/../resources/views/components', 'ab-testing');
 
         // Register the ab-testing Livewire namespace so the :: resolver can
         // auto-discover all components in ABTests\Presentation\Livewire, including
@@ -573,18 +573,18 @@ final class ABTestingServiceProvider extends ServiceProvider
             ]);
 
             $this->publishes([
-                __DIR__ . '/../config/ab-testing.php' => $this->app->configPath('ab-testing.php'),
+                __DIR__.'/../config/ab-testing.php' => $this->app->configPath('ab-testing.php'),
             ], 'ab-testing-config');
 
             $this->publishes([
-                __DIR__ . '/../database/migrations' => $this->app->databasePath('migrations'),
+                __DIR__.'/../database/migrations' => $this->app->databasePath('migrations'),
             ], 'ab-testing-migrations');
 
             $this->publishes([
-                __DIR__ . '/../resources/views' => $this->app->resourcePath('views/vendor/ab-testing'),
+                __DIR__.'/../resources/views' => $this->app->resourcePath('views/vendor/ab-testing'),
             ], 'ab-testing-dashboard-views');
         }
 
-        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
     }
 }

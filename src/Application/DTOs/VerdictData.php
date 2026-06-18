@@ -17,7 +17,7 @@ use DateTimeImmutable;
 final readonly class VerdictData
 {
     /**
-     * @param list<array<string, mixed>> $variants Per-treatment-variant verdicts.
+     * @param  list<array<string, mixed>>  $variants  Per-treatment-variant verdicts.
      */
     public function __construct(
         public string $experimentKey,
@@ -29,8 +29,7 @@ final readonly class VerdictData
         public ?int $totalUnits = null,
         public ?int $activeGuardrailBreaches = null,
         public ?string $message = null,
-    ) {
-    }
+    ) {}
 
     /**
      * No rollup data exists yet. The experiment may be running but has not
@@ -82,16 +81,16 @@ final readonly class VerdictData
             $verdict = $variantResult->verdictResult;
 
             $variantVerdicts[] = [
-                'key'                         => $variantResult->variant->key(),
-                'recommendation'              => $verdict?->verdict->value ?? 'inconclusive',
-                'label'                       => $verdict?->verdict->label() ?? 'Inconclusive',
-                'relative_lift'               => $verdict?->frequentist?->relativeLift ?? $verdict?->bayesian?->relativeLift ?? null,
-                'is_significant'              => $verdict?->frequentist?->isSignificant ?? $verdict?->bayesian?->isSignificant ?? false,
-                'p_value'                     => $verdict?->frequentist?->pValue,
+                'key' => $variantResult->variant->key(),
+                'recommendation' => $verdict?->verdict->value ?? 'inconclusive',
+                'label' => $verdict?->verdict->label() ?? 'Inconclusive',
+                'relative_lift' => $verdict?->frequentist?->relativeLift ?? $verdict?->bayesian?->relativeLift ?? null,
+                'is_significant' => $verdict?->frequentist?->isSignificant ?? $verdict?->bayesian?->isSignificant ?? false,
+                'p_value' => $verdict?->frequentist?->pValue,
                 'probability_to_beat_control' => $verdict?->bayesian?->probabilityToBeatControl,
-                'expected_loss'               => $verdict?->bayesian?->expectedLoss,
-                'count_of_units'              => $variantResult->primaryMetricSummary->countOfUnits,
-                'conversion_rate'             => $variantResult->primaryMetricSummary->conversionRate(),
+                'expected_loss' => $verdict?->bayesian?->expectedLoss,
+                'count_of_units' => $variantResult->primaryMetricSummary->countOfUnits,
+                'conversion_rate' => $variantResult->primaryMetricSummary->conversionRate(),
             ];
 
             // "ship" wins over "inconclusive"; "do_not_ship" overrides everything.

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace ABTests\Tests\Unit\Resolution\Steps;
 
-use ABTests\Enums\ExperimentStatus;
 use ABTests\Application\Resolution\Steps\CheckTrafficAllocationStep;
+use ABTests\Enums\ExperimentStatus;
 use ABTests\Tests\Support\MakesPayload;
 use ABTests\Values\ExperimentState;
 use PHPUnit\Framework\Attributes\Test;

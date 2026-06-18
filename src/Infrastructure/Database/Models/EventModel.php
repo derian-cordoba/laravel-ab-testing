@@ -9,17 +9,17 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * @property int         $id
- * @property string      $experiment_key
- * @property string      $unit_type
- * @property string      $unit_key
- * @property string      $variant_key
- * @property EventType   $type
+ * @property int $id
+ * @property string $experiment_key
+ * @property string $unit_type
+ * @property string $unit_key
+ * @property string $variant_key
+ * @property EventType $type
  * @property string|null $metric_key
- * @property float|null  $value
- * @property array|null  $properties
- * @property string      $idempotency_key
- * @property Carbon      $occurred_at
+ * @property float|null $value
+ * @property array|null $properties
+ * @property string $idempotency_key
+ * @property Carbon $occurred_at
  */
 final class EventModel extends Model
 {

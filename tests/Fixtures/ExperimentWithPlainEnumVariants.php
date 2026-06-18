@@ -14,6 +14,4 @@ use ABTests\Experiment;
     variants: PlainEnumVariant::class,
 )]
 #[PrimaryMetric(TestMetric::class)]
-final class ExperimentWithPlainEnumVariants extends Experiment
-{
-}
+final class ExperimentWithPlainEnumVariants extends Experiment {}

@@ -98,10 +98,10 @@ final class DatabaseExperimentStateRepositoryTest extends DatabaseTestCase
     public function maps_allowed_environments_from_database_row(): void
     {
         ExperimentModel::query()->create([
-            'key'                  => 'exp',
-            'status'               => 'running',
-            'traffic_percentage'   => 100,
-            'is_killed'            => false,
+            'key' => 'exp',
+            'status' => 'running',
+            'traffic_percentage' => 100,
+            'is_killed' => false,
             'allowed_environments' => ['production', 'staging'],
         ]);
 
@@ -115,10 +115,10 @@ final class DatabaseExperimentStateRepositoryTest extends DatabaseTestCase
     public function allowed_environments_is_null_when_column_is_null(): void
     {
         ExperimentModel::query()->create([
-            'key'                => 'exp',
-            'status'             => 'running',
+            'key' => 'exp',
+            'status' => 'running',
             'traffic_percentage' => 100,
-            'is_killed'          => false,
+            'is_killed' => false,
         ]);
 
         $state = $this->repo->findState('exp');

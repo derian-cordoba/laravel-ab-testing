@@ -21,14 +21,14 @@ use Throwable;
 final readonly class SlackChannel
 {
     private const array COLOR_MAP = [
-        'guardrail_breached'      => '#e53e3e',
-        'kill_switch_activated'   => '#e53e3e',
-        'experiment_paused'       => '#d69e2e',
-        'experiment_stopped'      => '#d69e2e',
-        'feature_flag_disabled'   => '#d69e2e',
-        'experiment_started'      => '#38a169',
-        'experiment_resumed'      => '#38a169',
-        'feature_flag_enabled'    => '#38a169',
+        'guardrail_breached' => '#e53e3e',
+        'kill_switch_activated' => '#e53e3e',
+        'experiment_paused' => '#d69e2e',
+        'experiment_stopped' => '#d69e2e',
+        'feature_flag_disabled' => '#d69e2e',
+        'experiment_started' => '#38a169',
+        'experiment_resumed' => '#38a169',
+        'feature_flag_enabled' => '#38a169',
     ];
 
     public function send(NotificationPayload $payload): void
@@ -38,21 +38,22 @@ final readonly class SlackChannel
 
         if (empty($config['webhook_url'])) {
             Log::warning('[ABTesting] SlackChannel: no webhook_url configured; skipping.');
+
             return;
         }
 
-        $color  = self::COLOR_MAP[$payload->event] ?? '#718096';
+        $color = self::COLOR_MAP[$payload->event] ?? '#718096';
         $fields = $this->buildFields($payload);
 
         $message = [
             'attachments' => [
                 [
-                    'color'      => $color,
-                    'title'      => $payload->title,
-                    'fields'     => $fields,
-                    'footer'     => 'A/B Testing · ' . config('app.name', 'Laravel'),
-                    'ts'         => $payload->occurredAt->getTimestamp(),
-                    'fallback'   => $payload->title,
+                    'color' => $color,
+                    'title' => $payload->title,
+                    'fields' => $fields,
+                    'footer' => 'A/B Testing · '.config('app.name', 'Laravel'),
+                    'ts' => $payload->occurredAt->getTimestamp(),
+                    'fallback' => $payload->title,
                 ],
             ],
         ];

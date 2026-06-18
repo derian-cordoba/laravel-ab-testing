@@ -13,7 +13,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
-use Throwable;
 
 /**
  * Converts every exception that escapes the API route group into a JSON:API
@@ -53,7 +52,7 @@ final readonly class ApiExceptionHandlerMiddleware
             'errors' => [
                 [
                     'status' => (string) $status,
-                    'title'  => $title,
+                    'title' => $title,
                     'detail' => $detail,
                 ],
             ],
@@ -68,7 +67,7 @@ final readonly class ApiExceptionHandlerMiddleware
             foreach ($messages as $message) {
                 $errors[] = [
                     'status' => (string) Response::HTTP_UNPROCESSABLE_ENTITY,
-                    'title'  => 'Validation Error',
+                    'title' => 'Validation Error',
                     'detail' => $message,
                     'source' => ['pointer' => "/data/attributes/$field"],
                 ];

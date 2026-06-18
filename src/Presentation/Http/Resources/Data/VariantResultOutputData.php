@@ -79,20 +79,20 @@ final readonly class VariantResultOutputData implements Arrayable
     public function toArray(): array
     {
         return [
-            'key'        => $this->key,
+            'key' => $this->key,
             'is_control' => $this->isControl,
             'primary_metric' => [
-                'count_of_units'  => $this->countOfUnits,
-                'conversions'     => $this->conversions,
+                'count_of_units' => $this->countOfUnits,
+                'conversions' => $this->conversions,
                 'conversion_rate' => $this->conversionRate,
-                'mean'            => $this->mean,
+                'mean' => $this->mean,
             ],
             'verdict' => $this->verdictRecommendation !== null ? [
                 'recommendation' => $this->verdictRecommendation,
-                'label'          => $this->verdictLabel,
-                'srm_detected'   => $this->verdictSrmDetected,
-                'frequentist'    => $this->frequentistAnalysis?->toArray(),
-                'bayesian'       => $this->bayesianAnalysis?->toArray(),
+                'label' => $this->verdictLabel,
+                'srm_detected' => $this->verdictSrmDetected,
+                'frequentist' => $this->frequentistAnalysis?->toArray(),
+                'bayesian' => $this->bayesianAnalysis?->toArray(),
             ] : null,
         ];
     }

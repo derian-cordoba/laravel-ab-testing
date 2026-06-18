@@ -6,9 +6,9 @@ namespace ABTests\Presentation\Http\Controllers\Api;
 
 use ABTests\Application\Commands\CreateFeatureFlagCommand;
 use ABTests\Contracts\CommandBus;
+use ABTests\Infrastructure\Database\Models\FeatureFlagStateModel;
 use ABTests\Presentation\Http\Requests\Api\CreateFeatureFlagRequest;
 use ABTests\Presentation\Http\Resources\Api\FeatureFlagResource;
-use ABTests\Infrastructure\Database\Models\FeatureFlagStateModel;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;

@@ -21,8 +21,7 @@ final readonly class UpdateExperimentCommandHandler
     public function __construct(
         private ExperimentRepository $experimentRepository,
         private AuditLogRepository $auditLogRepository,
-    ) {
-    }
+    ) {}
 
     public function handle(UpdateExperimentCommand $command): void
     {
@@ -39,8 +38,8 @@ final readonly class UpdateExperimentCommandHandler
         }
 
         $beforeState = [
-            'name'               => $model->name,
-            'layer'              => $model->layer,
+            'name' => $model->name,
+            'layer' => $model->layer,
             'target_sample_size' => $model->target_sample_size,
         ];
 

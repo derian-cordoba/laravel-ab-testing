@@ -29,7 +29,9 @@ final class EvaluationResultTest extends TestCase
             exposed: false,
             bucket: 5000,
             matchedCriterion: null,
-            exposeCallback: static function () use (&$called): void { $called++; },
+            exposeCallback: static function () use (&$called): void {
+                $called++;
+            },
         );
 
         $exposed = $result->expose();
@@ -54,7 +56,9 @@ final class EvaluationResultTest extends TestCase
             exposed: false,
             bucket: 3000,
             matchedCriterion: null,
-            exposeCallback: static function () use (&$called): void { $called++; },
+            exposeCallback: static function () use (&$called): void {
+                $called++;
+            },
         );
 
         $same = $result->expose();
@@ -95,10 +99,12 @@ final class EvaluationResultTest extends TestCase
             exposed: false,
             bucket: 7500,
             matchedCriterion: null,
-            exposeCallback: static function () use (&$called): void { $called++; },
+            exposeCallback: static function () use (&$called): void {
+                $called++;
+            },
         );
 
-        $first  = $result->expose();
+        $first = $result->expose();
         $second = $first->expose();
 
         // The callback fires on each call — idempotency is enforced by the
@@ -127,7 +133,9 @@ final class EvaluationResultTest extends TestCase
         );
 
         $withCallback = $result->withExposeCallback(
-            static function () use (&$called): void { $called++; },
+            static function () use (&$called): void {
+                $called++;
+            },
         );
 
         self::assertSame(0, $called, 'withExposeCallback must not fire the callback');

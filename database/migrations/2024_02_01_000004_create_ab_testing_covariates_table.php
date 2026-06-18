@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Schema;
  *
  * One row per (experiment_key, metric_key, unit_type, unit_key).
  */
-return new class extends Migration
+return new class() extends Migration
 {
     public function up(): void
     {

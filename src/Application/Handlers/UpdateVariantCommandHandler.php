@@ -16,8 +16,7 @@ final readonly class UpdateVariantCommandHandler
     public function __construct(
         private ExperimentRepository $experimentRepository,
         private AuditLogRepository $auditLogRepository,
-    ) {
-    }
+    ) {}
 
     public function handle(UpdateVariantCommand $command): void
     {
@@ -27,7 +26,7 @@ final readonly class UpdateVariantCommandHandler
 
         if (in_array($status, [ExperimentStatus::completed, ExperimentStatus::archived], true)) {
             throw new InvalidVariantOperation(
-                "Variants cannot be changed on completed or archived experiments. Current status: [{$status->value}]."
+                "Variants cannot be changed on completed or archived experiments. Current status: [{$status->value}].",
             );
         }
 
@@ -53,13 +52,13 @@ final readonly class UpdateVariantCommandHandler
 
         if ($keyConflict) {
             throw new InvalidVariantOperation(
-                "A variant with key [{$command->variantKey}] already exists in this experiment."
+                "A variant with key [{$command->variantKey}] already exists in this experiment.",
             );
         }
 
         if ($variant->is_control && ! $command->isControl) {
             throw new InvalidVariantOperation(
-                'Cannot remove control designation from this variant. Set another variant as control first.'
+                'Cannot remove control designation from this variant. Set another variant as control first.',
             );
         }
 
@@ -73,8 +72,8 @@ final readonly class UpdateVariantCommandHandler
         }
 
         $variant->update([
-            'key'        => $command->variantKey,
-            'weight'     => $command->weight,
+            'key' => $command->variantKey,
+            'weight' => $command->weight,
             'is_control' => $command->isControl,
         ]);
 
@@ -86,8 +85,8 @@ final readonly class UpdateVariantCommandHandler
             before: $before,
             after: [
                 'variant_key' => $command->variantKey,
-                'weight'      => $command->weight,
-                'is_control'  => $command->isControl,
+                'weight' => $command->weight,
+                'is_control' => $command->isControl,
             ],
         );
     }

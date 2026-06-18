@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Schema;
  * code-level #[AsExperiment(name: '...')] attribute to read from.
  * Code-defined names always take precedence in the UI.
  */
-return new class extends Migration
+return new class() extends Migration
 {
     public function up(): void
     {

@@ -15,7 +15,7 @@ use ABTests\Contracts\Bucketable;
 final readonly class GenericUnit implements Bucketable
 {
     /**
-     * @param array<string, scalar|array<scalar>|null> $attributes
+     * @param  array<string, scalar|array<scalar>|null>  $attributes
      */
     public function __construct(
         private string $key,

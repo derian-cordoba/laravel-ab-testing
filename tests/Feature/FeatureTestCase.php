@@ -8,8 +8,8 @@ use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\TestCase;
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Testing\TestResponse;
 
 /**
@@ -29,7 +29,7 @@ abstract class FeatureTestCase extends TestCase
     public function createApplication(): Application
     {
         /** @var Application $app */
-        $app = require __DIR__ . '/../Application/bootstrap/app.php';
+        $app = require __DIR__.'/../Application/bootstrap/app.php';
 
         $app->make(Kernel::class)->bootstrap();
 

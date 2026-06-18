@@ -11,8 +11,7 @@ final readonly class SetFlagRolloutPercentageCommandHandler
 {
     public function __construct(
         private FeatureFlagRepository $featureFlagRepository,
-    ) {
-    }
+    ) {}
 
     public function handle(SetFlagRolloutPercentageCommand $command): void
     {

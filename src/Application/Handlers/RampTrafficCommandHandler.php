@@ -13,8 +13,7 @@ final readonly class RampTrafficCommandHandler
     public function __construct(
         private ExperimentRepository $experimentRepository,
         private AuditLogRepository $auditLogRepository,
-    ) {
-    }
+    ) {}
 
     public function handle(RampTrafficCommand $command): void
     {

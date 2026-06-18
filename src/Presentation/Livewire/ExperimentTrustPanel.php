@@ -36,9 +36,9 @@ final class ExperimentTrustPanel extends Component
     {
         $results = app(ResultsService::class)->forExperiment($this->experimentKey);
 
-        $rows        = [];
-        $totalUnits  = 0;
-        $srmResult   = null;
+        $rows = [];
+        $totalUnits = 0;
+        $srmResult = null;
 
         if ($results !== null) {
             $srmResult = $results->sampleRatioMismatch;
@@ -67,7 +67,7 @@ final class ExperimentTrustPanel extends Component
 
             // Build per-variant rows using countOfUnits from the primary metric summary.
             foreach ($results->variantResults as $variantResult) {
-                $key      = $variantResult->variant->key();
+                $key = $variantResult->variant->key();
                 $observed = $variantResult->primaryMetricSummary->countOfUnits;
                 $totalUnits += $observed;
                 $rows[$key] = ['observed' => $observed, 'intended_weight' => $intendedWeights[$key] ?? 0];
@@ -75,10 +75,10 @@ final class ExperimentTrustPanel extends Component
 
             // Compute expected counts and observed % once we have the total.
             foreach ($rows as $key => &$row) {
-                $row['expected']          = $totalUnits > 0
+                $row['expected'] = $totalUnits > 0
                     ? round($totalUnits * ($row['intended_weight'] / 100))
                     : 0;
-                $row['observed_percent']  = $totalUnits > 0
+                $row['observed_percent'] = $totalUnits > 0
                     ? round($row['observed'] / $totalUnits * 100, 1)
                     : 0.0;
             }

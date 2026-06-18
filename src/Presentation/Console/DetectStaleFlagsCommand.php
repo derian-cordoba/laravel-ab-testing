@@ -49,10 +49,10 @@ final class DetectStaleFlagsCommand extends Command
                 // column is present but null (flag never evaluated since migration).
                 $query->where(static function ($q) use ($cutoff): void {
                     $q->whereNotNull('last_evaluated_at')
-                      ->where('last_evaluated_at', '<', $cutoff);
+                        ->where('last_evaluated_at', '<', $cutoff);
                 })->orWhere(static function ($q) use ($cutoff): void {
                     $q->whereNull('last_evaluated_at')
-                      ->where('updated_at', '<', $cutoff);
+                        ->where('updated_at', '<', $cutoff);
                 });
             })
             ->orderBy('key')
@@ -80,7 +80,7 @@ final class DetectStaleFlagsCommand extends Command
 
             return [
                 $flag->key,
-                $flag->rollout_percentage . '%',
+                $flag->rollout_percentage.'%',
                 $lastActivity?->toDateTimeString() ?? '—',
                 $daysStale,
             ];

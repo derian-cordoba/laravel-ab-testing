@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace ABTests\Tests\Unit\Registry;
 
+use ABTests\Application\Registry\AttributeReader;
 use ABTests\Enums\MetricRole;
 use ABTests\Enums\StatisticalEngine;
 use ABTests\Experiment;
-use ABTests\Application\Registry\AttributeReader;
 use ABTests\Tests\Fixtures\BackedEnumExperiment;
 use ABTests\Tests\Fixtures\ExperimentWithMissingUnitAttribute;
 use ABTests\Tests\Fixtures\ExperimentWithPlainEnumVariants;
@@ -132,7 +132,7 @@ final class AttributeReaderTest extends TestCase
     #[Test]
     public function throws_when_as_experiment_attribute_missing(): void
     {
-        $bareExperiment = new class extends Experiment {};
+        $bareExperiment = new class() extends Experiment {};
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessageMatches('/missing the required/');

@@ -15,9 +15,9 @@ use ABTests\Values\EvaluationResult;
  * The default implementation runs the full resolution pipeline; the testing
  * fake checks forced overrides before returning an override result.
  *
- * @param bool $dryRun When true, the resolver must not persist a new assignment
- *                     even if the unit would otherwise be bucketed for the first
- *                     time. Used by read-only operations such as isEligible().
+ * @param  bool  $dryRun  When true, the resolver must not persist a new assignment
+ *                        even if the unit would otherwise be bucketed for the first
+ *                        time. Used by read-only operations such as isEligible().
  */
 interface ResolvesVariant
 {

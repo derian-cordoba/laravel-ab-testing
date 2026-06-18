@@ -11,10 +11,9 @@ use ABTests\Application\Commands\StartExperimentCommand;
 use ABTests\Application\Commands\StopExperimentCommand;
 use ABTests\Application\Commands\ToggleKillSwitchCommand;
 use ABTests\Contracts\CommandBus;
+use ABTests\Infrastructure\Database\Models\ExperimentModel;
 use ABTests\Presentation\Http\Requests\Api\RampTrafficRequest;
 use ABTests\Presentation\Http\Resources\Api\ExperimentResource;
-use ABTests\Infrastructure\Database\Models\ExperimentModel;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /**

@@ -25,12 +25,12 @@ final class OperatorLabelTest extends TestCase
     public static function labelProvider(): array
     {
         return [
-            'equals'        => [Operator::equals,      'equals'],
-            'notEquals'     => [Operator::notEquals,   'does not equal'],
-            'in'            => [Operator::in,          'is one of'],
-            'notIn'         => [Operator::notIn,       'is not one of'],
-            'greaterThan'   => [Operator::greaterThan, 'greater than'],
-            'lessThan'      => [Operator::lessThan,    'less than'],
+            'equals' => [Operator::equals,      'equals'],
+            'notEquals' => [Operator::notEquals,   'does not equal'],
+            'in' => [Operator::in,          'is one of'],
+            'notIn' => [Operator::notIn,       'is not one of'],
+            'greaterThan' => [Operator::greaterThan, 'greater than'],
+            'lessThan' => [Operator::lessThan,    'less than'],
         ];
     }
 

@@ -9,7 +9,7 @@ use ABTests\Enums\ConditionsLogic;
 final readonly class SetFlagConditionsCommand
 {
     /**
-     * @param list<array{attribute: string, operator: string, expected: mixed}> $conditions
+     * @param  list<array{attribute: string, operator: string, expected: mixed}>  $conditions
      */
     public function __construct(
         public string $flagKey,

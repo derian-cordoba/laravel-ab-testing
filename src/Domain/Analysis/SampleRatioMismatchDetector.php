@@ -28,7 +28,7 @@ final readonly class SampleRatioMismatchDetector
     private const float SRM_ALPHA = 0.01;
 
     /**
-     * @param list<MetricSummary> $summaries One entry per variant, in any order.
+     * @param  list<MetricSummary>  $summaries  One entry per variant, in any order.
      */
     public function detect(array $summaries, Allocation $allocation): SampleRatioMismatchResult
     {

@@ -6,14 +6,14 @@ namespace ABTests\Application;
 
 use ABTests\Application\DTOs\ExperimentResultsData;
 use ABTests\Application\DTOs\VariantResultData;
+use ABTests\Application\Registry\ExperimentRegistry;
 use ABTests\Definitions\ExperimentDefinition;
 use ABTests\Definitions\MetricBinding;
+use ABTests\Domain\Analysis\AnalysisService;
 use ABTests\Enums\MetricRole;
 use ABTests\Infrastructure\Database\Models\ExperimentModel;
 use ABTests\Infrastructure\Database\Models\GuardrailBreachModel;
 use ABTests\Infrastructure\Database\Models\RollupModel;
-use ABTests\Application\Registry\ExperimentRegistry;
-use ABTests\Domain\Analysis\AnalysisService;
 use ABTests\Values\Allocation;
 use ABTests\Values\AnalysisConfiguration;
 use ABTests\Values\GenericVariant;
@@ -238,11 +238,11 @@ final readonly class ResultsService
         $snapshots = $model->variants->keyBy('key');
 
         $variantKeys = $rollups->pluck('variant_key')->unique()->sort()->values();
-        $metricKeys  = $rollups->pluck('metric_key')->unique()->values();
+        $metricKeys = $rollups->pluck('metric_key')->unique()->values();
 
         $variantCount = $variantKeys->count();
-        $evenWeight   = (int) floor(100 / $variantCount);
-        $remainder    = 100 - ($evenWeight * $variantCount);
+        $evenWeight = (int) floor(100 / $variantCount);
+        $remainder = 100 - ($evenWeight * $variantCount);
 
         $variants = $variantKeys->map(
             static function (string $key, int $index) use ($evenWeight, $remainder, $snapshots): GenericVariant {
@@ -258,12 +258,13 @@ final readonly class ResultsService
 
                 // Fallback: no snapshot — infer control from alphabetical position.
                 $isControl = $index === 0;
+
                 return new GenericVariant(
                     key: $key,
                     weight: $isControl ? $evenWeight + $remainder : $evenWeight,
                     isControl: $isControl,
                 );
-            }
+            },
         )->values()->all();
 
         $metrics = $metricKeys->map(static fn (string $key, int $index): MetricBinding => new MetricBinding(

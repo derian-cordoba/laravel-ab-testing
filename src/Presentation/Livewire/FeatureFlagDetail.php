@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace ABTests\Presentation\Livewire;
 
-use ABTests\Infrastructure\Database\Models\FeatureFlagStateModel;
 use ABTests\Application\Registry\FeatureFlagRegistry;
+use ABTests\Infrastructure\Database\Models\FeatureFlagStateModel;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -49,7 +49,7 @@ final class FeatureFlagDetail extends Component
 
         return view('ab-testing::livewire.feature-flag-detail', compact('model', 'displayName'))
             ->layout('ab-testing::layout', [
-                'title' => 'A/B Testing — ' . $displayName,
+                'title' => 'A/B Testing — '.$displayName,
             ]);
     }
 }

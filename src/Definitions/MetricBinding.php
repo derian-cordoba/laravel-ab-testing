@@ -13,7 +13,7 @@ use ABTests\Enums\MetricRole;
 final readonly class MetricBinding
 {
     /**
-     * @param string $metric A metric class-string (code-defined) or key (runtime-defined).
+     * @param  string  $metric  A metric class-string (code-defined) or key (runtime-defined).
      */
     public function __construct(
         public string $metric,

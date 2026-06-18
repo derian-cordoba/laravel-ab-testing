@@ -7,7 +7,7 @@ namespace ABTests\Domain\Events;
 final readonly class ExperimentEnvironmentsUpdatedEvent
 {
     /**
-     * @param list<string>|null $allowedEnvironments null = all environments allowed.
+     * @param  list<string>|null  $allowedEnvironments  null = all environments allowed.
      */
     public function __construct(
         public string $experimentKey,
