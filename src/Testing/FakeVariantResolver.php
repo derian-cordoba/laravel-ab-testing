@@ -7,16 +7,17 @@ namespace ABTests\Testing;
 use ABTests\Contracts\AssignmentRepository;
 use ABTests\Contracts\Bucketable;
 use ABTests\Contracts\ResolvesVariant;
-use ABTests\Contracts\Variant;
 use ABTests\Definitions\ExperimentDefinition;
+use ABTests\Enums\EvaluationReason;
 use ABTests\Values\Assignment;
+use ABTests\Values\EvaluationResult;
 use DateTimeImmutable;
 
 /**
  * A drop-in replacement for the real Resolver that returns explicitly forced
  * variants instead of running the full resolution pipeline. Any experiment key
- * that has not been forced returns null, so tests control exactly which
- * experiments appear to be active.
+ * that has not been forced returns an EvaluationResult with variant === null,
+ * so tests control exactly which experiments appear to be active.
  *
  * When a forced variant is returned, the assignment is also stored in the
  * provided repository so that subsequent Experiments::track() calls can locate
@@ -26,7 +27,7 @@ use DateTimeImmutable;
  */
 final class FakeVariantResolver implements ResolvesVariant
 {
-    /** @var array<string, Variant> experiment_key → forced Variant */
+    /** @var array<string, \ABTests\Contracts\Variant> experiment_key → forced Variant */
     private array $forcedVariants = [];
 
     public function __construct(
@@ -35,7 +36,7 @@ final class FakeVariantResolver implements ResolvesVariant
         //
     }
 
-    public function force(string $experimentKey, Variant $variant): void
+    public function force(string $experimentKey, \ABTests\Contracts\Variant $variant): void
     {
         $this->forcedVariants[$experimentKey] = $variant;
     }
@@ -50,11 +51,23 @@ final class FakeVariantResolver implements ResolvesVariant
         $this->forcedVariants = [];
     }
 
-    public function resolve(ExperimentDefinition $definition, Bucketable $unit): ?Variant
+    public function resolve(ExperimentDefinition $definition, Bucketable $unit, bool $dryRun = false): EvaluationResult
     {
         $variant = $this->forcedVariants[$definition->key] ?? null;
 
-        if ($variant !== null) {
+        if ($variant === null) {
+            return new EvaluationResult(
+                variant: null,
+                reason: EvaluationReason::experimentNotRunning,
+                eligible: false,
+                assigned: false,
+                exposed: false,
+                bucket: 0,
+                matchedCriterion: null,
+            );
+        }
+
+        if (! $dryRun) {
             // Store the assignment so track() calls can look it up.
             $this->assignmentRepository->storeAssignment(new Assignment(
                 experimentKey: $definition->key,
@@ -66,6 +79,14 @@ final class FakeVariantResolver implements ResolvesVariant
             ));
         }
 
-        return $variant;
+        return new EvaluationResult(
+            variant: $variant,
+            reason: EvaluationReason::override,
+            eligible: true,
+            assigned: true,
+            exposed: false,
+            bucket: 0,
+            matchedCriterion: null,
+        );
     }
 }

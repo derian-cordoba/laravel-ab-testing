@@ -226,6 +226,7 @@ final class ABTestingServiceProvider extends ServiceProvider
                 assignmentRepository: $this->app->make(AssignmentRepository::class),
                 bucketingStrategy: $this->app->make(BucketingStrategy::class),
                 featureFlagRepository: $this->app->make(FeatureFlagRepository::class),
+                stateRepository: $this->app->make(ExperimentStateRepository::class),
             ),
         );
     }

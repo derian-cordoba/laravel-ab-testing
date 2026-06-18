@@ -18,6 +18,7 @@ use ABTests\Contracts\AssignmentRepository;
 use ABTests\Contracts\Bucketable;
 use ABTests\Contracts\BucketingStrategy;
 use ABTests\Contracts\EventSink;
+use ABTests\Contracts\ExperimentStateRepository;
 use ABTests\Contracts\FeatureFlagRepository;
 use ABTests\Contracts\ResolvesVariant;
 use ABTests\Enums\ConditionsLogic;
@@ -58,6 +59,7 @@ final class Experiments
         private readonly AssignmentRepository $assignmentRepository,
         private readonly BucketingStrategy $bucketingStrategy,
         private readonly FeatureFlagRepository $featureFlagRepository,
+        private readonly ExperimentStateRepository $stateRepository,
     ) {
         //
     }
@@ -105,6 +107,8 @@ final class Experiments
             resolver: $self->resolver,
             eventSink: $self->eventSink,
             assignmentRepository: $self->assignmentRepository,
+            stateRepository: $self->stateRepository,
+            bucketingStrategy: $self->bucketingStrategy,
         );
     }
 

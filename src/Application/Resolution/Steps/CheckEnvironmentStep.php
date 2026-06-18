@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ABTests\Application\Resolution\Steps;
 
 use ABTests\Enums\Environment;
+use ABTests\Enums\EvaluationReason;
 use ABTests\Application\Resolution\Contracts\ResolutionStep;
 use ABTests\Application\Resolution\ResolutionPayload;
 
@@ -30,6 +31,8 @@ final readonly class CheckEnvironmentStep implements ResolutionStep
 
         // Empty list = disabled in every environment.
         if ($allowed === []) {
+            $payload->stopReason = EvaluationReason::environmentRestricted;
+
             return false;
         }
 
@@ -37,9 +40,17 @@ final readonly class CheckEnvironmentStep implements ResolutionStep
 
         if ($current === null) {
             // Unknown environment string — do not assign.
+            $payload->stopReason = EvaluationReason::environmentRestricted;
+
             return false;
         }
 
-        return in_array($current->value, $allowed, true);
+        if (! in_array($current->value, $allowed, true)) {
+            $payload->stopReason = EvaluationReason::environmentRestricted;
+
+            return false;
+        }
+
+        return true;
     }
 }

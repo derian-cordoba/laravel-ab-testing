@@ -385,6 +385,7 @@ final class FlagResolutionTest extends DatabaseTestCase
             assignmentRepository: new InMemoryAssignmentRepository(),
             bucketingStrategy: $this->fixedPosition(0.0),
             featureFlagRepository: new DatabaseFeatureFlagRepository(),
+            stateRepository: new AlwaysRunningExperimentStateRepository(),
         ));
 
         $result = Experiments::flag(TestFeatureFlag::class, new TestUnit('user-1'));
@@ -410,6 +411,7 @@ final class FlagResolutionTest extends DatabaseTestCase
             assignmentRepository: new InMemoryAssignmentRepository(),
             bucketingStrategy: $this->fixedPosition($position),
             featureFlagRepository: new DatabaseFeatureFlagRepository(),
+            stateRepository: new AlwaysRunningExperimentStateRepository(),
         ));
 
         return Experiments::flag(TestFeatureFlag::class, new TestUnit('user-1'));
@@ -425,6 +427,7 @@ final class FlagResolutionTest extends DatabaseTestCase
             assignmentRepository: new InMemoryAssignmentRepository(),
             bucketingStrategy: $this->fixedPosition(0.0),
             featureFlagRepository: new DatabaseFeatureFlagRepository(),
+            stateRepository: new AlwaysRunningExperimentStateRepository(),
         );
     }
 

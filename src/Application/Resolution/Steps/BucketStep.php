@@ -6,6 +6,7 @@ namespace ABTests\Application\Resolution\Steps;
 
 use ABTests\Application\Resolution\Contracts\ResolutionStep;
 use ABTests\Application\Resolution\ResolutionPayload;
+use ABTests\Enums\EvaluationReason;
 
 /**
  * Step 6 — deterministic variant assignment. Maps the unit's pre-computed
@@ -25,6 +26,8 @@ final readonly class BucketStep implements ResolutionStep
         $payload->resolvedVariant = $payload->definition->allocation->variantAt(
             $payload->bucketPosition
         );
+
+        $payload->stopReason = EvaluationReason::newAssignment;
 
         return true;
     }

@@ -10,6 +10,7 @@ use ABTests\Contracts\BucketingStrategy;
 use ABTests\Contracts\Variant;
 use ABTests\Experiment;
 use ABTests\Experiments;
+use ABTests\Infrastructure\AlwaysRunningExperimentStateRepository;
 use ABTests\Infrastructure\InMemoryAssignmentRepository;
 use ABTests\Infrastructure\NullFeatureFlagRepository;
 use ABTests\Metric;
@@ -74,6 +75,7 @@ final readonly class FakeExperiments
             assignmentRepository: $assignmentRepository,
             bucketingStrategy: $bucketingStrategy,
             featureFlagRepository: new NullFeatureFlagRepository(),
+            stateRepository: new AlwaysRunningExperimentStateRepository(),
         ));
     }
 

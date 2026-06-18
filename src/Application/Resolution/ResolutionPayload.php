@@ -7,6 +7,7 @@ namespace ABTests\Application\Resolution;
 use ABTests\Contracts\Bucketable;
 use ABTests\Contracts\Variant;
 use ABTests\Definitions\ExperimentDefinition;
+use ABTests\Enums\EvaluationReason;
 use ABTests\Values\ExperimentState;
 
 /**
@@ -33,6 +34,20 @@ final class ResolutionPayload
      * when this flag is set, preserving sticky assignment semantics.
      */
     public bool $hasExistingAssignment = false;
+
+    /**
+     * The reason a step short-circuited the pipeline. Set by each gate step
+     * before it returns false so the Resolver can include it in EvaluationResult.
+     * Remains null when the pipeline completes successfully.
+     */
+    public ?EvaluationReason $stopReason = null;
+
+    /**
+     * When true, PersistAssignmentStep skips writing to the repository.
+     * Set by the Resolver for operations that must not create side effects
+     * (e.g. isEligible checks).
+     */
+    public bool $dryRun = false;
 
     /**
      * @param float $bucketPosition Deterministic position in [0, 1) for this

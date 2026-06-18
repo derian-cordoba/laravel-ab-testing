@@ -6,6 +6,7 @@ namespace ABTests\Application\Resolution\Steps;
 
 use ABTests\Application\Resolution\Contracts\ResolutionStep;
 use ABTests\Application\Resolution\ResolutionPayload;
+use ABTests\Enums\EvaluationReason;
 
 /**
  * Gate 3 — traffic holdout. Only units whose deterministic bucket position
@@ -20,6 +21,12 @@ final readonly class CheckTrafficAllocationStep implements ResolutionStep
 {
     public function handle(ResolutionPayload $payload): bool
     {
-        return $payload->bucketPosition < ($payload->state->trafficPercentage / 100);
+        if ($payload->bucketPosition >= ($payload->state->trafficPercentage / 100)) {
+            $payload->stopReason = EvaluationReason::outsideTrafficAllocation;
+
+            return false;
+        }
+
+        return true;
     }
 }

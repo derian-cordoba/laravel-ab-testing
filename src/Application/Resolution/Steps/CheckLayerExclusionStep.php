@@ -7,6 +7,7 @@ namespace ABTests\Application\Resolution\Steps;
 use ABTests\Contracts\AssignmentRepository;
 use ABTests\Application\Resolution\Contracts\ResolutionStep;
 use ABTests\Application\Resolution\ResolutionPayload;
+use ABTests\Enums\EvaluationReason;
 
 /**
  * Gate 5 — layer mutual exclusion. If this experiment belongs to a named layer,
@@ -49,6 +50,12 @@ final readonly class CheckLayerExclusionStep implements ResolutionStep
         }
 
         // A different experiment in the same layer owns this unit.
-        return $existingLayerAssignment->experimentKey === $payload->definition->key;
+        if ($existingLayerAssignment->experimentKey !== $payload->definition->key) {
+            $payload->stopReason = EvaluationReason::layerExcluded;
+
+            return false;
+        }
+
+        return true;
     }
 }
