@@ -9,15 +9,11 @@ use ABTests\Application\Registry\ExperimentRegistry;
 use ABTests\Contracts\AuditLogRepository;
 use ABTests\Contracts\DomainEventDispatcher;
 use ABTests\Contracts\ExperimentRepository;
-use ABTests\Domain\Events\ExperimentStartedEvent;
-use ABTests\Enums\ApprovalStatus;
-use ABTests\Enums\ExperimentStatus;
+use ABTests\Domain\Experiment\ExperimentAggregate;
 use ABTests\Exceptions\ApprovalRequired;
-use ABTests\Exceptions\InvalidStateTransition;
-use ABTests\Infrastructure\Database\Models\ExperimentApprovalModel;
+use ABTests\Governance\Contracts\ApprovalPolicy;
 use ABTests\Infrastructure\Database\Models\VariantModel;
 use ABTests\Values\ExperimentRecord;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -28,27 +24,17 @@ final readonly class StartExperimentCommandHandler
         private AuditLogRepository $auditLogRepository,
         private ExperimentRegistry $registry,
         private DomainEventDispatcher $eventDispatcher,
+        private ApprovalPolicy $approvalPolicy,
     ) {}
 
     public function handle(StartExperimentCommand $command): void
     {
         $record = $this->experimentRepository->getByKey($command->experimentKey);
 
-        $currentStatus = ExperimentStatus::from($record->status);
-
-        if (! $currentStatus->canTransitionTo(ExperimentStatus::running)) {
-            throw new InvalidStateTransition($currentStatus, ExperimentStatus::running);
-        }
-
         // Approval gate: when governance.approval_required is true, the experiment
         // must have an approved review before it can start.
         if (config('ab-testing.governance.approval_required', false)) {
-            $hasApproval = ExperimentApprovalModel::query()
-                ->where('experiment_key', $command->experimentKey)
-                ->where('status', ApprovalStatus::approved->value)
-                ->exists();
-
-            if (! $hasApproval) {
+            if (! $this->approvalPolicy->hasApprovedReview($command->experimentKey)) {
                 throw new ApprovalRequired($command->experimentKey);
             }
         }
@@ -67,35 +53,23 @@ final readonly class StartExperimentCommandHandler
             Log::warning("[ABTesting] {$message}");
         }
 
-        $beforeState = ['status' => $record->status, 'started_at' => $record->startedAt];
-        $trafficPercentage = $record->trafficPercentage > 0 ? $record->trafficPercentage : 100;
+        $aggregate = ExperimentAggregate::reconstitute($record);
+        $aggregate->start($command->actorIdentifier, $command->actorType);
 
-        $this->experimentRepository->update($command->experimentKey, [
-            'status' => ExperimentStatus::running->value,
-            'traffic_percentage' => $trafficPercentage,
-            'started_at' => $record->startedAt ?? Carbon::now(),
-        ]);
+        $this->experimentRepository->update($command->experimentKey, $aggregate->pendingChanges());
 
         $this->auditLogRepository->append(
             experimentKey: $command->experimentKey,
             action: 'start',
             actorIdentifier: $command->actorIdentifier,
             actorType: $command->actorType,
-            before: $beforeState,
-            after: [
-                'status' => ExperimentStatus::running->value,
-                'traffic_percentage' => $trafficPercentage,
-            ],
+            before: $aggregate->beforeState(),
+            after: $aggregate->pendingChanges(),
         );
 
         $this->syncVariantSnapshot($record, $command->experimentKey);
 
-        $this->eventDispatcher->dispatch(new ExperimentStartedEvent(
-            experimentKey: $command->experimentKey,
-            actorIdentifier: $command->actorIdentifier,
-            actorType: $command->actorType,
-            trafficPercentage: $trafficPercentage,
-        ));
+        $this->eventDispatcher->dispatchAll($aggregate->pullEvents());
     }
 
     /**

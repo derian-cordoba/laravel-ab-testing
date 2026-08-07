@@ -8,9 +8,7 @@ use ABTests\Application\Commands\PauseExperimentCommand;
 use ABTests\Contracts\AuditLogRepository;
 use ABTests\Contracts\DomainEventDispatcher;
 use ABTests\Contracts\ExperimentRepository;
-use ABTests\Domain\Events\ExperimentPausedEvent;
-use ABTests\Enums\ExperimentStatus;
-use ABTests\Exceptions\InvalidStateTransition;
+use ABTests\Domain\Experiment\ExperimentAggregate;
 
 final readonly class PauseExperimentCommandHandler
 {
@@ -23,30 +21,20 @@ final readonly class PauseExperimentCommandHandler
     public function handle(PauseExperimentCommand $command): void
     {
         $record = $this->experimentRepository->getByKey($command->experimentKey);
+        $aggregate = ExperimentAggregate::reconstitute($record);
+        $aggregate->pause($command->actorIdentifier, $command->actorType);
 
-        $currentStatus = ExperimentStatus::from($record->status);
-
-        if (! $currentStatus->canTransitionTo(ExperimentStatus::paused)) {
-            throw new InvalidStateTransition($currentStatus, ExperimentStatus::paused);
-        }
-
-        $beforeState = ['status' => $record->status];
-
-        $this->experimentRepository->update($command->experimentKey, ['status' => ExperimentStatus::paused->value]);
+        $this->experimentRepository->update($command->experimentKey, $aggregate->pendingChanges());
 
         $this->auditLogRepository->append(
             experimentKey: $command->experimentKey,
             action: 'pause',
             actorIdentifier: $command->actorIdentifier,
             actorType: $command->actorType,
-            before: $beforeState,
-            after: ['status' => ExperimentStatus::paused->value],
+            before: $aggregate->beforeState(),
+            after: $aggregate->pendingChanges(),
         );
 
-        $this->eventDispatcher->dispatch(new ExperimentPausedEvent(
-            experimentKey: $command->experimentKey,
-            actorIdentifier: $command->actorIdentifier,
-            actorType: $command->actorType,
-        ));
+        $this->eventDispatcher->dispatchAll($aggregate->pullEvents());
     }
 }

@@ -7,6 +7,7 @@ namespace ABTests\Application\Handlers;
 use ABTests\Application\Commands\RampTrafficCommand;
 use ABTests\Contracts\AuditLogRepository;
 use ABTests\Contracts\ExperimentRepository;
+use ABTests\Domain\Experiment\ExperimentAggregate;
 
 final readonly class RampTrafficCommandHandler
 {
@@ -18,19 +19,18 @@ final readonly class RampTrafficCommandHandler
     public function handle(RampTrafficCommand $command): void
     {
         $record = $this->experimentRepository->getByKey($command->experimentKey);
+        $aggregate = ExperimentAggregate::reconstitute($record);
+        $aggregate->rampTraffic($command->trafficPercentage, $command->actorIdentifier, $command->actorType);
 
-        $percentage = max(0, min(100, $command->trafficPercentage));
-        $beforeState = ['traffic_percentage' => $record->trafficPercentage];
-
-        $this->experimentRepository->update($command->experimentKey, ['traffic_percentage' => $percentage]);
+        $this->experimentRepository->update($command->experimentKey, $aggregate->pendingChanges());
 
         $this->auditLogRepository->append(
             experimentKey: $command->experimentKey,
             action: 'ramp_traffic',
             actorIdentifier: $command->actorIdentifier,
             actorType: $command->actorType,
-            before: $beforeState,
-            after: ['traffic_percentage' => $percentage],
+            before: $aggregate->beforeState(),
+            after: $aggregate->pendingChanges(),
         );
     }
 }

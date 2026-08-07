@@ -8,7 +8,7 @@ use ABTests\Application\Commands\SetExperimentEnvironmentsCommand;
 use ABTests\Contracts\AuditLogRepository;
 use ABTests\Contracts\DomainEventDispatcher;
 use ABTests\Contracts\ExperimentRepository;
-use ABTests\Domain\Events\ExperimentEnvironmentsUpdatedEvent;
+use ABTests\Domain\Experiment\ExperimentAggregate;
 
 final readonly class SetExperimentEnvironmentsCommandHandler
 {
@@ -21,25 +21,20 @@ final readonly class SetExperimentEnvironmentsCommandHandler
     public function handle(SetExperimentEnvironmentsCommand $command): void
     {
         $record = $this->experimentRepository->getByKey($command->experimentKey);
+        $aggregate = ExperimentAggregate::reconstitute($record);
+        $aggregate->setEnvironments($command->allowedEnvironments, $command->actorIdentifier, $command->actorType);
 
-        $before = $record->allowedEnvironments;
-
-        $this->experimentRepository->update($command->experimentKey, ['allowed_environments' => $command->allowedEnvironments]);
+        $this->experimentRepository->update($command->experimentKey, $aggregate->pendingChanges());
 
         $this->auditLogRepository->append(
             experimentKey: $command->experimentKey,
             action: 'set_experiment_environments',
             actorIdentifier: $command->actorIdentifier,
             actorType: $command->actorType,
-            before: ['allowed_environments' => $before],
-            after: ['allowed_environments' => $command->allowedEnvironments],
+            before: $aggregate->beforeState(),
+            after: $aggregate->pendingChanges(),
         );
 
-        $this->eventDispatcher->dispatch(new ExperimentEnvironmentsUpdatedEvent(
-            experimentKey: $command->experimentKey,
-            allowedEnvironments: $command->allowedEnvironments,
-            actorIdentifier: $command->actorIdentifier,
-            actorType: $command->actorType,
-        ));
+        $this->eventDispatcher->dispatchAll($aggregate->pullEvents());
     }
 }

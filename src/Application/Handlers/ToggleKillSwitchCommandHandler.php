@@ -8,8 +8,7 @@ use ABTests\Application\Commands\ToggleKillSwitchCommand;
 use ABTests\Contracts\AuditLogRepository;
 use ABTests\Contracts\DomainEventDispatcher;
 use ABTests\Contracts\ExperimentRepository;
-use ABTests\Domain\Events\KillSwitchActivatedEvent;
-use Illuminate\Support\Carbon;
+use ABTests\Domain\Experiment\ExperimentAggregate;
 
 final readonly class ToggleKillSwitchCommandHandler
 {
@@ -22,29 +21,20 @@ final readonly class ToggleKillSwitchCommandHandler
     public function handle(ToggleKillSwitchCommand $command): void
     {
         $record = $this->experimentRepository->getByKey($command->experimentKey);
+        $aggregate = ExperimentAggregate::reconstitute($record);
+        $aggregate->activateKillSwitch($command->isKilled, $command->actorIdentifier, $command->actorType);
 
-        $beforeState = ['is_killed' => $record->isKilled];
-
-        $this->experimentRepository->update($command->experimentKey, [
-            'is_killed' => $command->isKilled,
-            'killed_at' => $command->isKilled ? Carbon::now() : null,
-        ]);
+        $this->experimentRepository->update($command->experimentKey, $aggregate->pendingChanges());
 
         $this->auditLogRepository->append(
             experimentKey: $command->experimentKey,
             action: 'kill',
             actorIdentifier: $command->actorIdentifier,
             actorType: $command->actorType,
-            before: $beforeState,
-            after: ['is_killed' => $command->isKilled],
+            before: $aggregate->beforeState(),
+            after: $aggregate->pendingChanges(),
         );
 
-        $this->eventDispatcher->dispatch(new KillSwitchActivatedEvent(
-            experimentKey: $command->experimentKey,
-            flagKey: null,
-            activated: $command->isKilled,
-            actorIdentifier: $command->actorIdentifier,
-            actorType: $command->actorType,
-        ));
+        $this->eventDispatcher->dispatchAll($aggregate->pullEvents());
     }
 }

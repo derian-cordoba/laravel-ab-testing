@@ -7,8 +7,7 @@ namespace ABTests\Application\Handlers;
 use ABTests\Application\Commands\ArchiveExperimentCommand;
 use ABTests\Contracts\AuditLogRepository;
 use ABTests\Contracts\ExperimentRepository;
-use ABTests\Enums\ExperimentStatus;
-use ABTests\Exceptions\InvalidStateTransition;
+use ABTests\Domain\Experiment\ExperimentAggregate;
 
 final readonly class ArchiveExperimentCommandHandler
 {
@@ -20,24 +19,18 @@ final readonly class ArchiveExperimentCommandHandler
     public function handle(ArchiveExperimentCommand $command): void
     {
         $record = $this->experimentRepository->getByKey($command->experimentKey);
+        $aggregate = ExperimentAggregate::reconstitute($record);
+        $aggregate->archive($command->actorIdentifier, $command->actorType);
 
-        $currentStatus = ExperimentStatus::from($record->status);
-
-        if (! $currentStatus->canTransitionTo(ExperimentStatus::archived)) {
-            throw new InvalidStateTransition($currentStatus, ExperimentStatus::archived);
-        }
-
-        $beforeState = ['status' => $record->status];
-
-        $this->experimentRepository->update($command->experimentKey, ['status' => ExperimentStatus::archived->value]);
+        $this->experimentRepository->update($command->experimentKey, $aggregate->pendingChanges());
 
         $this->auditLogRepository->append(
             experimentKey: $command->experimentKey,
             action: 'archive',
             actorIdentifier: $command->actorIdentifier,
             actorType: $command->actorType,
-            before: $beforeState,
-            after: ['status' => ExperimentStatus::archived->value],
+            before: $aggregate->beforeState(),
+            after: $aggregate->pendingChanges(),
         );
     }
 }

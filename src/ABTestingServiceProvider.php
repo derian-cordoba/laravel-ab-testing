@@ -27,6 +27,8 @@ use ABTests\Contracts\BucketingStrategy;
 use ABTests\Contracts\CommandBus;
 use ABTests\Contracts\CovariateRepository;
 use ABTests\Contracts\EventSink;
+use ABTests\Governance\Contracts\ApprovalPolicy;
+use ABTests\Governance\Database\DatabaseApprovalPolicy;
 use ABTests\Contracts\ExperimentRepository;
 use ABTests\Contracts\ExperimentStateRepository;
 use ABTests\Contracts\FeatureFlagRepository;
@@ -125,6 +127,8 @@ final class ABTestingServiceProvider extends ServiceProvider
         $this->app->singleton(BucketingStrategy::class, Sha256BucketingStrategy::class);
 
         $this->app->singleton(CovariateRepository::class, DatabaseCovariateRepository::class);
+
+        $this->app->singleton(ApprovalPolicy::class, DatabaseApprovalPolicy::class);
 
         $this->bindStorageDriver();
 

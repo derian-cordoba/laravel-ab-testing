@@ -8,9 +8,7 @@ use ABTests\Application\Commands\ResumeExperimentCommand;
 use ABTests\Contracts\AuditLogRepository;
 use ABTests\Contracts\DomainEventDispatcher;
 use ABTests\Contracts\ExperimentRepository;
-use ABTests\Domain\Events\ExperimentResumedEvent;
-use ABTests\Enums\ExperimentStatus;
-use ABTests\Exceptions\InvalidStateTransition;
+use ABTests\Domain\Experiment\ExperimentAggregate;
 
 final readonly class ResumeExperimentCommandHandler
 {
@@ -23,30 +21,20 @@ final readonly class ResumeExperimentCommandHandler
     public function handle(ResumeExperimentCommand $command): void
     {
         $record = $this->experimentRepository->getByKey($command->experimentKey);
+        $aggregate = ExperimentAggregate::reconstitute($record);
+        $aggregate->resume($command->actorIdentifier, $command->actorType);
 
-        $currentStatus = ExperimentStatus::from($record->status);
-
-        if (! $currentStatus->canTransitionTo(ExperimentStatus::running)) {
-            throw new InvalidStateTransition($currentStatus, ExperimentStatus::running);
-        }
-
-        $beforeState = ['status' => $record->status];
-
-        $this->experimentRepository->update($command->experimentKey, ['status' => ExperimentStatus::running->value]);
+        $this->experimentRepository->update($command->experimentKey, $aggregate->pendingChanges());
 
         $this->auditLogRepository->append(
             experimentKey: $command->experimentKey,
             action: 'resume',
             actorIdentifier: $command->actorIdentifier,
             actorType: $command->actorType,
-            before: $beforeState,
-            after: ['status' => ExperimentStatus::running->value],
+            before: $aggregate->beforeState(),
+            after: $aggregate->pendingChanges(),
         );
 
-        $this->eventDispatcher->dispatch(new ExperimentResumedEvent(
-            experimentKey: $command->experimentKey,
-            actorIdentifier: $command->actorIdentifier,
-            actorType: $command->actorType,
-        ));
+        $this->eventDispatcher->dispatchAll($aggregate->pullEvents());
     }
 }
