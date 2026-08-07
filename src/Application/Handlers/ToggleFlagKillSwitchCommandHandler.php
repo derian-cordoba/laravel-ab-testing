@@ -5,15 +5,16 @@ declare(strict_types=1);
 namespace ABTests\Application\Handlers;
 
 use ABTests\Application\Commands\ToggleFlagKillSwitchCommand;
+use ABTests\Contracts\DomainEventDispatcher;
 use ABTests\Contracts\FeatureFlagRepository;
 use ABTests\Domain\Events\KillSwitchActivatedEvent;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Event;
 
 final readonly class ToggleFlagKillSwitchCommandHandler
 {
     public function __construct(
         private FeatureFlagRepository $featureFlagRepository,
+        private DomainEventDispatcher $eventDispatcher,
     ) {}
 
     public function handle(ToggleFlagKillSwitchCommand $command): void
@@ -27,7 +28,7 @@ final readonly class ToggleFlagKillSwitchCommandHandler
             $this->featureFlagRepository->create(array_merge(['key' => $command->flagKey], $attributes));
         }
 
-        Event::dispatch(new KillSwitchActivatedEvent(
+        $this->eventDispatcher->dispatch(new KillSwitchActivatedEvent(
             experimentKey: null,
             flagKey: $command->flagKey,
             activated: $command->isKilled,

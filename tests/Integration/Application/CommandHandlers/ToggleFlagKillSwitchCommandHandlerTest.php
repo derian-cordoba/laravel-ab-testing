@@ -9,6 +9,7 @@ use ABTests\Application\Handlers\ToggleFlagKillSwitchCommandHandler;
 use ABTests\Domain\Events\KillSwitchActivatedEvent;
 use ABTests\Infrastructure\Database\DatabaseFeatureFlagRepository;
 use ABTests\Infrastructure\Database\Models\FeatureFlagStateModel;
+use ABTests\Infrastructure\Events\LaravelDomainEventDispatcher;
 use ABTests\Tests\Integration\DatabaseTestCase;
 use Carbon\Carbon;
 use Illuminate\Container\Container;
@@ -25,7 +26,7 @@ final class ToggleFlagKillSwitchCommandHandlerTest extends DatabaseTestCase
             'killed_at' => null,
         ]);
 
-        (new ToggleFlagKillSwitchCommandHandler(new DatabaseFeatureFlagRepository()))->handle(new ToggleFlagKillSwitchCommand(
+        (new ToggleFlagKillSwitchCommandHandler(new DatabaseFeatureFlagRepository(), new LaravelDomainEventDispatcher()))->handle(new ToggleFlagKillSwitchCommand(
             flagKey: 'my-flag',
             isKilled: true,
             actorIdentifier: 'tester',
@@ -45,7 +46,7 @@ final class ToggleFlagKillSwitchCommandHandlerTest extends DatabaseTestCase
             'killed_at' => Carbon::now(),
         ]);
 
-        (new ToggleFlagKillSwitchCommandHandler(new DatabaseFeatureFlagRepository()))->handle(new ToggleFlagKillSwitchCommand(
+        (new ToggleFlagKillSwitchCommandHandler(new DatabaseFeatureFlagRepository(), new LaravelDomainEventDispatcher()))->handle(new ToggleFlagKillSwitchCommand(
             flagKey: 'my-flag',
             isKilled: false,
             actorIdentifier: 'tester',
@@ -59,7 +60,7 @@ final class ToggleFlagKillSwitchCommandHandlerTest extends DatabaseTestCase
     #[Test]
     public function creates_record_when_no_state_exists_and_kill_switch_is_activated(): void
     {
-        (new ToggleFlagKillSwitchCommandHandler(new DatabaseFeatureFlagRepository()))->handle(new ToggleFlagKillSwitchCommand(
+        (new ToggleFlagKillSwitchCommandHandler(new DatabaseFeatureFlagRepository(), new LaravelDomainEventDispatcher()))->handle(new ToggleFlagKillSwitchCommand(
             flagKey: 'brand-new-flag',
             isKilled: true,
             actorIdentifier: 'tester',
@@ -80,7 +81,7 @@ final class ToggleFlagKillSwitchCommandHandlerTest extends DatabaseTestCase
             'killed_at' => null,
         ]);
 
-        (new ToggleFlagKillSwitchCommandHandler(new DatabaseFeatureFlagRepository()))->handle(new ToggleFlagKillSwitchCommand(
+        (new ToggleFlagKillSwitchCommandHandler(new DatabaseFeatureFlagRepository(), new LaravelDomainEventDispatcher()))->handle(new ToggleFlagKillSwitchCommand(
             flagKey: 'my-flag',
             isKilled: true,
             actorIdentifier: 'tester',
@@ -109,7 +110,7 @@ final class ToggleFlagKillSwitchCommandHandlerTest extends DatabaseTestCase
             },
         );
 
-        (new ToggleFlagKillSwitchCommandHandler(new DatabaseFeatureFlagRepository()))->handle(new ToggleFlagKillSwitchCommand(
+        (new ToggleFlagKillSwitchCommandHandler(new DatabaseFeatureFlagRepository(), new LaravelDomainEventDispatcher()))->handle(new ToggleFlagKillSwitchCommand(
             flagKey: 'my-flag',
             isKilled: true,
             actorIdentifier: 'alice',
@@ -140,7 +141,7 @@ final class ToggleFlagKillSwitchCommandHandlerTest extends DatabaseTestCase
             },
         );
 
-        (new ToggleFlagKillSwitchCommandHandler(new DatabaseFeatureFlagRepository()))->handle(new ToggleFlagKillSwitchCommand(
+        (new ToggleFlagKillSwitchCommandHandler(new DatabaseFeatureFlagRepository(), new LaravelDomainEventDispatcher()))->handle(new ToggleFlagKillSwitchCommand(
             flagKey: 'my-flag',
             isKilled: false,
             actorIdentifier: 'alice',

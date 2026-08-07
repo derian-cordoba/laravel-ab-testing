@@ -6,18 +6,19 @@ namespace ABTests\Application\Handlers;
 
 use ABTests\Application\Commands\StopExperimentCommand;
 use ABTests\Contracts\AuditLogRepository;
+use ABTests\Contracts\DomainEventDispatcher;
 use ABTests\Contracts\ExperimentRepository;
 use ABTests\Domain\Events\ExperimentStoppedEvent;
 use ABTests\Enums\ExperimentStatus;
 use ABTests\Exceptions\InvalidStateTransition;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Event;
 
 final readonly class StopExperimentCommandHandler
 {
     public function __construct(
         private ExperimentRepository $experimentRepository,
         private AuditLogRepository $auditLogRepository,
+        private DomainEventDispatcher $eventDispatcher,
     ) {}
 
     public function handle(StopExperimentCommand $command): void
@@ -46,7 +47,7 @@ final readonly class StopExperimentCommandHandler
             after: ['status' => ExperimentStatus::completed->value],
         );
 
-        Event::dispatch(new ExperimentStoppedEvent(
+        $this->eventDispatcher->dispatch(new ExperimentStoppedEvent(
             experimentKey: $command->experimentKey,
             actorIdentifier: $command->actorIdentifier,
             actorType: $command->actorType,

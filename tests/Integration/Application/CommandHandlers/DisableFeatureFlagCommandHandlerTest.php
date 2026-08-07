@@ -9,6 +9,7 @@ use ABTests\Application\Handlers\DisableFeatureFlagCommandHandler;
 use ABTests\Domain\Events\FeatureFlagDisabledEvent;
 use ABTests\Infrastructure\Database\DatabaseFeatureFlagRepository;
 use ABTests\Infrastructure\Database\Models\FeatureFlagStateModel;
+use ABTests\Infrastructure\Events\LaravelDomainEventDispatcher;
 use ABTests\Tests\Integration\DatabaseTestCase;
 use Illuminate\Container\Container;
 use PHPUnit\Framework\Attributes\Test;
@@ -18,7 +19,7 @@ final class DisableFeatureFlagCommandHandlerTest extends DatabaseTestCase
     #[Test]
     public function creates_record_and_disables_when_no_state_exists(): void
     {
-        (new DisableFeatureFlagCommandHandler(new DatabaseFeatureFlagRepository()))->handle(new DisableFeatureFlagCommand(
+        (new DisableFeatureFlagCommandHandler(new DatabaseFeatureFlagRepository(), new LaravelDomainEventDispatcher()))->handle(new DisableFeatureFlagCommand(
             flagKey: 'my-flag',
             actorIdentifier: 'tester',
         ));
@@ -37,7 +38,7 @@ final class DisableFeatureFlagCommandHandlerTest extends DatabaseTestCase
             'is_enabled' => true,
         ]);
 
-        (new DisableFeatureFlagCommandHandler(new DatabaseFeatureFlagRepository()))->handle(new DisableFeatureFlagCommand(
+        (new DisableFeatureFlagCommandHandler(new DatabaseFeatureFlagRepository(), new LaravelDomainEventDispatcher()))->handle(new DisableFeatureFlagCommand(
             flagKey: 'my-flag',
             actorIdentifier: 'tester',
         ));
@@ -55,7 +56,7 @@ final class DisableFeatureFlagCommandHandlerTest extends DatabaseTestCase
             'is_enabled' => false,
         ]);
 
-        (new DisableFeatureFlagCommandHandler(new DatabaseFeatureFlagRepository()))->handle(new DisableFeatureFlagCommand(
+        (new DisableFeatureFlagCommandHandler(new DatabaseFeatureFlagRepository(), new LaravelDomainEventDispatcher()))->handle(new DisableFeatureFlagCommand(
             flagKey: 'my-flag',
             actorIdentifier: 'tester',
         ));
@@ -78,7 +79,7 @@ final class DisableFeatureFlagCommandHandlerTest extends DatabaseTestCase
             },
         );
 
-        (new DisableFeatureFlagCommandHandler(new DatabaseFeatureFlagRepository()))->handle(new DisableFeatureFlagCommand(
+        (new DisableFeatureFlagCommandHandler(new DatabaseFeatureFlagRepository(), new LaravelDomainEventDispatcher()))->handle(new DisableFeatureFlagCommand(
             flagKey: 'my-flag',
             actorIdentifier: 'alice',
         ));

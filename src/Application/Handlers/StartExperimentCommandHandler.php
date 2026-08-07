@@ -7,6 +7,7 @@ namespace ABTests\Application\Handlers;
 use ABTests\Application\Commands\StartExperimentCommand;
 use ABTests\Application\Registry\ExperimentRegistry;
 use ABTests\Contracts\AuditLogRepository;
+use ABTests\Contracts\DomainEventDispatcher;
 use ABTests\Contracts\ExperimentRepository;
 use ABTests\Domain\Events\ExperimentStartedEvent;
 use ABTests\Enums\ApprovalStatus;
@@ -17,7 +18,6 @@ use ABTests\Infrastructure\Database\Models\ExperimentApprovalModel;
 use ABTests\Infrastructure\Database\Models\ExperimentModel;
 use ABTests\Infrastructure\Database\Models\VariantModel;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -27,6 +27,7 @@ final readonly class StartExperimentCommandHandler
         private ExperimentRepository $experimentRepository,
         private AuditLogRepository $auditLogRepository,
         private ExperimentRegistry $registry,
+        private DomainEventDispatcher $eventDispatcher,
     ) {}
 
     public function handle(StartExperimentCommand $command): void
@@ -89,7 +90,7 @@ final readonly class StartExperimentCommandHandler
 
         $this->syncVariantSnapshot($model, $command->experimentKey);
 
-        Event::dispatch(new ExperimentStartedEvent(
+        $this->eventDispatcher->dispatch(new ExperimentStartedEvent(
             experimentKey: $command->experimentKey,
             actorIdentifier: $command->actorIdentifier,
             actorType: $command->actorType,

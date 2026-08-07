@@ -25,7 +25,7 @@ final readonly class SynchronousCommandBus implements CommandBus
     /**
      * @throws BindingResolutionException
      */
-    public function dispatch(object $command): void
+    public function dispatch(object $command): mixed
     {
         // Derive the handler class from the command class:
         //   ABTests\Application\Commands\StartExperimentCommand
@@ -37,6 +37,7 @@ final readonly class SynchronousCommandBus implements CommandBus
         $handlerClass = str_replace('\\Commands\\', '\\Handlers\\', get_class($command)).'Handler';
 
         $handler = $this->container->make($handlerClass);
-        $handler->handle($command);
+
+        return $handler->handle($command);
     }
 }

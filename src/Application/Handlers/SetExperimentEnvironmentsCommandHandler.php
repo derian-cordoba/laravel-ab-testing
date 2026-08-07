@@ -6,15 +6,16 @@ namespace ABTests\Application\Handlers;
 
 use ABTests\Application\Commands\SetExperimentEnvironmentsCommand;
 use ABTests\Contracts\AuditLogRepository;
+use ABTests\Contracts\DomainEventDispatcher;
 use ABTests\Contracts\ExperimentRepository;
 use ABTests\Domain\Events\ExperimentEnvironmentsUpdatedEvent;
-use Illuminate\Support\Facades\Event;
 
 final readonly class SetExperimentEnvironmentsCommandHandler
 {
     public function __construct(
         private ExperimentRepository $experimentRepository,
         private AuditLogRepository $auditLogRepository,
+        private DomainEventDispatcher $eventDispatcher,
     ) {}
 
     public function handle(SetExperimentEnvironmentsCommand $command): void
@@ -34,7 +35,7 @@ final readonly class SetExperimentEnvironmentsCommandHandler
             after: ['allowed_environments' => $command->allowedEnvironments],
         );
 
-        Event::dispatch(new ExperimentEnvironmentsUpdatedEvent(
+        $this->eventDispatcher->dispatch(new ExperimentEnvironmentsUpdatedEvent(
             experimentKey: $command->experimentKey,
             allowedEnvironments: $command->allowedEnvironments,
             actorIdentifier: $command->actorIdentifier,

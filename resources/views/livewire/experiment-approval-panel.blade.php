@@ -1,4 +1,5 @@
 @use(ABTests\Enums\ApprovalStatus)
+@use(ABTests\Presentation\Support\ApprovalStatusPresenter)
 
 {{-- Approval panel — only visible when governance.approval_required is true --}}
 <div>
@@ -8,7 +9,7 @@
         {{-- Accordion header --}}
         <div @click="open = !open"
              role="button" tabindex="0" @keydown.enter="open = !open"
-             class="flex items-center justify-between min-h-[3.5rem] px-6 py-4 cursor-pointer select-none hover:bg-gray-800/40 transition-colors"
+             class="flex items-center justify-between min-h-14 px-6 py-4 cursor-pointer select-none hover:bg-gray-800/40 transition-colors"
              :class="open ? 'border-b border-gray-700/60' : ''">
             <div class="flex items-center gap-3">
                 <h2 class="font-semibold text-gray-100">Approval</h2>
@@ -16,7 +17,7 @@
             </div>
             <div class="flex items-center gap-2">
                 @if($latestApproval)
-                    <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium {{ $latestApproval->status->badgeClass() }}">
+                    <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium {{ ApprovalStatusPresenter::badgeClass($latestApproval->status) }}">
                         {{ $latestApproval->status->label() }}
                     </span>
                 @else
@@ -55,7 +56,7 @@
                         <ul class="space-y-3">
                             @foreach($approvalHistory as $entry)
                                 <li class="flex items-start gap-3 text-sm">
-                                    <span class="mt-0.5 inline-flex shrink-0 items-center rounded px-1.5 py-0.5 text-xs font-medium {{ $entry->status->badgeClass() }}">
+                                    <span class="mt-0.5 inline-flex shrink-0 items-center rounded px-1.5 py-0.5 text-xs font-medium {{ ApprovalStatusPresenter::badgeClass($entry->status) }}">
                                         {{ $entry->status->label() }}
                                     </span>
                                     <div class="min-w-0 flex-1">

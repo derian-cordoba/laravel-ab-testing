@@ -1,5 +1,6 @@
 @use(ABTests\Enums\ExperimentStatus)
 @use(ABTests\Infrastructure\Database\Models\ExperimentModel)
+@use(ABTests\Presentation\Support\ExperimentStatusPresenter)
 
 <div>
     <div class="mb-6 sm:flex sm:items-end sm:justify-between">
@@ -86,7 +87,7 @@
 
                         {{-- Status dot --}}
                         <span class="flex h-5 w-5 shrink-0 items-center justify-center">
-                            <span class="h-2 w-2 rounded-full {{ $statusEnum?->dotClass() ?? 'bg-gray-500' }}"></span>
+                            <span class="h-2 w-2 rounded-full {{ $statusEnum !== null ? ExperimentStatusPresenter::dotClass($statusEnum) : 'bg-gray-500' }}"></span>
                         </span>
 
                         {{-- Name + key --}}

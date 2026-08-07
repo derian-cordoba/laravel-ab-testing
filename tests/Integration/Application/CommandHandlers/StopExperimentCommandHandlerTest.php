@@ -13,6 +13,7 @@ use ABTests\Exceptions\InvalidStateTransition;
 use ABTests\Infrastructure\Database\DatabaseAuditLogRepository;
 use ABTests\Infrastructure\Database\DatabaseExperimentRepository;
 use ABTests\Infrastructure\Database\Models\ExperimentModel;
+use ABTests\Infrastructure\Events\LaravelDomainEventDispatcher;
 use ABTests\Tests\Integration\DatabaseTestCase;
 use Illuminate\Container\Container;
 use PHPUnit\Framework\Attributes\Test;
@@ -29,7 +30,7 @@ final class StopExperimentCommandHandlerTest extends DatabaseTestCase
             'is_killed' => false,
         ]);
 
-        (new StopExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository()))->handle(new StopExperimentCommand(
+        (new StopExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository(), new LaravelDomainEventDispatcher()))->handle(new StopExperimentCommand(
             experimentKey: 'my-exp',
             actorIdentifier: 'tester',
         ));
@@ -50,7 +51,7 @@ final class StopExperimentCommandHandlerTest extends DatabaseTestCase
             'is_killed' => false,
         ]);
 
-        (new StopExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository()))->handle(new StopExperimentCommand(
+        (new StopExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository(), new LaravelDomainEventDispatcher()))->handle(new StopExperimentCommand(
             experimentKey: 'my-exp',
             actorIdentifier: 'tester',
         ));
@@ -65,7 +66,7 @@ final class StopExperimentCommandHandlerTest extends DatabaseTestCase
     {
         $this->expectException(ExperimentNotFound::class);
 
-        (new StopExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository()))->handle(new StopExperimentCommand(
+        (new StopExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository(), new LaravelDomainEventDispatcher()))->handle(new StopExperimentCommand(
             experimentKey: 'nonexistent',
             actorIdentifier: 'tester',
         ));
@@ -83,7 +84,7 @@ final class StopExperimentCommandHandlerTest extends DatabaseTestCase
 
         $this->expectException(InvalidStateTransition::class);
 
-        (new StopExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository()))->handle(new StopExperimentCommand(
+        (new StopExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository(), new LaravelDomainEventDispatcher()))->handle(new StopExperimentCommand(
             experimentKey: 'my-exp',
             actorIdentifier: 'tester',
         ));
@@ -108,7 +109,7 @@ final class StopExperimentCommandHandlerTest extends DatabaseTestCase
             },
         );
 
-        (new StopExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository()))->handle(new StopExperimentCommand(
+        (new StopExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository(), new LaravelDomainEventDispatcher()))->handle(new StopExperimentCommand(
             experimentKey: 'my-exp',
             actorIdentifier: 'alice',
         ));

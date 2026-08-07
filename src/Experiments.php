@@ -6,8 +6,6 @@ namespace ABTests;
 
 use ABTests\Application\Commands\ForgetUnitCommand;
 use ABTests\Application\Commands\RecordCovariateCommand;
-use ABTests\Application\Handlers\ForgetUnitCommandHandler;
-use ABTests\Application\Handlers\RecordCovariateCommandHandler;
 use ABTests\Application\Registry\ExperimentRegistry;
 use ABTests\Application\Registry\FeatureFlagRegistry;
 use ABTests\Attributes\AsFeatureFlag;
@@ -15,6 +13,7 @@ use ABTests\Attributes\AsMetric;
 use ABTests\Contracts\AssignmentRepository;
 use ABTests\Contracts\Bucketable;
 use ABTests\Contracts\BucketingStrategy;
+use ABTests\Contracts\CommandBus;
 use ABTests\Contracts\EventSink;
 use ABTests\Contracts\ExperimentStateRepository;
 use ABTests\Contracts\FeatureFlagRepository;
@@ -60,6 +59,7 @@ final class Experiments
         private readonly BucketingStrategy $bucketingStrategy,
         private readonly FeatureFlagRepository $featureFlagRepository,
         private readonly ExperimentStateRepository $stateRepository,
+        private readonly CommandBus $commandBus,
     ) {
         //
     }
@@ -175,7 +175,7 @@ final class Experiments
             }
         }
 
-        app(RecordCovariateCommandHandler::class)->handle(
+        self::getInstance()->commandBus->dispatch(
             new RecordCovariateCommand(
                 experimentKey: $experimentKey,
                 metricKey: $metricKey,
@@ -198,7 +198,8 @@ final class Experiments
         string $unitKey,
         string $actorIdentifier = 'system',
     ): array {
-        return app(ForgetUnitCommandHandler::class)->handle(
+        /** @var array{deleted_events: int, deleted_assignments: int} */
+        return self::getInstance()->commandBus->dispatch(
             new ForgetUnitCommand(
                 unitType: $unitType,
                 unitKey: $unitKey,

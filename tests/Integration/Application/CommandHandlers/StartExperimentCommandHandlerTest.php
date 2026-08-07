@@ -12,6 +12,7 @@ use ABTests\Enums\ExperimentStatus;
 use ABTests\Infrastructure\Database\DatabaseAuditLogRepository;
 use ABTests\Infrastructure\Database\DatabaseExperimentRepository;
 use ABTests\Infrastructure\Database\Models\ExperimentModel;
+use ABTests\Infrastructure\Events\LaravelDomainEventDispatcher;
 use ABTests\Tests\Integration\DatabaseTestCase;
 use Illuminate\Container\Container;
 use PHPUnit\Framework\Attributes\Test;
@@ -28,7 +29,7 @@ final class StartExperimentCommandHandlerTest extends DatabaseTestCase
             'is_killed' => false,
         ]);
 
-        (new StartExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository(), new ExperimentRegistry()))->handle(new StartExperimentCommand(
+        (new StartExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository(), new ExperimentRegistry(), new LaravelDomainEventDispatcher()))->handle(new StartExperimentCommand(
             experimentKey: 'checkout-button-color',
             actorIdentifier: 'tester',
         ));
@@ -51,7 +52,7 @@ final class StartExperimentCommandHandlerTest extends DatabaseTestCase
             'is_killed' => false,
         ]);
 
-        (new StartExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository(), new ExperimentRegistry()))->handle(new StartExperimentCommand(
+        (new StartExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository(), new ExperimentRegistry(), new LaravelDomainEventDispatcher()))->handle(new StartExperimentCommand(
             experimentKey: 'checkout-button-color',
             actorIdentifier: 'tester',
         ));
@@ -82,7 +83,7 @@ final class StartExperimentCommandHandlerTest extends DatabaseTestCase
             },
         );
 
-        (new StartExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository(), new ExperimentRegistry()))->handle(new StartExperimentCommand(
+        (new StartExperimentCommandHandler(new DatabaseExperimentRepository(), new DatabaseAuditLogRepository(), new ExperimentRegistry(), new LaravelDomainEventDispatcher()))->handle(new StartExperimentCommand(
             experimentKey: 'checkout-button-color',
             actorIdentifier: 'alice',
         ));

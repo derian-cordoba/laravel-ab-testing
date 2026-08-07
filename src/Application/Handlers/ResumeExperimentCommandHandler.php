@@ -6,17 +6,18 @@ namespace ABTests\Application\Handlers;
 
 use ABTests\Application\Commands\ResumeExperimentCommand;
 use ABTests\Contracts\AuditLogRepository;
+use ABTests\Contracts\DomainEventDispatcher;
 use ABTests\Contracts\ExperimentRepository;
 use ABTests\Domain\Events\ExperimentResumedEvent;
 use ABTests\Enums\ExperimentStatus;
 use ABTests\Exceptions\InvalidStateTransition;
-use Illuminate\Support\Facades\Event;
 
 final readonly class ResumeExperimentCommandHandler
 {
     public function __construct(
         private ExperimentRepository $experimentRepository,
         private AuditLogRepository $auditLogRepository,
+        private DomainEventDispatcher $eventDispatcher,
     ) {}
 
     public function handle(ResumeExperimentCommand $command): void
@@ -42,7 +43,7 @@ final readonly class ResumeExperimentCommandHandler
             after: ['status' => ExperimentStatus::running->value],
         );
 
-        Event::dispatch(new ExperimentResumedEvent(
+        $this->eventDispatcher->dispatch(new ExperimentResumedEvent(
             experimentKey: $command->experimentKey,
             actorIdentifier: $command->actorIdentifier,
             actorType: $command->actorType,

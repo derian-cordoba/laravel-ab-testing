@@ -6,9 +6,9 @@ namespace ABTests\Application\Listeners;
 
 use ABTests\Application\Commands\PauseExperimentCommand;
 use ABTests\Contracts\CommandBus;
+use ABTests\Contracts\ExperimentRepository;
 use ABTests\Domain\Events\GuardrailBreachedEvent;
 use ABTests\Enums\ExperimentStatus;
-use ABTests\Infrastructure\Database\Models\ExperimentModel;
 
 /**
  * Automatically pauses an experiment when a guardrail metric breaches its
@@ -17,14 +17,16 @@ use ABTests\Infrastructure\Database\Models\ExperimentModel;
  */
 final readonly class AutoPauseOnGuardrailBreachListener
 {
-    public function __construct(private CommandBus $commandBus)
-    {
+    public function __construct(
+        private CommandBus $commandBus,
+        private ExperimentRepository $experimentRepository,
+    ) {
         //
     }
 
     public function handle(GuardrailBreachedEvent $event): void
     {
-        $model = ExperimentModel::query()->firstWhere('key', $event->experimentKey);
+        $model = $this->experimentRepository->findByKey($event->experimentKey);
 
         if ($model === null || $model->status !== ExperimentStatus::running->value) {
             return;

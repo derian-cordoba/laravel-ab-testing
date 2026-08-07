@@ -6,16 +6,17 @@ namespace ABTests\Application\Handlers;
 
 use ABTests\Application\Commands\ToggleKillSwitchCommand;
 use ABTests\Contracts\AuditLogRepository;
+use ABTests\Contracts\DomainEventDispatcher;
 use ABTests\Contracts\ExperimentRepository;
 use ABTests\Domain\Events\KillSwitchActivatedEvent;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Event;
 
 final readonly class ToggleKillSwitchCommandHandler
 {
     public function __construct(
         private ExperimentRepository $experimentRepository,
         private AuditLogRepository $auditLogRepository,
+        private DomainEventDispatcher $eventDispatcher,
     ) {}
 
     public function handle(ToggleKillSwitchCommand $command): void
@@ -38,7 +39,7 @@ final readonly class ToggleKillSwitchCommandHandler
             after: ['is_killed' => $command->isKilled],
         );
 
-        Event::dispatch(new KillSwitchActivatedEvent(
+        $this->eventDispatcher->dispatch(new KillSwitchActivatedEvent(
             experimentKey: $command->experimentKey,
             flagKey: null,
             activated: $command->isKilled,

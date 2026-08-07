@@ -5,15 +5,18 @@ declare(strict_types=1);
 namespace ABTests\Application\Handlers;
 
 use ABTests\Application\Commands\EnableFeatureFlagCommand;
+use ABTests\Contracts\DomainEventDispatcher;
 use ABTests\Contracts\FeatureFlagRepository;
 use ABTests\Domain\Events\FeatureFlagEnabledEvent;
-use Illuminate\Support\Facades\Event;
 
 final readonly class EnableFeatureFlagCommandHandler
 {
     public function __construct(
         private FeatureFlagRepository $featureFlagRepository,
-    ) {}
+        private DomainEventDispatcher $eventDispatcher,
+    ) {
+        //
+    }
 
     public function handle(EnableFeatureFlagCommand $command): void
     {
@@ -25,7 +28,7 @@ final readonly class EnableFeatureFlagCommandHandler
             $this->featureFlagRepository->create(['key' => $command->flagKey, 'is_enabled' => true]);
         }
 
-        Event::dispatch(new FeatureFlagEnabledEvent(
+        $this->eventDispatcher->dispatch(new FeatureFlagEnabledEvent(
             flagKey: $command->flagKey,
             actorIdentifier: $command->actorIdentifier,
             actorType: $command->actorType,

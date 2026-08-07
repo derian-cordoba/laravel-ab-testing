@@ -6,17 +6,18 @@ namespace ABTests\Application\Handlers;
 
 use ABTests\Application\Commands\PauseExperimentCommand;
 use ABTests\Contracts\AuditLogRepository;
+use ABTests\Contracts\DomainEventDispatcher;
 use ABTests\Contracts\ExperimentRepository;
 use ABTests\Domain\Events\ExperimentPausedEvent;
 use ABTests\Enums\ExperimentStatus;
 use ABTests\Exceptions\InvalidStateTransition;
-use Illuminate\Support\Facades\Event;
 
 final readonly class PauseExperimentCommandHandler
 {
     public function __construct(
         private ExperimentRepository $experimentRepository,
         private AuditLogRepository $auditLogRepository,
+        private DomainEventDispatcher $eventDispatcher,
     ) {}
 
     public function handle(PauseExperimentCommand $command): void
@@ -42,7 +43,7 @@ final readonly class PauseExperimentCommandHandler
             after: ['status' => ExperimentStatus::paused->value],
         );
 
-        Event::dispatch(new ExperimentPausedEvent(
+        $this->eventDispatcher->dispatch(new ExperimentPausedEvent(
             experimentKey: $command->experimentKey,
             actorIdentifier: $command->actorIdentifier,
             actorType: $command->actorType,

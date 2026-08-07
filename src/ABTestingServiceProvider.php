@@ -218,6 +218,11 @@ final class ABTestingServiceProvider extends ServiceProvider
         );
 
         $this->app->singleton(
+            \ABTests\Contracts\DomainEventDispatcher::class,
+            \ABTests\Infrastructure\Events\LaravelDomainEventDispatcher::class,
+        );
+
+        $this->app->singleton(
             Experiments::class,
             fn (): Experiments => new Experiments(
                 registry: $this->app->make(ExperimentRegistry::class),
@@ -228,6 +233,7 @@ final class ABTestingServiceProvider extends ServiceProvider
                 bucketingStrategy: $this->app->make(BucketingStrategy::class),
                 featureFlagRepository: $this->app->make(FeatureFlagRepository::class),
                 stateRepository: $this->app->make(ExperimentStateRepository::class),
+                commandBus: $this->app->make(CommandBus::class),
             ),
         );
     }

@@ -16,6 +16,7 @@ use ABTests\Infrastructure\Database\DatabaseFeatureFlagRepository;
 use ABTests\Infrastructure\Database\Models\FeatureFlagStateModel;
 use ABTests\Infrastructure\InMemoryAssignmentRepository;
 use ABTests\Infrastructure\NullEventSink;
+use ABTests\Testing\NullCommandBus;
 use ABTests\Tests\Fixtures\TestFeatureFlag;
 use ABTests\Tests\Fixtures\TestUnit;
 use ABTests\Tests\Integration\DatabaseTestCase;
@@ -384,6 +385,7 @@ final class FlagResolutionTest extends DatabaseTestCase
             bucketingStrategy: $this->fixedPosition(0.0),
             featureFlagRepository: new DatabaseFeatureFlagRepository(),
             stateRepository: new AlwaysRunningExperimentStateRepository(),
+            commandBus: new NullCommandBus(),
         ));
 
         $result = Experiments::flag(TestFeatureFlag::class, new TestUnit('user-1'));
@@ -410,6 +412,7 @@ final class FlagResolutionTest extends DatabaseTestCase
             bucketingStrategy: $this->fixedPosition($position),
             featureFlagRepository: new DatabaseFeatureFlagRepository(),
             stateRepository: new AlwaysRunningExperimentStateRepository(),
+            commandBus: new NullCommandBus(),
         ));
 
         return Experiments::flag(TestFeatureFlag::class, new TestUnit('user-1'));
@@ -426,6 +429,7 @@ final class FlagResolutionTest extends DatabaseTestCase
             bucketingStrategy: $this->fixedPosition(0.0),
             featureFlagRepository: new DatabaseFeatureFlagRepository(),
             stateRepository: new AlwaysRunningExperimentStateRepository(),
+            commandBus: new NullCommandBus(),
         );
     }
 

@@ -9,6 +9,7 @@ use ABTests\Application\Registry\FeatureFlagRegistry;
 use ABTests\Attributes\AsMetric;
 use ABTests\Contracts\Bucketable;
 use ABTests\Contracts\BucketingStrategy;
+use ABTests\Contracts\CommandBus;
 use ABTests\Contracts\Variant;
 use ABTests\Experiment;
 use ABTests\Experiments;
@@ -59,6 +60,7 @@ final readonly class FakeExperiments
         ExperimentRegistry $registry,
         FeatureFlagRegistry $flagRegistry,
         BucketingStrategy $bucketingStrategy,
+        CommandBus $commandBus,
     ) {
         $this->registry = $registry;
         $this->eventSink = new RecordingEventSink();
@@ -78,6 +80,7 @@ final readonly class FakeExperiments
             bucketingStrategy: $bucketingStrategy,
             featureFlagRepository: new NullFeatureFlagRepository(),
             stateRepository: new AlwaysRunningExperimentStateRepository(),
+            commandBus: $commandBus,
         ));
     }
 
@@ -102,7 +105,13 @@ final readonly class FakeExperiments
             $strategy = new Sha256BucketingStrategy();
         }
 
-        return new self($registry, $flagRegistry, $strategy);
+        try {
+            $commandBus = app(CommandBus::class);
+        } catch (Throwable) {
+            $commandBus = new NullCommandBus();
+        }
+
+        return new self($registry, $flagRegistry, $strategy, $commandBus);
     }
 
     /**
@@ -114,7 +123,7 @@ final readonly class FakeExperiments
         FeatureFlagRegistry $flagRegistry,
         ?BucketingStrategy $bucketingStrategy = null,
     ): self {
-        return new self($registry, $flagRegistry, $bucketingStrategy ?? new Sha256BucketingStrategy());
+        return new self($registry, $flagRegistry, $bucketingStrategy ?? new Sha256BucketingStrategy(), new NullCommandBus());
     }
 
     // -------------------------------------------------------------------------

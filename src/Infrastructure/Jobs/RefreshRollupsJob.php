@@ -6,6 +6,7 @@ namespace ABTests\Infrastructure\Jobs;
 
 use ABTests\Application\Registry\AttributeReader;
 use ABTests\Application\Registry\ExperimentRegistry;
+use ABTests\Contracts\DomainEventDispatcher;
 use ABTests\Definitions\MetricBinding;
 use ABTests\Domain\Events\GuardrailBreachedEvent;
 use ABTests\Enums\EventType;
@@ -18,7 +19,6 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Event;
 use Throwable;
 
 /**
@@ -33,14 +33,14 @@ final class RefreshRollupsJob implements ShouldQueue
 {
     use Queueable;
 
-    public function handle(ExperimentRegistry $registry): void
+    public function handle(ExperimentRegistry $registry, DomainEventDispatcher $eventDispatcher): void
     {
         $activeStatuses = [ExperimentStatus::running->value, ExperimentStatus::paused->value];
 
         ExperimentModel::query()
             ->whereIn('status', $activeStatuses)
-            ->each(function (ExperimentModel $experiment) use ($registry): void {
-                $this->refreshExperiment($experiment, $registry);
+            ->each(function (ExperimentModel $experiment) use ($registry, $eventDispatcher): void {
+                $this->refreshExperiment($experiment, $registry, $eventDispatcher);
             });
     }
 
@@ -49,7 +49,7 @@ final class RefreshRollupsJob implements ShouldQueue
      * status. This is used by the dashboard's manual "Refresh Data" control,
      * which should work for completed experiments too.
      */
-    public function refreshExperimentByKey(string $experimentKey, ExperimentRegistry $registry): bool
+    public function refreshExperimentByKey(string $experimentKey, ExperimentRegistry $registry, DomainEventDispatcher $eventDispatcher): bool
     {
         $experiment = ExperimentModel::query()->firstWhere('key', $experimentKey);
 
@@ -57,12 +57,12 @@ final class RefreshRollupsJob implements ShouldQueue
             return false;
         }
 
-        $this->refreshExperiment($experiment, $registry);
+        $this->refreshExperiment($experiment, $registry, $eventDispatcher);
 
         return true;
     }
 
-    private function refreshExperiment(ExperimentModel $experiment, ExperimentRegistry $registry): void
+    private function refreshExperiment(ExperimentModel $experiment, ExperimentRegistry $registry, DomainEventDispatcher $eventDispatcher): void
     {
         // Resolve the code-defined experiment definition to get metric keys.
         try {
@@ -110,6 +110,7 @@ final class RefreshRollupsJob implements ShouldQueue
                 experimentKey: $experiment->key,
                 guardrails: $definition->guardrails(),
                 controlVariantKey: $definition->allocation->control()->key(),
+                eventDispatcher: $eventDispatcher,
             );
         }
     }
@@ -304,7 +305,7 @@ final class RefreshRollupsJob implements ShouldQueue
     /**
      * @param  list<MetricBinding>  $guardrails
      */
-    private function checkGuardrails(string $experimentKey, array $guardrails, string $controlVariantKey): void
+    private function checkGuardrails(string $experimentKey, array $guardrails, string $controlVariantKey, DomainEventDispatcher $eventDispatcher): void
     {
         foreach ($guardrails as $guardrail) {
             $rollups = RollupModel::query()
@@ -358,7 +359,7 @@ final class RefreshRollupsJob implements ShouldQueue
                             'breached_at' => Carbon::now(),
                         ]);
 
-                        Event::dispatch(new GuardrailBreachedEvent(
+                        $eventDispatcher->dispatch(new GuardrailBreachedEvent(
                             experimentKey: $experimentKey,
                             metricKey: $guardrail->metric,
                             variantKey: $rollup->variant_key,

@@ -6,15 +6,16 @@ namespace ABTests\Application\Handlers;
 
 use ABTests\Application\Commands\SetFlagEnvironmentsCommand;
 use ABTests\Contracts\AuditLogRepository;
+use ABTests\Contracts\DomainEventDispatcher;
 use ABTests\Contracts\FeatureFlagRepository;
 use ABTests\Domain\Events\FeatureFlagEnvironmentsUpdatedEvent;
-use Illuminate\Support\Facades\Event;
 
 final readonly class SetFlagEnvironmentsCommandHandler
 {
     public function __construct(
         private FeatureFlagRepository $featureFlagRepository,
         private AuditLogRepository $auditLogRepository,
+        private DomainEventDispatcher $eventDispatcher,
     ) {}
 
     public function handle(SetFlagEnvironmentsCommand $command): void
@@ -34,7 +35,7 @@ final readonly class SetFlagEnvironmentsCommandHandler
             after: ['allowed_environments' => $command->allowedEnvironments],
         );
 
-        Event::dispatch(new FeatureFlagEnvironmentsUpdatedEvent(
+        $this->eventDispatcher->dispatch(new FeatureFlagEnvironmentsUpdatedEvent(
             flagKey: $command->flagKey,
             allowedEnvironments: $command->allowedEnvironments,
             actorIdentifier: $command->actorIdentifier,
