@@ -17,12 +17,12 @@ final readonly class RampTrafficCommandHandler
 
     public function handle(RampTrafficCommand $command): void
     {
-        $model = $this->experimentRepository->getByKey($command->experimentKey);
+        $record = $this->experimentRepository->getByKey($command->experimentKey);
 
         $percentage = max(0, min(100, $command->trafficPercentage));
-        $beforeState = ['traffic_percentage' => $model->traffic_percentage];
+        $beforeState = ['traffic_percentage' => $record->trafficPercentage];
 
-        $model->update(['traffic_percentage' => $percentage]);
+        $this->experimentRepository->update($command->experimentKey, ['traffic_percentage' => $percentage]);
 
         $this->auditLogRepository->append(
             experimentKey: $command->experimentKey,

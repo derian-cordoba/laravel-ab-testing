@@ -20,9 +20,9 @@ final readonly class UpdateVariantCommandHandler
 
     public function handle(UpdateVariantCommand $command): void
     {
-        $model = $this->experimentRepository->getByKey($command->experimentKey);
+        $record = $this->experimentRepository->getByKey($command->experimentKey);
 
-        $status = ExperimentStatus::from($model->status);
+        $status = ExperimentStatus::from($record->status);
 
         if (in_array($status, [ExperimentStatus::completed, ExperimentStatus::archived], true)) {
             throw new InvalidVariantOperation(
@@ -32,7 +32,7 @@ final readonly class UpdateVariantCommandHandler
 
         /** @var VariantModel|null $variant */
         $variant = VariantModel::query()
-            ->where('experiment_id', $model->id)
+            ->where('experiment_id', $record->id)
             ->where('id', $command->variantId)
             ->first();
 
@@ -45,7 +45,7 @@ final readonly class UpdateVariantCommandHandler
         }
 
         $keyConflict = VariantModel::query()
-            ->where('experiment_id', $model->id)
+            ->where('experiment_id', $record->id)
             ->where('key', $command->variantKey)
             ->where('id', '!=', $command->variantId)
             ->exists();
@@ -66,7 +66,7 @@ final readonly class UpdateVariantCommandHandler
 
         if ($command->isControl && ! $variant->is_control) {
             VariantModel::query()
-                ->where('experiment_id', $model->id)
+                ->where('experiment_id', $record->id)
                 ->where('is_control', true)
                 ->update(['is_control' => false]);
         }

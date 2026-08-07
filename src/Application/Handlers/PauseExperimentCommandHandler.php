@@ -22,17 +22,17 @@ final readonly class PauseExperimentCommandHandler
 
     public function handle(PauseExperimentCommand $command): void
     {
-        $model = $this->experimentRepository->getByKey($command->experimentKey);
+        $record = $this->experimentRepository->getByKey($command->experimentKey);
 
-        $currentStatus = ExperimentStatus::from($model->status);
+        $currentStatus = ExperimentStatus::from($record->status);
 
         if (! $currentStatus->canTransitionTo(ExperimentStatus::paused)) {
             throw new InvalidStateTransition($currentStatus, ExperimentStatus::paused);
         }
 
-        $beforeState = ['status' => $model->status];
+        $beforeState = ['status' => $record->status];
 
-        $model->update(['status' => ExperimentStatus::paused->value]);
+        $this->experimentRepository->update($command->experimentKey, ['status' => ExperimentStatus::paused->value]);
 
         $this->auditLogRepository->append(
             experimentKey: $command->experimentKey,

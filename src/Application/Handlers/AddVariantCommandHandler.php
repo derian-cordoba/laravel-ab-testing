@@ -20,9 +20,9 @@ final readonly class AddVariantCommandHandler
 
     public function handle(AddVariantCommand $command): void
     {
-        $model = $this->experimentRepository->getByKey($command->experimentKey);
+        $record = $this->experimentRepository->getByKey($command->experimentKey);
 
-        $status = ExperimentStatus::from($model->status);
+        $status = ExperimentStatus::from($record->status);
 
         if (in_array($status, [ExperimentStatus::completed, ExperimentStatus::archived], true)) {
             throw new InvalidVariantOperation(
@@ -35,7 +35,7 @@ final readonly class AddVariantCommandHandler
         }
 
         $existing = VariantModel::query()
-            ->where('experiment_id', $model->id)
+            ->where('experiment_id', $record->id)
             ->get();
 
         $keyExists = $existing->contains('key', $command->variantKey);
@@ -61,7 +61,7 @@ final readonly class AddVariantCommandHandler
         }
 
         VariantModel::query()->create([
-            'experiment_id' => $model->id,
+            'experiment_id' => $record->id,
             'key' => $command->variantKey,
             'weight' => $command->weight,
             'is_control' => $command->isControl,

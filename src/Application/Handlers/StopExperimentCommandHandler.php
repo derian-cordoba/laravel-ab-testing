@@ -23,17 +23,17 @@ final readonly class StopExperimentCommandHandler
 
     public function handle(StopExperimentCommand $command): void
     {
-        $model = $this->experimentRepository->getByKey($command->experimentKey);
+        $record = $this->experimentRepository->getByKey($command->experimentKey);
 
-        $currentStatus = ExperimentStatus::from($model->status);
+        $currentStatus = ExperimentStatus::from($record->status);
 
         if (! $currentStatus->canTransitionTo(ExperimentStatus::completed)) {
             throw new InvalidStateTransition($currentStatus, ExperimentStatus::completed);
         }
 
-        $beforeState = ['status' => $model->status];
+        $beforeState = ['status' => $record->status];
 
-        $model->update([
+        $this->experimentRepository->update($command->experimentKey, [
             'status' => ExperimentStatus::completed->value,
             'stopped_at' => Carbon::now(),
         ]);

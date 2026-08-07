@@ -22,17 +22,17 @@ final readonly class ResumeExperimentCommandHandler
 
     public function handle(ResumeExperimentCommand $command): void
     {
-        $model = $this->experimentRepository->getByKey($command->experimentKey);
+        $record = $this->experimentRepository->getByKey($command->experimentKey);
 
-        $currentStatus = ExperimentStatus::from($model->status);
+        $currentStatus = ExperimentStatus::from($record->status);
 
         if (! $currentStatus->canTransitionTo(ExperimentStatus::running)) {
             throw new InvalidStateTransition($currentStatus, ExperimentStatus::running);
         }
 
-        $beforeState = ['status' => $model->status];
+        $beforeState = ['status' => $record->status];
 
-        $model->update(['status' => ExperimentStatus::running->value]);
+        $this->experimentRepository->update($command->experimentKey, ['status' => ExperimentStatus::running->value]);
 
         $this->auditLogRepository->append(
             experimentKey: $command->experimentKey,

@@ -20,11 +20,11 @@ final readonly class SetExperimentEnvironmentsCommandHandler
 
     public function handle(SetExperimentEnvironmentsCommand $command): void
     {
-        $model = $this->experimentRepository->getByKey($command->experimentKey);
+        $record = $this->experimentRepository->getByKey($command->experimentKey);
 
-        $before = $model->allowed_environments;
+        $before = $record->allowedEnvironments;
 
-        $model->update(['allowed_environments' => $command->allowedEnvironments]);
+        $this->experimentRepository->update($command->experimentKey, ['allowed_environments' => $command->allowedEnvironments]);
 
         $this->auditLogRepository->append(
             experimentKey: $command->experimentKey,

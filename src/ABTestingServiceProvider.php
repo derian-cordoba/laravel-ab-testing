@@ -25,6 +25,7 @@ use ABTests\Contracts\AssignmentRepository;
 use ABTests\Contracts\AuditLogRepository;
 use ABTests\Contracts\BucketingStrategy;
 use ABTests\Contracts\CommandBus;
+use ABTests\Contracts\CovariateRepository;
 use ABTests\Contracts\EventSink;
 use ABTests\Contracts\ExperimentRepository;
 use ABTests\Contracts\ExperimentStateRepository;
@@ -51,6 +52,7 @@ use ABTests\Infrastructure\AlwaysRunningExperimentStateRepository;
 use ABTests\Infrastructure\Bucketing\Sha256BucketingStrategy;
 use ABTests\Infrastructure\Database\DatabaseAssignmentRepository;
 use ABTests\Infrastructure\Database\DatabaseAuditLogRepository;
+use ABTests\Infrastructure\Database\DatabaseCovariateRepository;
 use ABTests\Infrastructure\Database\DatabaseEventSink;
 use ABTests\Infrastructure\Database\DatabaseExperimentRepository;
 use ABTests\Infrastructure\Database\DatabaseExperimentStateRepository;
@@ -121,6 +123,8 @@ final class ABTestingServiceProvider extends ServiceProvider
         );
 
         $this->app->singleton(BucketingStrategy::class, Sha256BucketingStrategy::class);
+
+        $this->app->singleton(CovariateRepository::class, DatabaseCovariateRepository::class);
 
         $this->bindStorageDriver();
 
@@ -202,6 +206,7 @@ final class ABTestingServiceProvider extends ServiceProvider
                 bayesianEngine: $this->app->make(BayesianAnalysisEngine::class),
                 srmDetector: $this->app->make(SampleRatioMismatchDetector::class),
                 verdictResolver: $this->app->make(VerdictResolver::class),
+                covariateRepository: $this->app->make(CovariateRepository::class),
             );
         });
 

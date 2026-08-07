@@ -21,11 +21,11 @@ final readonly class ToggleKillSwitchCommandHandler
 
     public function handle(ToggleKillSwitchCommand $command): void
     {
-        $model = $this->experimentRepository->getByKey($command->experimentKey);
+        $record = $this->experimentRepository->getByKey($command->experimentKey);
 
-        $beforeState = ['is_killed' => $model->is_killed];
+        $beforeState = ['is_killed' => $record->isKilled];
 
-        $model->update([
+        $this->experimentRepository->update($command->experimentKey, [
             'is_killed' => $command->isKilled,
             'killed_at' => $command->isKilled ? Carbon::now() : null,
         ]);

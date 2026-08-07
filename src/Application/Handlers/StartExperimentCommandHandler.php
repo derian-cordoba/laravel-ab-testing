@@ -15,8 +15,8 @@ use ABTests\Enums\ExperimentStatus;
 use ABTests\Exceptions\ApprovalRequired;
 use ABTests\Exceptions\InvalidStateTransition;
 use ABTests\Infrastructure\Database\Models\ExperimentApprovalModel;
-use ABTests\Infrastructure\Database\Models\ExperimentModel;
 use ABTests\Infrastructure\Database\Models\VariantModel;
+use ABTests\Values\ExperimentRecord;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -32,9 +32,9 @@ final readonly class StartExperimentCommandHandler
 
     public function handle(StartExperimentCommand $command): void
     {
-        $model = $this->experimentRepository->getByKey($command->experimentKey);
+        $record = $this->experimentRepository->getByKey($command->experimentKey);
 
-        $currentStatus = ExperimentStatus::from($model->status);
+        $currentStatus = ExperimentStatus::from($record->status);
 
         if (! $currentStatus->canTransitionTo(ExperimentStatus::running)) {
             throw new InvalidStateTransition($currentStatus, ExperimentStatus::running);
@@ -56,7 +56,7 @@ final readonly class StartExperimentCommandHandler
         // Power-analysis gate: warn or block depending on configuration.
         $powerAnalysisMode = config('ab-testing.governance.require_power_analysis', 'warn');
 
-        if ($powerAnalysisMode !== 'off' && empty($model->target_sample_size)) {
+        if ($powerAnalysisMode !== 'off' && empty($record->targetSampleSize)) {
             $message = "Experiment [{$command->experimentKey}] has no target_sample_size set. ".
                 'Run a power analysis (ab:power-analysis or the dashboard) before starting.';
 
@@ -67,13 +67,13 @@ final readonly class StartExperimentCommandHandler
             Log::warning("[ABTesting] {$message}");
         }
 
-        $beforeState = ['status' => $model->status, 'started_at' => $model->started_at];
-        $trafficPercentage = $model->traffic_percentage > 0 ? $model->traffic_percentage : 100;
+        $beforeState = ['status' => $record->status, 'started_at' => $record->startedAt];
+        $trafficPercentage = $record->trafficPercentage > 0 ? $record->trafficPercentage : 100;
 
-        $model->update([
+        $this->experimentRepository->update($command->experimentKey, [
             'status' => ExperimentStatus::running->value,
             'traffic_percentage' => $trafficPercentage,
-            'started_at' => $model->started_at ?? Carbon::now(),
+            'started_at' => $record->startedAt ?? Carbon::now(),
         ]);
 
         $this->auditLogRepository->append(
@@ -88,7 +88,7 @@ final readonly class StartExperimentCommandHandler
             ],
         );
 
-        $this->syncVariantSnapshot($model, $command->experimentKey);
+        $this->syncVariantSnapshot($record, $command->experimentKey);
 
         $this->eventDispatcher->dispatch(new ExperimentStartedEvent(
             experimentKey: $command->experimentKey,
@@ -107,7 +107,7 @@ final readonly class StartExperimentCommandHandler
      * idempotent — the first write creates the row, subsequent writes update
      * only the weight and is_control flag.
      */
-    private function syncVariantSnapshot(ExperimentModel $model, string $experimentKey): void
+    private function syncVariantSnapshot(ExperimentRecord $record, string $experimentKey): void
     {
         try {
             $definition = $this->registry->findByKey($experimentKey);
@@ -118,7 +118,7 @@ final readonly class StartExperimentCommandHandler
 
         foreach ($definition->allocation->variants as $variant) {
             VariantModel::query()->updateOrCreate(
-                ['experiment_id' => $model->id, 'key' => $variant->key()],
+                ['experiment_id' => $record->id, 'key' => $variant->key()],
                 ['weight' => $variant->weight(), 'is_control' => $variant->isControl()],
             );
         }

@@ -26,9 +26,9 @@ final readonly class AutoPauseOnGuardrailBreachListener
 
     public function handle(GuardrailBreachedEvent $event): void
     {
-        $model = $this->experimentRepository->findByKey($event->experimentKey);
+        $record = $this->experimentRepository->findByKey($event->experimentKey);
 
-        if ($model === null || $model->status !== ExperimentStatus::running->value) {
+        if ($record === null || $record->status !== ExperimentStatus::running->value) {
             return;
         }
 

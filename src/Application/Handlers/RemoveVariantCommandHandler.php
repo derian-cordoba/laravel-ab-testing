@@ -11,6 +11,8 @@ use ABTests\Enums\ExperimentStatus;
 use ABTests\Exceptions\InvalidVariantOperation;
 use ABTests\Infrastructure\Database\Models\VariantModel;
 
+use function in_array;
+
 final readonly class RemoveVariantCommandHandler
 {
     public function __construct(
@@ -20,9 +22,9 @@ final readonly class RemoveVariantCommandHandler
 
     public function handle(RemoveVariantCommand $command): void
     {
-        $model = $this->experimentRepository->getByKey($command->experimentKey);
+        $record = $this->experimentRepository->getByKey($command->experimentKey);
 
-        $status = ExperimentStatus::from($model->status);
+        $status = ExperimentStatus::from($record->status);
 
         if (in_array($status, [ExperimentStatus::completed, ExperimentStatus::archived], true)) {
             throw new InvalidVariantOperation(
@@ -32,7 +34,7 @@ final readonly class RemoveVariantCommandHandler
 
         /** @var VariantModel|null $variant */
         $variant = VariantModel::query()
-            ->where('experiment_id', $model->id)
+            ->where('experiment_id', $record->id)
             ->where('id', $command->variantId)
             ->first();
 
@@ -48,7 +50,7 @@ final readonly class RemoveVariantCommandHandler
 
         if (in_array($status, [ExperimentStatus::running, ExperimentStatus::paused], true)) {
             $totalVariants = VariantModel::query()
-                ->where('experiment_id', $model->id)
+                ->where('experiment_id', $record->id)
                 ->count();
 
             if ($totalVariants < 3) {

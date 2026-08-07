@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace ABTests\Domain\Analysis;
 
 use ABTests\Contracts\AnalysisEngine;
+use ABTests\Contracts\CovariateRepository;
 use ABTests\Definitions\ExperimentDefinition;
 use ABTests\Enums\StatisticalEngine;
 use ABTests\Values\MetricSummary;
 use ABTests\Values\VerdictResult;
-use Illuminate\Support\Facades\DB;
 
 /**
  * Orchestrates a full analysis run for one (control, treatment) pair.
@@ -32,6 +32,7 @@ final readonly class AnalysisService
         private AnalysisEngine $bayesianEngine,
         private SampleRatioMismatchDetector $srmDetector,
         private VerdictResolver $verdictResolver,
+        private CovariateRepository $covariateRepository,
     ) {
         //
     }
@@ -106,17 +107,15 @@ final readonly class AnalysisService
         array $allSummaries,
     ): array {
         // Check cheaply whether any covariate rows exist before instantiating CUPED.
-        $hasCovariates = DB::table('ab_testing_covariates')
-            ->where('experiment_key', $experimentKey)
-            ->where('metric_key', $metricKey)
-            ->exists();
-
-        if (! $hasCovariates) {
+        if (! $this->covariateRepository->hasAny($experimentKey, $metricKey)) {
             return [$control, $treatment, $allSummaries];
         }
 
+        $covStats = $this->covariateRepository->loadStatsPerVariant($experimentKey, $metricKey);
+        $globalMean = $this->covariateRepository->globalMean($experimentKey, $metricKey);
+
         $cuped = new CupedVarianceReduction();
-        $adjustedSummaries = $cuped->adjust($allSummaries, $experimentKey, $metricKey);
+        $adjustedSummaries = $cuped->adjust($allSummaries, $covStats, $globalMean);
 
         // Re-locate control and treatment in the adjusted array (same order, same variant).
         $controlKey = $control->variant->key();
