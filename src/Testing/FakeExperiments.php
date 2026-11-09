@@ -11,13 +11,13 @@ use ABTests\Contracts\Bucketable;
 use ABTests\Contracts\BucketingStrategy;
 use ABTests\Contracts\CommandBus;
 use ABTests\Contracts\Variant;
-use ABTests\Experiment;
+use ABTests\Domain\Experiment\Experiment;
 use ABTests\Experiments;
 use ABTests\Infrastructure\AlwaysRunningExperimentStateRepository;
 use ABTests\Infrastructure\Bucketing\Sha256BucketingStrategy;
 use ABTests\Infrastructure\InMemoryAssignmentRepository;
 use ABTests\Infrastructure\NullFeatureFlagRepository;
-use ABTests\Metric;
+use ABTests\Domain\Analysis\Metric;
 use ABTests\Values\RecordedEvent;
 use PHPUnit\Framework\Assert;
 use ReflectionClass;
@@ -75,6 +75,7 @@ final readonly class FakeExperiments
             registry: $registry,
             flagRegistry: $flagRegistry,
             resolver: $this->variantResolver,
+            exposureRecorder: new \ABTests\Application\Resolution\ExposureRecorder($this->eventSink),
             eventSink: $this->eventSink,
             assignmentRepository: $assignmentRepository,
             bucketingStrategy: $bucketingStrategy,

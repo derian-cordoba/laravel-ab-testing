@@ -43,14 +43,17 @@
         "format": "pint",
         "lint:dirty": "pint --test --dirty",
         "format:dirty": "pint --dirty",
+        "deptrac": "vendor/bin/deptrac analyse --config-file=deptrac.yaml",
         "check": [
             "@lint",
             "@analyse",
+            "@deptrac",
             "@test"
         ]
     },
     "require-dev": {
         "illuminate/config": "^12.0 || ^13.0",
+        "deptrac/deptrac": "^2.0",
         "illuminate/database": "^12.0 || ^13.0",
         "larastan/larastan": "^3.10",
         "laravel/framework": "^12.0 || ^13.0",

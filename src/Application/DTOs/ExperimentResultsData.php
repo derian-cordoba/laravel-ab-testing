@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace ABTests\Application\DTOs;
 
 use ABTests\Definitions\ExperimentDefinition;
-use ABTests\Infrastructure\Database\Models\ExperimentModel;
 use ABTests\Infrastructure\Database\Models\GuardrailBreachModel;
+use ABTests\Values\ExperimentRecord;
 use ABTests\Values\SampleRatioMismatchResult;
 use DateTimeImmutable;
 use Illuminate\Database\Eloquent\Collection;
@@ -19,7 +19,7 @@ final readonly class ExperimentResultsData
      */
     public function __construct(
         public ExperimentDefinition $definition,
-        public ExperimentModel $model,
+        public ExperimentRecord $record,
         public array $variantResults,
         public SampleRatioMismatchResult $sampleRatioMismatch,
         public Collection $activeGuardrailBreaches,

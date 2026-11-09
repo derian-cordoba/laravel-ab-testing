@@ -7,6 +7,7 @@ namespace ABTests\Tests\Integration\Experiments;
 use ABTests\Application\Registry\AttributeReader;
 use ABTests\Application\Registry\ExperimentRegistry;
 use ABTests\Application\Registry\FeatureFlagRegistry;
+use ABTests\Application\Resolution\ExposureRecorder;
 use ABTests\Application\Resolution\Resolver;
 use ABTests\Contracts\Bucketable;
 use ABTests\Contracts\BucketingStrategy;
@@ -376,11 +377,14 @@ final class FlagResolutionTest extends DatabaseTestCase
         // Build an Experiments instance WITHOUT registering the flag.
         $emptyFlagRegistry = new FeatureFlagRegistry();
 
+        $sink = new NullEventSink();
+
         Experiments::setInstance(new Experiments(
             registry: new ExperimentRegistry(),
             flagRegistry: $emptyFlagRegistry,
             resolver: $this->makeResolver(),
-            eventSink: new NullEventSink(),
+            exposureRecorder: new ExposureRecorder($sink),
+            eventSink: $sink,
             assignmentRepository: new InMemoryAssignmentRepository(),
             bucketingStrategy: $this->fixedPosition(0.0),
             featureFlagRepository: new DatabaseFeatureFlagRepository(),
@@ -403,11 +407,14 @@ final class FlagResolutionTest extends DatabaseTestCase
      */
     private function resolveWithPosition(float $position): mixed
     {
+        $sink = new NullEventSink();
+
         Experiments::setInstance(new Experiments(
             registry: new ExperimentRegistry(),
             flagRegistry: $this->flagRegistry,
             resolver: $this->makeResolver(),
-            eventSink: new NullEventSink(),
+            exposureRecorder: new ExposureRecorder($sink),
+            eventSink: $sink,
             assignmentRepository: new InMemoryAssignmentRepository(),
             bucketingStrategy: $this->fixedPosition($position),
             featureFlagRepository: new DatabaseFeatureFlagRepository(),
@@ -420,11 +427,14 @@ final class FlagResolutionTest extends DatabaseTestCase
 
     private function makeExperiments(): Experiments
     {
+        $sink = new NullEventSink();
+
         return new Experiments(
             registry: new ExperimentRegistry(),
             flagRegistry: $this->flagRegistry,
             resolver: $this->makeResolver(),
-            eventSink: new NullEventSink(),
+            exposureRecorder: new ExposureRecorder($sink),
+            eventSink: $sink,
             assignmentRepository: new InMemoryAssignmentRepository(),
             bucketingStrategy: $this->fixedPosition(0.0),
             featureFlagRepository: new DatabaseFeatureFlagRepository(),

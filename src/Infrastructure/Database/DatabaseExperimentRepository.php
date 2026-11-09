@@ -7,7 +7,9 @@ namespace ABTests\Infrastructure\Database;
 use ABTests\Contracts\ExperimentRepository;
 use ABTests\Exceptions\ExperimentNotFound;
 use ABTests\Infrastructure\Database\Models\ExperimentModel;
+use ABTests\Infrastructure\Database\Models\VariantModel;
 use ABTests\Values\ExperimentRecord;
+use ABTests\Values\VariantSnapshot;
 
 final readonly class DatabaseExperimentRepository implements ExperimentRepository
 {
@@ -46,6 +48,27 @@ final readonly class DatabaseExperimentRepository implements ExperimentRepositor
     public function deleteByKey(string $key): void
     {
         ExperimentModel::query()->where('key', $key)->delete();
+    }
+
+    public function findVariants(string $experimentKey): array
+    {
+        $experiment = ExperimentModel::query()
+            ->with('variants')
+            ->where('key', $experimentKey)
+            ->first();
+
+        if ($experiment === null) {
+            return [];
+        }
+
+        return $experiment->variants
+            ->map(static fn (VariantModel $variant): VariantSnapshot => new VariantSnapshot(
+                key: $variant->key,
+                weight: (int) $variant->weight,
+                isControl: (bool) $variant->is_control,
+            ))
+            ->values()
+            ->all();
     }
 
     private function toRecord(ExperimentModel $model): ExperimentRecord

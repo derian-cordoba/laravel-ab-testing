@@ -8,6 +8,7 @@ use ABTests\Application\Commands\ForgetUnitCommand;
 use ABTests\Application\Commands\RecordCovariateCommand;
 use ABTests\Application\Registry\ExperimentRegistry;
 use ABTests\Application\Registry\FeatureFlagRegistry;
+use ABTests\Application\Resolution\ExposureRecorder;
 use ABTests\Attributes\AsFeatureFlag;
 use ABTests\Attributes\AsMetric;
 use ABTests\Contracts\AssignmentRepository;
@@ -54,6 +55,7 @@ final class Experiments
         private readonly ExperimentRegistry $registry,
         private readonly FeatureFlagRegistry $flagRegistry,
         private readonly ResolvesVariant $resolver,
+        private readonly ExposureRecorder $exposureRecorder,
         private readonly EventSink $eventSink,
         private readonly AssignmentRepository $assignmentRepository,
         private readonly BucketingStrategy $bucketingStrategy,
@@ -105,6 +107,7 @@ final class Experiments
             unit: $unit,
             registry: $self->registry,
             resolver: $self->resolver,
+            exposureRecorder: $self->exposureRecorder,
             eventSink: $self->eventSink,
             assignmentRepository: $self->assignmentRepository,
             stateRepository: $self->stateRepository,
@@ -246,27 +249,23 @@ final class Experiments
         // Check operational state persisted in the database.
         $state = $this->featureFlagRepository->findByKey($definition->key);
 
-        if ($state === null || ! $state->is_enabled || $state->killed_at !== null) {
+        if ($state === null || ! $state->isActive()) {
             return $definition->defaultValue;
         }
 
         // Environment gate: if the flag restricts to specific environments and
         // the current environment is not in the list, return the default value.
-        $allowedEnvironments = $state->allowed_environments;
-
-        if ($allowedEnvironments !== null) {
+        if ($state->allowedEnvironments !== null) {
             $current = Environment::tryFrom((string) app()->environment());
 
-            if ($current === null || ! in_array($current->value, $allowedEnvironments, true)) {
+            if ($current === null || ! in_array($current->value, $state->allowedEnvironments, true)) {
                 return $definition->defaultValue;
             }
         }
 
         // Evaluate targeting conditions before computing the bucketing position,
         // since attribute checks are cheap. Logic (AND/OR) is stored per-flag.
-        $logic = $state->conditions_logic ?? ConditionsLogic::all;
-
-        if (! $this->unitMatchesConditions($unit, $state->conditions ?? [], $logic)) {
+        if (! $this->unitMatchesConditions($unit, $state->conditions ?? [], $state->conditionsLogic)) {
             return $definition->defaultValue;
         }
 
@@ -278,7 +277,7 @@ final class Experiments
         $position = $this->bucketingStrategy->position($definition->key, $unit);
 
         // Apply rollout gating: if unit falls outside the rollout slice, return default.
-        if ($position >= ($state->rollout_percentage / 100)) {
+        if ($position >= ($state->rolloutPercentage / 100)) {
             return $definition->defaultValue;
         }
 

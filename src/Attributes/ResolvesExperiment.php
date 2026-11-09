@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ABTests\Attributes;
 
-use ABTests\Experiment;
+use ABTests\Domain\Experiment\Experiment;
 use Attribute;
 
 /**

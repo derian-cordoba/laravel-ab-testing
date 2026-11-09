@@ -99,7 +99,11 @@ final readonly class SlackChannel
 
             $fields[] = [
                 'title' => ucwords(str_replace('_', ' ', $key)),
-                'value' => is_bool($value) ? ($value ? 'Yes' : 'No') : (string) $value,
+                'value' => match (true) {
+                    is_bool($value) => $value ? 'Yes' : 'No',
+                    is_array($value) => implode(', ', $value),
+                    default => (string) $value,
+                },
                 'short' => true,
             ];
         }

@@ -7,19 +7,21 @@ namespace ABTests\Application;
 use ABTests\Application\DTOs\ExperimentResultsData;
 use ABTests\Application\DTOs\VariantResultData;
 use ABTests\Application\Registry\ExperimentRegistry;
+use ABTests\Contracts\ExperimentRepository;
 use ABTests\Definitions\ExperimentDefinition;
 use ABTests\Definitions\MetricBinding;
 use ABTests\Domain\Analysis\AnalysisService;
 use ABTests\Enums\MetricRole;
-use ABTests\Infrastructure\Database\Models\ExperimentModel;
 use ABTests\Infrastructure\Database\Models\GuardrailBreachModel;
 use ABTests\Infrastructure\Database\Models\RollupModel;
 use ABTests\Values\Allocation;
 use ABTests\Values\AnalysisConfiguration;
+use ABTests\Values\ExperimentRecord;
 use ABTests\Values\GenericVariant;
 use ABTests\Values\MetricSummary;
 use ABTests\Values\SampleRatioMismatchResult;
 use ABTests\Values\Segment;
+use ABTests\Values\VariantSnapshot;
 use DateTimeImmutable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -28,14 +30,15 @@ use Throwable;
 /**
  * CQRS read side for the dashboard. Reads only the rollups table (never the
  * raw events table in the request path), runs the analysis engines, and returns
- * a fully-computed ExperimentResultsData DTO. Results are cached per experiment
- * key with a configurable TTL.
+ * a fully-computed ExperimentResultsData DTO. Results are backed by the rollups
+ * table which itself acts as the pre-aggregated cache layer.
  */
 final readonly class ResultsService
 {
     public function __construct(
         private ExperimentRegistry $registry,
         private AnalysisService $analysisService,
+        private ExperimentRepository $experimentRepository,
     ) {
         //
     }
@@ -43,11 +46,6 @@ final readonly class ResultsService
     /**
      * Compute analysis results for the given experiment, or null if the
      * experiment does not exist or has no rollup data yet.
-     *
-     * Note: the rollups table is itself the pre-aggregated cache layer, so
-     * no additional object-level caching is applied here. Serializing readonly
-     * DTOs containing Eloquent models via PHP's serialize()/unserialize()
-     * produces __PHP_Incomplete_Class on read-back and is unsafe.
      */
     public function forExperiment(string $experimentKey): ?ExperimentResultsData
     {
@@ -56,16 +54,16 @@ final readonly class ResultsService
 
     private function compute(string $experimentKey): ?ExperimentResultsData
     {
-        $model = ExperimentModel::query()->where('key', $experimentKey)->first();
+        $record = $this->experimentRepository->findByKey($experimentKey);
 
-        if ($model === null) {
+        if ($record === null) {
             return null;
         }
 
         try {
             $definition = $this->registry->findByKey($experimentKey);
         } catch (Throwable) {
-            $definition = $this->buildDefinitionFromRollups($experimentKey, $model);
+            $definition = $this->buildDefinitionFromRollups($experimentKey, $record);
         }
 
         if ($definition === null) {
@@ -80,7 +78,7 @@ final readonly class ResultsService
         if ($rollups->isEmpty()) {
             return new ExperimentResultsData(
                 definition: $definition,
-                model: $model,
+                record: $record,
                 variantResults: [],
                 sampleRatioMismatch: $this->emptyMismatch(),
                 activeGuardrailBreaches: new Collection(),
@@ -107,7 +105,7 @@ final readonly class ResultsService
         if ($allSummaries === []) {
             return new ExperimentResultsData(
                 definition: $definition,
-                model: $model,
+                record: $record,
                 variantResults: [],
                 sampleRatioMismatch: $this->emptyMismatch(),
                 activeGuardrailBreaches: new Collection(),
@@ -194,7 +192,7 @@ final readonly class ResultsService
 
         return new ExperimentResultsData(
             definition: $definition,
-            model: $model,
+            record: $record,
             variantResults: $variantResults,
             sampleRatioMismatch: $srm,
             activeGuardrailBreaches: $activeBreaches,
@@ -210,15 +208,13 @@ final readonly class ResultsService
      * snapshot table when available — this is its purpose. Alphabetical fallback
      * inference (first key = control) only applies when no snapshot exists.
      */
-    private function buildDefinitionFromRollups(string $experimentKey, ExperimentModel $model): ?ExperimentDefinition
+    private function buildDefinitionFromRollups(string $experimentKey, ExperimentRecord $record): ?ExperimentDefinition
     {
         $rollups = RollupModel::query()
             ->where('experiment_key', $experimentKey)
             ->get();
 
         if ($rollups->isEmpty()) {
-            // No rollup data — return a definition with no variants so the
-            // dashboard can still show the experiment header and controls.
             return new ExperimentDefinition(
                 key: $experimentKey,
                 unitType: 'unknown',
@@ -228,14 +224,17 @@ final readonly class ResultsService
                 analysis: AnalysisConfiguration::default(),
                 audience: Segment::any(),
                 metrics: [],
-                name: $model->key,
+                name: $record->key,
             );
         }
 
-        // Prefer the variants snapshot over alphabetical inference. The snapshot
-        // is populated on experiment registration / start and is the authoritative
-        // source for weight and control designation for DB-only experiments.
-        $snapshots = $model->variants->keyBy('key');
+        /** @var list<VariantSnapshot> $snapshots */
+        $snapshots = $this->experimentRepository->findVariants($experimentKey);
+        $snapshotMap = [];
+
+        foreach ($snapshots as $snapshot) {
+            $snapshotMap[$snapshot->key] = $snapshot;
+        }
 
         $variantKeys = $rollups->pluck('variant_key')->unique()->sort()->values();
         $metricKeys = $rollups->pluck('metric_key')->unique()->values();
@@ -245,14 +244,14 @@ final readonly class ResultsService
         $remainder = 100 - ($evenWeight * $variantCount);
 
         $variants = $variantKeys->map(
-            static function (string $key, int $index) use ($evenWeight, $remainder, $snapshots): GenericVariant {
-                $snapshot = $snapshots->get($key);
+            static function (string $key, int $index) use ($evenWeight, $remainder, $snapshotMap): GenericVariant {
+                $snapshot = $snapshotMap[$key] ?? null;
 
                 if ($snapshot !== null) {
                     return new GenericVariant(
                         key: $key,
-                        weight: (int) $snapshot->weight,
-                        isControl: (bool) $snapshot->is_control,
+                        weight: $snapshot->weight,
+                        isControl: $snapshot->isControl,
                     );
                 }
 
@@ -274,12 +273,12 @@ final readonly class ResultsService
 
         return new ExperimentDefinition(
             key: $experimentKey,
-            unitType: $model->layer ?? 'unknown',
+            unitType: $record->layer ?? 'unknown',
             allocation: Allocation::fromVariants($variants),
             analysis: AnalysisConfiguration::default(),
             audience: Segment::any(),
             metrics: $metrics,
-            name: $model->key,
+            name: $record->key,
         );
     }
 

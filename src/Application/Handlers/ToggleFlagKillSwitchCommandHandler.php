@@ -7,8 +7,7 @@ namespace ABTests\Application\Handlers;
 use ABTests\Application\Commands\ToggleFlagKillSwitchCommand;
 use ABTests\Contracts\DomainEventDispatcher;
 use ABTests\Contracts\FeatureFlagRepository;
-use ABTests\Domain\Events\KillSwitchActivatedEvent;
-use Illuminate\Support\Carbon;
+use ABTests\Domain\FeatureFlag\FeatureFlagAggregate;
 
 final readonly class ToggleFlagKillSwitchCommandHandler
 {
@@ -19,21 +18,18 @@ final readonly class ToggleFlagKillSwitchCommandHandler
 
     public function handle(ToggleFlagKillSwitchCommand $command): void
     {
-        $state = $this->featureFlagRepository->findByKey($command->flagKey);
-        $attributes = ['killed_at' => $command->isKilled ? Carbon::now() : null];
+        $record = $this->featureFlagRepository->findByKey($command->flagKey)
+            ?? $this->featureFlagRepository->create(['key' => $command->flagKey]);
 
-        if ($state !== null) {
-            $this->featureFlagRepository->update($command->flagKey, $attributes);
+        $aggregate = FeatureFlagAggregate::reconstitute($record);
+
+        if ($command->isKilled) {
+            $aggregate->activateKillSwitch($command->actorIdentifier, $command->actorType);
         } else {
-            $this->featureFlagRepository->create(array_merge(['key' => $command->flagKey], $attributes));
+            $aggregate->deactivateKillSwitch($command->actorIdentifier, $command->actorType);
         }
 
-        $this->eventDispatcher->dispatch(new KillSwitchActivatedEvent(
-            experimentKey: null,
-            flagKey: $command->flagKey,
-            activated: $command->isKilled,
-            actorIdentifier: $command->actorIdentifier,
-            actorType: $command->actorType,
-        ));
+        $this->featureFlagRepository->update($command->flagKey, $aggregate->pendingChanges());
+        $this->eventDispatcher->dispatchAll($aggregate->pullEvents());
     }
 }

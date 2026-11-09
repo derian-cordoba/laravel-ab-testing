@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ABTests\Attributes;
 
-use ABTests\Metric;
+use ABTests\Domain\Analysis\Metric;
 use Attribute;
 
 /**

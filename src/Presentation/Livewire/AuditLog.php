@@ -9,6 +9,8 @@ use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
+use function is_array;
+
 /**
  * Full-page component for the system-wide audit log. Shows all recorded
  * privileged actions across every experiment, filterable by experiment key,
@@ -50,7 +52,12 @@ final class AuditLog extends Component
         }
 
         $total = $query->count();
-        $entries = $query->limit($this->perPage)->get();
+        $entries = $query->limit($this->perPage)->get()->map(function (AuditLogModel $entry): AuditLogModel {
+            $entry->before_state_display = $this->formatState($entry->before_state);
+            $entry->after_state_display = $this->formatState($entry->after_state);
+
+            return $entry;
+        });
         $hasMore = $total > $this->perPage;
 
         $distinctActions = AuditLogModel::query()
@@ -61,5 +68,20 @@ final class AuditLog extends Component
 
         return view('ab-testing::livewire.audit-log', compact('entries', 'total', 'hasMore', 'distinctActions'))
             ->layout('ab-testing::layout', ['title' => 'A/B Testing — Audit Log']);
+    }
+
+    /** @param array<string, mixed>|null $state */
+    private function formatState(?array $state): string
+    {
+        if ($state === null || $state === []) {
+            return '—';
+        }
+
+        return collect($state)
+            ->map(fn (mixed $value, string $key): string => "$key: ".(is_array($value)
+                    ? json_encode($value)
+                    : (string) $value),
+            )
+            ->implode(', ');
     }
 }

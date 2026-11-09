@@ -204,10 +204,10 @@
                                         @endif
                                     </td>
                                     <td class="px-6 py-3 text-xs text-gray-500 font-mono">
-                                        {{ $entry->before_state ? collect($entry->before_state)->map(fn($v, $k) => "$k: $v")->implode(', ') : '—' }}
+                                        {{ $entry->before_state_display }}
                                     </td>
                                     <td class="px-6 py-3 text-xs text-gray-400 font-mono">
-                                        {{ $entry->after_state ? collect($entry->after_state)->map(fn($v, $k) => "$k: $v")->implode(', ') : '—' }}
+                                        {{ $entry->after_state_display }}
                                     </td>
                                     <td class="px-6 py-3 text-right text-xs text-gray-500" title="{{ $entry->occurred_at }}">
                                         {{ $entry->occurred_at->diffForHumans() }}

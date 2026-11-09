@@ -80,7 +80,7 @@
             @if($results->hasResults())
                 @php
                     // Sample size gauge
-                    $targetSampleSize = $results->model->target_sample_size;
+                    $targetSampleSize = $results->record->targetSampleSize;
                     $currentUnits     = $results->totalAssignedUnits();
                     $samplePct        = $targetSampleSize
                         ? (int) min(100, round($currentUnits / $targetSampleSize * 100))

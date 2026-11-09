@@ -86,10 +86,10 @@
                                     @endif
                                 </td>
                                 <td class="px-5 py-3 font-mono text-xs text-gray-500 max-w-xs truncate">
-                                    {{ $entry->before_state ? collect($entry->before_state)->map(fn($v, $k) => "$k: $v")->implode(', ') : '—' }}
+                                    {{ $entry->before_state_display }}
                                 </td>
                                 <td class="px-5 py-3 font-mono text-xs text-gray-400 max-w-xs truncate">
-                                    {{ $entry->after_state ? collect($entry->after_state)->map(fn($v, $k) => "$k: $v")->implode(', ') : '—' }}
+                                    {{ $entry->after_state_display }}
                                 </td>
                             </tr>
                         @endforeach

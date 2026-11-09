@@ -7,7 +7,7 @@ namespace ABTests\Application\Handlers;
 use ABTests\Application\Commands\EnableFeatureFlagCommand;
 use ABTests\Contracts\DomainEventDispatcher;
 use ABTests\Contracts\FeatureFlagRepository;
-use ABTests\Domain\Events\FeatureFlagEnabledEvent;
+use ABTests\Domain\FeatureFlag\FeatureFlagAggregate;
 
 final readonly class EnableFeatureFlagCommandHandler
 {
@@ -20,18 +20,13 @@ final readonly class EnableFeatureFlagCommandHandler
 
     public function handle(EnableFeatureFlagCommand $command): void
     {
-        $state = $this->featureFlagRepository->findByKey($command->flagKey);
+        $record = $this->featureFlagRepository->findByKey($command->flagKey)
+            ?? $this->featureFlagRepository->create(['key' => $command->flagKey, 'is_enabled' => false]);
 
-        if ($state !== null) {
-            $this->featureFlagRepository->update($command->flagKey, ['is_enabled' => true]);
-        } else {
-            $this->featureFlagRepository->create(['key' => $command->flagKey, 'is_enabled' => true]);
-        }
+        $aggregate = FeatureFlagAggregate::reconstitute($record);
+        $aggregate->enable($command->actorIdentifier, $command->actorType);
 
-        $this->eventDispatcher->dispatch(new FeatureFlagEnabledEvent(
-            flagKey: $command->flagKey,
-            actorIdentifier: $command->actorIdentifier,
-            actorType: $command->actorType,
-        ));
+        $this->featureFlagRepository->update($command->flagKey, $aggregate->pendingChanges());
+        $this->eventDispatcher->dispatchAll($aggregate->pullEvents());
     }
 }

@@ -4,21 +4,11 @@ declare(strict_types=1);
 
 namespace ABTests;
 
-use ABTests\Values\Segment;
-
 /**
- * Base class for experiment definitions. Structural configuration is declared
- * with #[AsExperiment] and the metric/analysis attributes; this class only
- * exposes behavioral hooks consumers may override.
+ * @deprecated Use ABTests\Domain\Experiment\Experiment instead.
+ *
+ * Backward-compatible shim — kept so existing user-defined subclasses that
+ * extend ABTests\Experiment continue to work without changes. The canonical
+ * class now lives in the Experiment bounded context.
  */
-abstract class Experiment
-{
-    /**
-     * Scope the experiment to an eligible audience. Units outside the segment
-     * are never assigned (they are excluded, not placed in control).
-     */
-    public function audience(): Segment
-    {
-        return Segment::any();
-    }
-}
+abstract class Experiment extends \ABTests\Domain\Experiment\Experiment {}

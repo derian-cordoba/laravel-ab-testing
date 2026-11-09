@@ -23,7 +23,7 @@ final class ExperimentResultsResource extends JsonApiResource
         /** @var ExperimentResultsData $data */
         $data = $this->resource;
 
-        return $data->model->key;
+        return $data->record->key;
     }
 
     public function toType(Request $request): string
@@ -40,7 +40,7 @@ final class ExperimentResultsResource extends JsonApiResource
         $data = $this->resource;
 
         return [
-            'status' => $data->model->status,
+            'status' => $data->record->status,
             'computed_at' => $data->computedAt->format('c'),
             'total_units' => $data->totalAssignedUnits(),
             'srm' => [

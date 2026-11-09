@@ -88,7 +88,11 @@ final readonly class MailChannel
             }
 
             $label = ucwords(str_replace('_', ' ', $key));
-            $displayValue = is_bool($value) ? ($value ? 'Yes' : 'No') : (string) $value;
+            $displayValue = match (true) {
+                is_bool($value) => $value ? 'Yes' : 'No',
+                is_array($value) => implode(', ', $value),
+                default => (string) $value,
+            };
             $rows .= $this->row(e($label), e($displayValue));
         }
 

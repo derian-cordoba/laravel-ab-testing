@@ -6,6 +6,7 @@ namespace ABTests\Contracts;
 
 use ABTests\Exceptions\ExperimentNotFound;
 use ABTests\Values\ExperimentRecord;
+use ABTests\Values\VariantSnapshot;
 
 interface ExperimentRepository
 {
@@ -19,4 +20,13 @@ interface ExperimentRepository
     public function create(array $attributes): ExperimentRecord;
 
     public function deleteByKey(string $key): void;
+
+    /**
+     * Return variant weight/control snapshots for a given experiment key.
+     * Used by the read-side (ResultsService) to reconstruct definitions for
+     * experiments no longer present in the code registry.
+     *
+     * @return list<VariantSnapshot>
+     */
+    public function findVariants(string $experimentKey): array;
 }

@@ -8,7 +8,7 @@ use ABTests\Application\Commands\SetFlagEnvironmentsCommand;
 use ABTests\Contracts\AuditLogRepository;
 use ABTests\Contracts\DomainEventDispatcher;
 use ABTests\Contracts\FeatureFlagRepository;
-use ABTests\Domain\Events\FeatureFlagEnvironmentsUpdatedEvent;
+use ABTests\Domain\FeatureFlag\FeatureFlagAggregate;
 
 final readonly class SetFlagEnvironmentsCommandHandler
 {
@@ -20,26 +20,22 @@ final readonly class SetFlagEnvironmentsCommandHandler
 
     public function handle(SetFlagEnvironmentsCommand $command): void
     {
-        $model = $this->featureFlagRepository->getByKey($command->flagKey);
+        $record = $this->featureFlagRepository->getByKey($command->flagKey);
 
-        $before = $model->allowed_environments;
+        $aggregate = FeatureFlagAggregate::reconstitute($record);
+        $aggregate->setEnvironments($command->allowedEnvironments, $command->actorIdentifier, $command->actorType);
 
-        $this->featureFlagRepository->update($command->flagKey, ['allowed_environments' => $command->allowedEnvironments]);
+        $this->featureFlagRepository->update($command->flagKey, $aggregate->pendingChanges());
 
         $this->auditLogRepository->appendForFlag(
             flagKey: $command->flagKey,
             action: 'set_flag_environments',
             actorIdentifier: $command->actorIdentifier,
             actorType: $command->actorType,
-            before: ['allowed_environments' => $before],
-            after: ['allowed_environments' => $command->allowedEnvironments],
+            before: $aggregate->beforeState(),
+            after: $aggregate->pendingChanges(),
         );
 
-        $this->eventDispatcher->dispatch(new FeatureFlagEnvironmentsUpdatedEvent(
-            flagKey: $command->flagKey,
-            allowedEnvironments: $command->allowedEnvironments,
-            actorIdentifier: $command->actorIdentifier,
-            actorType: $command->actorType,
-        ));
+        $this->eventDispatcher->dispatchAll($aggregate->pullEvents());
     }
 }

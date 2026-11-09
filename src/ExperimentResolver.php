@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ABTests;
 
 use ABTests\Application\Registry\ExperimentRegistry;
+use ABTests\Application\Resolution\ExposureRecorder;
 use ABTests\Attributes\AsMetric;
 use ABTests\Contracts\AssignmentRepository;
 use ABTests\Contracts\Bucketable;
@@ -13,7 +14,7 @@ use ABTests\Contracts\EventSink;
 use ABTests\Contracts\ExperimentStateRepository;
 use ABTests\Contracts\ResolvesVariant;
 use ABTests\Contracts\Variant;
-use ABTests\Definitions\ExperimentDefinition;
+use ABTests\Domain\Experiment\Experiment;
 use ABTests\Enums\Environment;
 use ABTests\Enums\EvaluationReason;
 use ABTests\Enums\EventType;
@@ -43,6 +44,7 @@ final readonly class ExperimentResolver
         private Bucketable $unit,
         private ExperimentRegistry $registry,
         private ResolvesVariant $resolver,
+        private ExposureRecorder $exposureRecorder,
         private EventSink $eventSink,
         private AssignmentRepository $assignmentRepository,
         private ExperimentStateRepository $stateRepository,
@@ -71,7 +73,7 @@ final readonly class ExperimentResolver
         $result = $this->resolver->resolve($definition, $this->unit);
 
         if ($result->variant !== null) {
-            $this->recordExposureEvent($definition, $result->variant);
+            $this->exposureRecorder->record($definition, $this->unit, $result->variant);
         }
 
         return $result->variant;
@@ -97,7 +99,11 @@ final readonly class ExperimentResolver
         }
 
         return $result->withExposeCallback(
-            fn () => $this->recordExposureEvent($definition, $result->variant),
+            fn () => $this->exposureRecorder->record(
+                $definition,
+                $this->unit,
+                $result->variant,
+            ),
         );
     }
 
@@ -146,7 +152,7 @@ final readonly class ExperimentResolver
 
         if ($variant !== null) {
             return $result->withExposeCallback(
-                fn () => $this->recordExposureEvent($definition, $variant),
+                fn () => $this->exposureRecorder->record($definition, $this->unit, $variant),
             );
         }
 
@@ -246,7 +252,11 @@ final readonly class ExperimentResolver
         $result = $this->resolver->resolve($definition, $this->unit);
 
         if ($result->variant !== null) {
-            $this->recordExposureEvent($definition, $result->variant);
+            $this->exposureRecorder->record(
+                $definition,
+                $this->unit,
+                $result->variant,
+            );
         }
 
         return $result->variant;
@@ -265,7 +275,7 @@ final readonly class ExperimentResolver
      * (runtime-defined). The metric key is resolved from the #[AsMetric]
      * attribute when a class is passed.
      *
-     * @param  class-string<Metric>|string  $metricClassOrKey
+     * @param  class-string<\ABTests\Domain\Analysis\Metric>|string  $metricClassOrKey
      */
     public function track(string $metricClassOrKey, ?float $value = null): void
     {
@@ -305,19 +315,6 @@ final readonly class ExperimentResolver
     // =========================================================================
     // Private helpers
     // =========================================================================
-
-    private function recordExposureEvent(ExperimentDefinition $definition, Variant $variant): void
-    {
-        $this->eventSink->record(new RecordedEvent(
-            experimentKey: $definition->key,
-            unitType: $definition->unitType,
-            unitKey: $this->unit->bucketingKey(),
-            variantKey: $variant->key(),
-            type: EventType::exposure,
-            idempotencyKey: "exposure:{$definition->key}:{$this->unit->bucketingKey()}",
-            occurredAt: new DateTimeImmutable(),
-        ));
-    }
 
     /**
      * Resolve a class-string to its #[AsMetric] key, or return the string as-is

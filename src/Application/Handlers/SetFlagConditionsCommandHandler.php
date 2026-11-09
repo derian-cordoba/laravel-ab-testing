@@ -6,6 +6,7 @@ namespace ABTests\Application\Handlers;
 
 use ABTests\Application\Commands\SetFlagConditionsCommand;
 use ABTests\Contracts\FeatureFlagRepository;
+use ABTests\Domain\FeatureFlag\FeatureFlagAggregate;
 
 final readonly class SetFlagConditionsCommandHandler
 {
@@ -15,17 +16,12 @@ final readonly class SetFlagConditionsCommandHandler
 
     public function handle(SetFlagConditionsCommand $command): void
     {
-        $state = $this->featureFlagRepository->findByKey($command->flagKey);
+        $record = $this->featureFlagRepository->findByKey($command->flagKey)
+            ?? $this->featureFlagRepository->create(['key' => $command->flagKey]);
 
-        $attributes = [
-            'conditions' => $command->conditions ?: null,
-            'conditions_logic' => $command->conditionsLogic,
-        ];
+        $aggregate = FeatureFlagAggregate::reconstitute($record);
+        $aggregate->setConditions($command->conditions ?: null, $command->conditionsLogic);
 
-        if ($state !== null) {
-            $this->featureFlagRepository->update($command->flagKey, $attributes);
-        } else {
-            $this->featureFlagRepository->create(array_merge(['key' => $command->flagKey], $attributes));
-        }
+        $this->featureFlagRepository->update($command->flagKey, $aggregate->pendingChanges());
     }
 }

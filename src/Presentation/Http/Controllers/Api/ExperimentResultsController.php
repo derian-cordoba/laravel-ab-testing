@@ -6,8 +6,9 @@ namespace ABTests\Presentation\Http\Controllers\Api;
 
 use ABTests\Application\DTOs\VerdictData;
 use ABTests\Application\ResultsService;
+use ABTests\Contracts\ExperimentRepository;
+use ABTests\Exceptions\ExperimentNotFound;
 use ABTests\Exceptions\NoResultsAvailableException;
-use ABTests\Infrastructure\Database\Models\ExperimentModel;
 use ABTests\Presentation\Http\Resources\Api\ExperimentResultsResource;
 use ABTests\Presentation\Http\Resources\Api\VerdictResource;
 
@@ -22,8 +23,10 @@ use ABTests\Presentation\Http\Resources\Api\VerdictResource;
  */
 final readonly class ExperimentResultsController
 {
-    public function __construct(private ResultsService $resultsService)
-    {
+    public function __construct(
+        private ResultsService $resultsService,
+        private ExperimentRepository $experimentRepository,
+    ) {
         //
     }
 
@@ -34,11 +37,12 @@ final readonly class ExperimentResultsController
      * engine outputs, SRM diagnostic, and active guardrail breaches. The payload
      * is the same data the dashboard renders.
      *
+     * @throws ExperimentNotFound When the experiment is not found in the database.
      * @throws NoResultsAvailableException When the experiment exists but has no rollup data.
      */
     public function show(string $key): ExperimentResultsResource
     {
-        ExperimentModel::query()->where('key', $key)->firstOrFail();
+        $this->experimentRepository->getByKey($key);
 
         $results = $this->resultsService->forExperiment($key);
 
@@ -63,14 +67,14 @@ final readonly class ExperimentResultsController
      */
     public function verdict(string $key): VerdictResource
     {
-        ExperimentModel::query()->where('key', $key)->firstOrFail();
+        $this->experimentRepository->getByKey($key);
 
         $results = $this->resultsService->forExperiment($key);
 
         if ($results === null || ! $results->hasResults()) {
             return new VerdictResource(VerdictData::noResults(
                 experimentKey: $key,
-                status: $results?->model->status ?? 'unknown',
+                status: $results?->record->status ?? 'unknown',
             ));
         }
 

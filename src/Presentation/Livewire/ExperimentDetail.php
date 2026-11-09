@@ -11,6 +11,9 @@ use ABTests\Infrastructure\Database\Models\ExperimentModel;
 use ABTests\Infrastructure\Database\Models\GuardrailBreachModel;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
+
+use function is_array;
+
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Throwable;
@@ -75,7 +78,13 @@ final class ExperimentDetail extends Component
             ->where('experiment_key', $this->key)
             ->orderByDesc('occurred_at')
             ->limit(10)
-            ->get();
+            ->get()
+            ->map(function (AuditLogModel $entry): AuditLogModel {
+                $entry->before_state_display = $this->formatState($entry->before_state);
+                $entry->after_state_display = $this->formatState($entry->after_state);
+
+                return $entry;
+            });
 
         $activeBreachCount = GuardrailBreachModel::query()
             ->where('experiment_key', $this->key)
@@ -86,5 +95,20 @@ final class ExperimentDetail extends Component
             ->layout('ab-testing::layout', [
                 'title' => 'A/B Testing — '.$displayName,
             ]);
+    }
+
+    /** @param array<string, mixed>|null $state */
+    private function formatState(?array $state): string
+    {
+        if ($state === null || $state === []) {
+            return '—';
+        }
+
+        return collect($state)
+            ->map(fn (mixed $value, string $key): string => "$key: ".(is_array($value)
+                    ? json_encode($value)
+                    : (string) $value),
+            )
+            ->implode(', ');
     }
 }

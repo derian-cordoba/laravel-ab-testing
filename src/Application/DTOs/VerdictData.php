@@ -59,7 +59,7 @@ final readonly class VerdictData
         if ($results->sampleRatioMismatch->detected) {
             return new self(
                 experimentKey: $experimentKey,
-                status: $results->model->status,
+                status: $results->record->status,
                 srmDetected: true,
                 overallRecommendation: 'inconclusive',
                 variants: [],
@@ -105,7 +105,7 @@ final readonly class VerdictData
 
         return new self(
             experimentKey: $experimentKey,
-            status: $results->model->status,
+            status: $results->record->status,
             srmDetected: false,
             overallRecommendation: $overallRecommendation,
             variants: $variantVerdicts,

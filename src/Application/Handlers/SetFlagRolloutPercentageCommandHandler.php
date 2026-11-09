@@ -6,6 +6,7 @@ namespace ABTests\Application\Handlers;
 
 use ABTests\Application\Commands\SetFlagRolloutPercentageCommand;
 use ABTests\Contracts\FeatureFlagRepository;
+use ABTests\Domain\FeatureFlag\FeatureFlagAggregate;
 
 final readonly class SetFlagRolloutPercentageCommandHandler
 {
@@ -15,12 +16,12 @@ final readonly class SetFlagRolloutPercentageCommandHandler
 
     public function handle(SetFlagRolloutPercentageCommand $command): void
     {
-        $state = $this->featureFlagRepository->findByKey($command->flagKey);
+        $record = $this->featureFlagRepository->findByKey($command->flagKey)
+            ?? $this->featureFlagRepository->create(['key' => $command->flagKey]);
 
-        if ($state !== null) {
-            $this->featureFlagRepository->update($command->flagKey, ['rollout_percentage' => $command->percentage]);
-        } else {
-            $this->featureFlagRepository->create(['key' => $command->flagKey, 'rollout_percentage' => $command->percentage]);
-        }
+        $aggregate = FeatureFlagAggregate::reconstitute($record);
+        $aggregate->setRolloutPercentage($command->percentage);
+
+        $this->featureFlagRepository->update($command->flagKey, $aggregate->pendingChanges());
     }
 }

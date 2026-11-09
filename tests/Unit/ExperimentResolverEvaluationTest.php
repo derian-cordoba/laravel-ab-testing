@@ -6,6 +6,7 @@ namespace ABTests\Tests\Unit;
 
 use ABTests\Application\Registry\AttributeReader;
 use ABTests\Application\Registry\ExperimentRegistry;
+use ABTests\Application\Resolution\ExposureRecorder;
 use ABTests\Application\Resolution\Resolver;
 use ABTests\Application\Resolution\Steps\BucketStep;
 use ABTests\Application\Resolution\Steps\CheckEnvironmentStep;
@@ -405,11 +406,14 @@ final class ExperimentResolverEvaluationTest extends TestCase
             ],
         );
 
+        $sink = $eventSink ?? new NullEventSink();
+
         return new ExperimentResolver(
             unit: new TestUnit($unitKey, $attributes),
             registry: $this->registry,
             resolver: $resolver,
-            eventSink: $eventSink ?? new NullEventSink(),
+            exposureRecorder: new ExposureRecorder($sink),
+            eventSink: $sink,
             assignmentRepository: $assignmentRepository,
             stateRepository: $stateRepo,
             bucketingStrategy: $this->bucketingStrategy,

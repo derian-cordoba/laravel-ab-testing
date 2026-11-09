@@ -1,0 +1,194 @@
+deptrac:
+  paths:
+    - src
+
+  # ── Layer definitions ──────────────────────────────────────────────────────
+  # Each layer maps to one or more classLike collectors. The names mirror the
+  # hexagonal-architecture rings so deptrac output reads like the design doc.
+  layers:
+
+    # Innermost ring — pure business logic, no infrastructure dependencies.
+    # Includes the four experiment/metric attributes that reference Domain
+    # abstract base classes (Experiment, Metric) — they belong here because
+    # they annotate Domain-level user classes.
+    - name: Domain
+      collectors:
+        - type: classLike
+          value: .*ABTests\\Domain\\.*
+        - type: classLike
+          value: .*ABTests\\Attributes\\(Guardrail|PrimaryMetric|ResolvesExperiment|SecondaryMetric).*
+
+    # Shared kernel: value objects, enums, definitions, contracts, and the
+    # pure PHP attributes (Weight, Control, etc.) that carry no Domain refs.
+    # Must not import from any outer ring.
+    - name: Kernel
+      collectors:
+        - type: classLike
+          value: .*ABTests\\Values\\.*
+        - type: classLike
+          value: .*ABTests\\Enums\\.*
+        - type: classLike
+          value: .*ABTests\\Definitions\\.*
+        - type: classLike
+          value: .*ABTests\\Exceptions\\.*
+        - type: classLike
+          value: .*ABTests\\Concerns\\.*
+        - type: classLike
+          value: .*ABTests\\Contracts\\.*
+        - type: classLike
+          value: .*ABTests\\Attributes\\(Analysis|AsExperiment|AsFeatureFlag|AsMetric|AsUnit|Control|Weight).*
+
+    # Governance — cross-cutting policy layer
+    - name: Governance
+      collectors:
+        - type: classLike
+          value: .*ABTests\\Governance\\.*
+
+    # Application — orchestration, commands, handlers, registry, resolution
+    - name: Application
+      collectors:
+        - type: classLike
+          value: .*ABTests\\Application\\.*
+
+    # Infrastructure — Eloquent, DB, jobs, notifications, bucketing
+    - name: Infrastructure
+      collectors:
+        - type: classLike
+          value: .*ABTests\\Infrastructure\\.*
+
+    # Presentation — HTTP, Livewire, Blade, Console
+    - name: Presentation
+      collectors:
+        - type: classLike
+          value: .*ABTests\\Presentation\\.*
+
+    # Sub-providers — wiring layer registered by ABTestingServiceProvider
+    - name: Providers
+      collectors:
+        - type: classLike
+          value: .*ABTests\\Providers\\.*
+
+    # Testing utilities — allowed to import everything
+    - name: Testing
+      collectors:
+        - type: classLike
+          value: .*ABTests\\Testing\\.*
+
+    # Entry-point shims at the package root (Experiments, ExperimentResolver…)
+    # These are the public API surface and may depend on everything.
+    - name: Root
+      collectors:
+        - type: classLike
+          value: ABTests\\[^\\]+$
+
+  # ── Allowed dependency directions ──────────────────────────────────────────
+  #
+  # "A may depend on B" = code in layer A is allowed to import from B.
+  # Hexagonal rule: inner rings must never import from outer rings.
+  #
+  ruleset:
+
+    # Shared kernel: no imports from any ABTests layer
+    Kernel: ~
+
+    # Domain: may use Kernel only (no infra, no application, no presentation)
+    Domain:
+      - Kernel
+
+    # Governance: cross-cutting policy — may read Domain + Kernel.
+    # DatabaseApprovalPolicy also needs Infrastructure DB models.
+    Governance:
+      - Kernel
+      - Domain
+      - Infrastructure
+
+    # Application: coordinates Domain + Kernel; no direct infra imports
+    Application:
+      - Kernel
+      - Domain
+      - Governance
+
+    # Infrastructure: implements Kernel contracts; may import Domain + Kernel.
+    # Jobs (RefreshRollupsJob) coordinate Application-layer registries.
+    Infrastructure:
+      - Kernel
+      - Domain
+      - Governance
+      - Application
+
+    # Presentation: outer ring; imports Application + Domain + Kernel.
+    # Root entry-points (Experiments) are used by Blade directives and middleware.
+    # Infrastructure is allowed for query-side Eloquent reads and job dispatch.
+    Presentation:
+      - Kernel
+      - Domain
+      - Application
+      - Governance
+      - Infrastructure
+      - Root
+
+    # Providers: wiring layer, may import everything
+    Providers:
+      - Kernel
+      - Domain
+      - Application
+      - Infrastructure
+      - Governance
+      - Presentation
+      - Root
+
+    # Root entry-points (Experiments, ExperimentResolver, service provider):
+    # may import everything
+    Root:
+      - Kernel
+      - Domain
+      - Application
+      - Infrastructure
+      - Governance
+      - Presentation
+      - Providers
+
+    # Testing utilities: unrestricted
+    Testing:
+      - Kernel
+      - Domain
+      - Application
+      - Infrastructure
+      - Governance
+      - Presentation
+      - Root
+
+  ignore_uncovered_internal_classes: true
+
+  # ── Baseline ──────────────────────────────────────────────────────────────
+  # Pre-existing Application→Infrastructure violations that pre-date the DDD
+  # refactor. Each entry is a tracked TODO: replace direct Eloquent model usage
+  # with a repository contract / port (Phase 5 refactoring).
+  skip_violations:
+    ABTests\Application\DTOs\ExperimentResultsData:
+      - ABTests\Infrastructure\Database\Models\GuardrailBreachModel
+    ABTests\Application\Handlers\AddVariantCommandHandler:
+      - ABTests\Infrastructure\Database\Models\VariantModel
+    ABTests\Application\Handlers\ApproveExperimentCommandHandler:
+      - ABTests\Infrastructure\Database\Models\ExperimentApprovalModel
+    ABTests\Application\Handlers\RecordCovariateCommandHandler:
+      - ABTests\Infrastructure\Database\Models\CovariateModel
+    ABTests\Application\Handlers\RejectExperimentCommandHandler:
+      - ABTests\Infrastructure\Database\Models\ExperimentApprovalModel
+    ABTests\Application\Handlers\RemoveVariantCommandHandler:
+      - ABTests\Infrastructure\Database\Models\VariantModel
+    ABTests\Application\Handlers\RequestApprovalCommandHandler:
+      - ABTests\Infrastructure\Database\Models\ExperimentApprovalModel
+    ABTests\Application\Handlers\StartExperimentCommandHandler:
+      - ABTests\Infrastructure\Database\Models\VariantModel
+    ABTests\Application\Handlers\UpdateVariantCommandHandler:
+      - ABTests\Infrastructure\Database\Models\VariantModel
+    ABTests\Application\Listeners\DispatchNotificationListener:
+      - ABTests\Infrastructure\Notifications\Jobs\DispatchNotificationsJob
+      - ABTests\Infrastructure\Notifications\NotificationPayload
+    ABTests\Application\ResultsService:
+      - ABTests\Infrastructure\Database\Models\GuardrailBreachModel
+      - ABTests\Infrastructure\Database\Models\RollupModel
+    ABTests\Application\Services\ExportService:
+      - ABTests\Infrastructure\Database\Models\ExperimentModel
+      - ABTests\Infrastructure\Database\Models\RollupModel
